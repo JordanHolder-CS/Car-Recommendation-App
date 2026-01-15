@@ -1,7 +1,12 @@
-import { View } from "react-native";
+import Screen from "../UI/Layout/screen.js";
+import { Text } from "react-native";
 
 export const HomeScreen = ({}) => {
-  return <View></View>;
+  return (
+    <Screen>
+      <Text>{"Hello"}</Text>
+    </Screen>
+  );
 };
 
 export default HomeScreen;
