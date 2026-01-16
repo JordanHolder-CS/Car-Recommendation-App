@@ -1,12 +1,13 @@
 import { StyleSheet, View, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
-export const QButton = () => {
+export const QButton = ({ Title, Description }) => {
   return (
     <View style={[styles.button]}>
       <Text style={styles.title}>
-        Example answer{"\n"}
-        <Text style={styles.faded}>This is an example description</Text>
+        {Title}
+        {"\n"}
+        <Text style={styles.faded}>{Description}</Text>
       </Text>
     </View>
   );
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     paddingVertical: 12,
     paddingHorizontal: 14,
-    marginVertical: 15,
+    marginVertical: 7,
     marginHorizontal: 7,
     flexDirection: "row",
     alignItems: "center",
@@ -39,7 +40,6 @@ const styles = StyleSheet.create({
   textWrap: {
     // flex: 1,
   },
-
   title: {
     fontSize: 16,
     fontWeight: "600",
