@@ -11,7 +11,7 @@ export const Screen = ({ children }) => {
 };
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
+  screen: { flex: 1, backgroundColor: "white" },
 });
 
 export default Screen;

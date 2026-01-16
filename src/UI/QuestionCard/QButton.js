@@ -1,18 +1,30 @@
 import { StyleSheet, View, Text } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { Pressable } from "react-native";
+import RadioButton from "./RadioButton";
 
-export const QButton = ({ Title, Description }) => {
+export const QButton = ({ id, Title, Description, selectedId, onPress }) => {
+  const isSelected = selectedId === id;
+
+  const handlePress = () => {
+    onPress?.(isSelected ? undefined : id);
+  };
+
   return (
-    <View style={[styles.button]}>
-      <Text style={styles.title}>
-        {Title}
-        {"\n"}
-        <Text style={styles.faded}>{Description}</Text>
-      </Text>
-    </View>
+    <Pressable onPress={handlePress}>
+      <View style={[styles.button]}>
+        <RadioButton
+          selectedId={isSelected ? "1" : null}
+          options={[{ id: "1", value: "2" }]}
+        />
+        <Text style={styles.title}>
+          {Title}
+          {"\n"}
+          <Text style={styles.faded}>{Description}</Text>
+        </Text>
+      </View>
+    </Pressable>
   );
 };
-
 const styles = StyleSheet.create({
   button: {
     borderWidth: 1,
