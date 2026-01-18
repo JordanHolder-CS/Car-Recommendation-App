@@ -1,11 +1,11 @@
-import { StyleSheet, ScrollView } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useState } from "react";
 import QuestionItem from "./QuestionItem";
 
 const QuestionList = ({ Questions: question }) => {
   const [selectedId, setSelectedId] = useState(null);
   return (
-    <ScrollView>
+    <View>
       {question.map((question, index) => (
         <QuestionItem
           key={question.id}
@@ -15,7 +15,7 @@ const QuestionList = ({ Questions: question }) => {
           onPress={setSelectedId}
         />
       ))}
-    </ScrollView>
+    </View>
   );
 };
 

@@ -15,18 +15,4 @@ const QuestionItem = ({ question, id, selectedId, onPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-  },
-
-  faded: {
-    marginTop: 4,
-    color: "#6B7280",
-    fontSize: 13,
-  },
-});
-
 export default QuestionItem;

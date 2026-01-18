@@ -19,7 +19,7 @@ export const QButton = ({ id, Title, Description, selectedId, onPress }) => {
         <Text style={styles.title}>
           {Title}
           {"\n"}
-          <Text style={styles.faded}>{Description}</Text>
+          <Text style={styles.desc}>{Description}</Text>
         </Text>
       </View>
     </Pressable>
@@ -32,12 +32,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#FFFFFF",
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingRight: 14,
     marginVertical: 7,
-    marginHorizontal: 7,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 7,
   },
 
   radio: {
@@ -58,10 +57,10 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 
-  faded: {
+  desc: {
     marginTop: 4,
     color: "#6B7280",
-    fontSize: 13,
+    fontSize: 10,
   },
 });
 

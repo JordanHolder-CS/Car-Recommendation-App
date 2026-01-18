@@ -18,8 +18,9 @@ export default function RadioButton({ options, selectedId, onChange }) {
   return (
     <RadioGroup
       radioButtons={radioButtons}
-      onPress={onChange || (() => {})}
+      //onPress={onChange || (() => {})}
       selectedId={selectedId}
+      containerStyle={{ pointerEvents: "none" }}
     />
   );
 }
