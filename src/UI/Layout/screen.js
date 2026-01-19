@@ -3,7 +3,7 @@ import { StatusBar } from "expo-status-bar";
 
 export const Screen = ({ children }) => {
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen]}>
       <StatusBar hidden></StatusBar>
       {children}
     </View>

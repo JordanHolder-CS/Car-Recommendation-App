@@ -55,12 +55,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#111827",
+    //flex: 1,
+    flexShrink: 1,
   },
 
   desc: {
     marginTop: 4,
     color: "#6B7280",
     fontSize: 10,
+    flex: 1,
+    flexShrink: 1,
   },
 });
 
