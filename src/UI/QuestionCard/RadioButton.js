@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo } from "react";
 import RadioGroup from "react-native-radio-buttons-group";
 
 export default function RadioButton({ options, selectedId, onChange }) {

@@ -2,6 +2,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./src/screen/Home";
 import QuestionScreen from "./src/screen/Questionnaire";
+import { ChevronLeft } from "lucide-react-native";
+import { View } from "react-native";
+import BackButton from "./src/ui/Navigation/BackButton";
 
 const Stack = createNativeStackNavigator();
 
@@ -23,7 +26,10 @@ export const App = () => {
         <Stack.Screen
           name="Questionnaire"
           component={QuestionScreen}
-          options={{ title: "Questionnaire" }}
+          options={{
+            title: "Questionnaire",
+            headerShown: false,
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

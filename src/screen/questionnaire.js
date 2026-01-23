@@ -3,8 +3,11 @@ import { useState } from "react";
 import QuestionList from "../Lists/QuestionListing.js";
 import { ScrollView, Text, StyleSheet, View } from "react-native";
 import Button from "../ui/Navigation/ContinueButton.js";
+import BackButton from "../ui/Navigation/BackButton.js";
 import { ButtonTray } from "../ui/Navigation/ContinueButton.js";
 import { QPages } from "../Data (Temp)/QuestionPages.js";
+import { ProgressBar } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const QuestionScreen = ({}) => {
   const steps = QPages;
@@ -19,14 +22,25 @@ export const QuestionScreen = ({}) => {
     setAnswers((prev) => ({ ...prev, [step.key]: optionIdOrNull ?? null }));
   };
 
+  const onBack = () => {
+    if (stepIndex > 0) setStepIndex((i) => i - 1);
+  };
   const onContinue = () => {
     if (!selectedId) return;
     if (stepIndex < steps.length - 1) setStepIndex((i) => i + 1);
-    else {
-    }
   };
   return (
     <Screen>
+      <SafeAreaView style={styles.Header} edges={["top"]}>
+        <BackButton onBack={onBack} />
+        <Text style={styles.HeaderTitle}>Questionnaire</Text>
+        <View style={{ width: 44 }} />
+      </SafeAreaView>
+      <ProgressBar
+        progress={stepIndex / steps.length}
+        color="#3B82F6"
+        style={styles.ProgressBar}
+      />
       <View style={styles.SafeArea}>
         <View style={styles.Content}>
           <Text style={styles.Title}>{step.title}</Text>
@@ -60,5 +74,22 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
     backgroundColor: "white",
   },
+  ProgressBar: {
+    height: 6,
+    marginBottom: 10,
+  },
+  Header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    backgroundColor: "white",
+  },
+  HeaderTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+  },
 });
+
 export default QuestionScreen;
