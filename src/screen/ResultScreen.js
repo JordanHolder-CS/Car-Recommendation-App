@@ -5,6 +5,8 @@ import BackButton from "../ui/Navigation/BackButton.js";
 import { ButtonTray } from "../ui/Navigation/ContinueButton.js";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RecommendationContent from "../ui/RecommendationCard/Content.js";
+import Cars from "../Data (Temp)/Cars.js";
+import RecommendationList from "../Lists/RecommendationList.js";
 
 export const ResultScreen = ({ navigation }) => {
   const onBack = () => {
@@ -17,13 +19,17 @@ export const ResultScreen = ({ navigation }) => {
         <Text style={styles.HeaderTitle}>Top 3 Matches</Text>
         <View style={{ width: 44 }} />
       </SafeAreaView>
-      <RecommendationContent />
+      <View style={styles.SafeArea}>
+        <ScrollView>
+          <RecommendationList cars={Cars} />
+        </ScrollView>
+      </View>
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  SafeArea: { marginHorizontal: 20, flex: 1 },
+  SafeArea: { marginHorizontal: 15, flex: 1 },
   Content: { rowGap: 12, paddingBottom: 12, flex: 1 },
   BottomTray: {
     paddingBottom: 30,

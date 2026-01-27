@@ -1,19 +1,26 @@
 import { StyleSheet, View, Image, ScrollView, Text } from "react-native";
 import Icons from "../Icons/Icons";
 
-export const RecommendationContent = ({}) => {
+export const RecommendationContent = ({
+  Name,
+  Model,
+  Brand,
+  Image: ImageURL,
+}) => {
   return (
     <View style={styles.Container}>
       <View style={styles.HeaderWrapper}>
         <Image
           style={styles.ImageHeader}
           source={{
-            uri: "https://toyotagazooracing.com/pages/contents/jp/gr/assets/img/supra/gt4/pic_hdg_pc.jpg",
+            uri: ImageURL,
           }}
         />
       </View>
       <View style={styles.TextWrapper}>
-        <Text style={styles.NameText}>Toyota Supra</Text>
+        <Text style={styles.NameText}>
+          {Brand} {Name} {Model}
+        </Text>
         <Text style={styles.PriceText}>£20,000</Text>
         <View style={styles.CoolStatsContainer}>
           <Text style={styles.CoolStatsText}>
@@ -93,7 +100,7 @@ const styles = StyleSheet.create({
   },
   ImageHeader: {
     height: 120,
-    width: 390,
+    width: "100%",
     borderRadius: 12,
   },
   NameText: { fontWeight: "700", fontSize: 20 },
@@ -108,22 +115,20 @@ const styles = StyleSheet.create({
   Item: {
     flexDirection: "row",
     paddingLeft: 2,
-    marginTop: 2,
+    marginTop: 7,
     alignItems: "flex-start",
   },
   ItemText: { fontSize: 14, lineHeight: 22, flex: 1 },
   ConBullet: { color: "#d50000", fontSize: 22, lineHeight: 22, marginRight: 5 },
   Con: { fontWeight: "500", color: "#d50000", fontSize: 14 },
   Container: {
-    height: 500,
     borderWidth: 1,
     borderColor: "#2452ae",
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: "#ffffff",
     padding: 5,
     marginVertical: 7,
     flexDirection: "column",
-    //alignItems: "center",
     gap: 7,
   },
   CoolStatsContainer: {
@@ -135,11 +140,11 @@ const styles = StyleSheet.create({
     color: "#777777",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    paddingRight: 7,
     marginRight: 8,
     marginBottom: 8,
     backgroundColor: "#f0f0f0",
     borderRadius: 6,
+    textAlign: "center",
   },
 });
 

@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontSize: 13,
   },
-  SafeArea: { marginHorizontal: 20, flex: 1 },
+  SafeArea: { marginHorizontal: 15, flex: 1 },
   Content: { rowGap: 12, paddingBottom: 12, flex: 1 },
   BottomTray: {
     paddingBottom: 30,
