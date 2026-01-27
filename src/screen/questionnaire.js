@@ -9,7 +9,7 @@ import { QPages } from "../Data (Temp)/QuestionPages.js";
 import { ProgressBar } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export const QuestionScreen = ({}) => {
+export const QuestionScreen = ({ navigation }) => {
   const steps = QPages;
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -22,12 +22,17 @@ export const QuestionScreen = ({}) => {
     setAnswers((prev) => ({ ...prev, [step.key]: optionIdOrNull ?? null }));
   };
 
+  const goToResultScreen = () => navigation.navigate("ResultScreen");
+
   const onBack = () => {
     if (stepIndex > 0) setStepIndex((i) => i - 1);
   };
   const onContinue = () => {
     if (!selectedId) return;
     if (stepIndex < steps.length - 1) setStepIndex((i) => i + 1);
+    else {
+      navigation.navigate("ResultScreen");
+    }
   };
   return (
     <Screen>

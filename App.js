@@ -1,6 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import HomeScreen from "./src/screen/Home";
+import ResultScreen from "./src/screen/ResultScreen";
 import QuestionScreen from "./src/screen/Questionnaire";
 import { ChevronLeft } from "lucide-react-native";
 import { View } from "react-native";
@@ -12,16 +12,16 @@ export const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Questionnaire"
+        initialRouteName="ResultScreen"
         // screenOptions={{
         //   headerStyle: { backgroundColor: "black" },
         //   headerTintColor: "white",
         // }}
       >
         <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: "Home" }}
+          name="ResultScreen"
+          component={ResultScreen}
+          options={{ title: "Result", headerShown: false }}
         />
         <Stack.Screen
           name="Questionnaire"
