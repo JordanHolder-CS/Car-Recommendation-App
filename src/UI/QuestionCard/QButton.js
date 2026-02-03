@@ -27,7 +27,7 @@ export const QButton = ({ id, Title, Description, selectedId, onPress }) => {
 };
 const styles = StyleSheet.create({
   button: {
-    borderWidth: 1,
+    //borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 12,
     backgroundColor: "#FFFFFF",

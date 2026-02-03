@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
   Content: { rowGap: 12, paddingBottom: 12, flex: 1 },
   BottomTray: {
     paddingBottom: 30,
-    backgroundColor: "white",
   },
   ProgressBar: {
     height: 6,

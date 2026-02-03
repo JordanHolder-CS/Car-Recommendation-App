@@ -1,5 +1,6 @@
 import { StyleSheet, View, Image, ScrollView, Text } from "react-native";
 import Icons from "../Icons/Icons";
+import Button, { ButtonTray } from "../Navigation/ContinueButton";
 
 export const RecommendationContent = ({
   Name,
@@ -42,48 +43,55 @@ export const RecommendationContent = ({
             <Icons icon="airline-seat-recline-extra" size="12" /> 2+2 Seats
           </Text>
         </View>
-        <Text style={styles.Pro}>
-          <Icons icon="thumb-up" size="10" style="Pro" /> Pros
-        </Text>
-        <View style={styles.Item}>
-          <Text style={styles.ProBullet}>•</Text>
-          <Text style={styles.ItemText}>
-            Legendary inline-6 engine with smooth power delivery
+        <View style={{ paddingBottom: 8 }}>
+          <Text style={styles.Pro}>
+            <Icons icon="thumb-up" size="10" style="Pro" /> Pros
           </Text>
+          <View style={styles.Item}>
+            <Text style={styles.ProBullet}>•</Text>
+            <Text style={styles.ItemText}>
+              Legendary inline-6 engine with smooth power delivery
+            </Text>
+          </View>
+          <View style={styles.Item}>
+            <Text style={styles.ProBullet}>•</Text>
+            <Text style={styles.ItemText}>
+              Sharp handling and excellent chassis balance
+            </Text>
+          </View>
+          <View style={styles.Item}>
+            <Text style={styles.ProBullet}>•</Text>
+            <Text style={styles.ItemText}>
+              Premium interior with modern tech features
+            </Text>
+          </View>
         </View>
-        <View style={styles.Item}>
-          <Text style={styles.ProBullet}>•</Text>
-          <Text style={styles.ItemText}>
-            Sharp handling and excellent chassis balance
+        <View style={{ paddingBottom: 8 }}>
+          <Text style={styles.Con}>
+            <Icons icon="thumb-down" size="10" style="Con" /> Cons
           </Text>
+          <View style={styles.Item}>
+            <Text style={styles.ConBullet}>•</Text>
+            <Text style={styles.ItemText}>
+              Limited rear seat space and practicality
+            </Text>
+          </View>
+          <View style={styles.Item}>
+            <Text style={styles.ConBullet}>•</Text>
+            <Text style={styles.ItemText}>
+              Firm ride quality may be uncomfortable on rough roads
+            </Text>
+          </View>
+          <View style={styles.Item}>
+            <Text style={styles.ConBullet}>•</Text>
+            <Text style={styles.ItemText}>
+              Higher maintenance costs compared to mainstream cars
+            </Text>
+          </View>
         </View>
-        <View style={styles.Item}>
-          <Text style={styles.ProBullet}>•</Text>
-          <Text style={styles.ItemText}>
-            Premium interior with modern tech features
-          </Text>
-        </View>
-        <Text style={styles.Con}>
-          <Icons icon="thumb-down" size="10" style="Con" /> Cons
-        </Text>
-        <View style={styles.Item}>
-          <Text style={styles.ConBullet}>•</Text>
-          <Text style={styles.ItemText}>
-            Limited rear seat space and practicality
-          </Text>
-        </View>
-        <View style={styles.Item}>
-          <Text style={styles.ConBullet}>•</Text>
-          <Text style={styles.ItemText}>
-            Firm ride quality may be uncomfortable on rough roads
-          </Text>
-        </View>
-        <View style={styles.Item}>
-          <Text style={styles.ConBullet}>•</Text>
-          <Text style={styles.ItemText}>
-            Higher maintenance costs compared to mainstream cars
-          </Text>
-        </View>
+        <ButtonTray trayStyle={styles.BottomTray}>
+          <Button label="View Details" />
+        </ButtonTray>
       </View>
     </View>
   );
@@ -105,7 +113,7 @@ const styles = StyleSheet.create({
   },
   NameText: { fontWeight: "700", fontSize: 20 },
   PriceText: {
-    paddingTop: 4,
+    paddinTop: 4,
     fontWeight: "500",
     fontSize: 18,
     color: "#007BFF",
@@ -123,7 +131,7 @@ const styles = StyleSheet.create({
   Con: { fontWeight: "500", color: "#d50000", fontSize: 14 },
   Container: {
     borderWidth: 1,
-    borderColor: "#2452ae",
+    borderColor: "white",
     borderRadius: 16,
     backgroundColor: "#ffffff",
     padding: 5,

@@ -1,7 +1,7 @@
 import { Text, StyleSheet, View } from "react-native";
 import Selector from "../Navigation/Selector";
 
-const Button = ({ label = "Continue", onPress = () => {}, textStyle }) => {
+const Button = ({ label, onPress = () => {}, textStyle }) => {
   return (
     <Selector
       onPress={onPress}
@@ -21,15 +21,15 @@ const styles = StyleSheet.create({
   buttonTray: {
     flexDirection: "row",
     gap: 15,
-    paddingVertical: 15,
+    paddingVertical: 5,
   },
 
   button: {
     minHeight: 50,
     borderWidth: 1,
     borderRadius: 7,
-    borderColor: "grey",
-    backgroundColor: "white",
+    borderColor: "#e4e4e4",
+    backgroundColor: "#e4e4e4",
     alignItems: "center",
     justifyContent: "center",
     padding: 8,
