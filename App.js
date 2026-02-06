@@ -1,7 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ResultScreen from "./src/screen/ResultScreen";
-import QuestionScreen from "./src/screen/Questionnaire";
+import QuestionScreen from "./src/screen/questionnaire";
 import { ChevronLeft } from "lucide-react-native";
 import { View } from "react-native";
 import BackButton from "./src/ui/Navigation/BackButton";
