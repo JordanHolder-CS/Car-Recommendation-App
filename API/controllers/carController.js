@@ -1,6 +1,6 @@
 const carModel = require("../models/carModel");
 
-const getAllCars = async (req, res) => {
+const getCars = async (req, res) => {
   try {
     const cars = await carModel.findAll();
     res.status(200).json(cars);
@@ -8,6 +8,27 @@ const getAllCars = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error retrieving cars", error: error.message });
+  }
+};
+
+const getFilteredCars = async (req, res) => {
+  try {
+    const cars = await carModel.findFiltered(req.query);
+    res.status(200).json(cars);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error filtering cars", error: error.message });
+  }
+};
+const getSpecs = async (req, res) => {
+  try {
+    const specs = await carModel.findSpecs(req.query);
+    res.status(200).json(specs);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving specs", error: error.message });
   }
 };
 
@@ -23,4 +44,4 @@ const getCarByType = async (req, res) => {
   }
 };
 
-module.exports = { getAllCars, getCarByType };
+module.exports = { getCars, getCarByType, getSpecs, getFilteredCars };
