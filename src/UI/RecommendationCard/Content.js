@@ -3,45 +3,88 @@ import Icons from "../Icons/Icons";
 import Button, { ButtonTray } from "../Navigation/ContinueButton";
 
 export const RecommendationContent = ({
-  Name,
-  Model,
-  Brand,
-  Image: ImageURL,
+  name,
+  brand,
+  image,
+  price,
+  horsepower,
+  mpg,
+  engine,
+  drivetrain,
+  transmission,
+  seats,
+  zeroToSixty,
+  topSpeed,
+  torque,
+  bodyStyle,
+  isEV,
+  evRange,
+  reliability,
+  serviceCost,
+  insuranceEstimate,
 }) => {
+  const formatPrice = (price) => {
+    return price ? `£${Number(price).toLocaleString("en-GB")}` : "";
+  };
   return (
     <View style={styles.Container}>
       <View style={styles.HeaderWrapper}>
         <Image
           style={styles.ImageHeader}
           source={{
-            uri: ImageURL,
+            uri:
+              image ||
+              "https://hips.hearstapps.com/hmg-prod/images/2024-mercedes-amg-gt63-643-66b52543c907c.jpg?crop=0.683xw:0.511xh;0.0976xw,0.409xh&resize=1200:*",
           }}
         />
       </View>
       <View style={styles.TextWrapper}>
         <Text style={styles.NameText}>
-          {Brand} {Name} {Model}
+          {brand} {name}
         </Text>
-        <Text style={styles.PriceText}>£20,000</Text>
+        <Text style={styles.PriceText}>{formatPrice(price)}</Text>
         <View style={styles.CoolStatsContainer}>
-          <Text style={styles.CoolStatsText}>
-            <Icons icon="speed" size="12" /> 382 HP
-          </Text>
-          <Text style={styles.CoolStatsText}>
-            <Icons icon="local-gas-station" size="12" /> 25 MPG
-          </Text>
-          <Text style={styles.CoolStatsText}>
-            <Icons icon="settings" size="12" /> 3.0L I6 Turbo
-          </Text>
-          <Text style={styles.CoolStatsText}>
-            <Icons icon="directions-car" size="12" /> RWD
-          </Text>
-          <Text style={styles.CoolStatsText}>
-            <Icons icon="tune" size="12" /> 8-Speed Auto
-          </Text>
-          <Text style={styles.CoolStatsText}>
-            <Icons icon="airline-seat-recline-extra" size="12" /> 2+2 Seats
-          </Text>
+          {horsepower && (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="speed" size="12" /> {horsepower}
+            </Text>
+          )}
+          {isEV && evRange ? (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="battery-charging-full" size="12" /> {evRange} mi
+              range
+            </Text>
+          ) : mpg ? (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="local-gas-station" size="12" /> {mpg} MPG
+            </Text>
+          ) : null}
+          {engine && (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="settings" size="12" /> {engine}
+            </Text>
+          )}
+          {drivetrain && (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="directions-car" size="12" /> {drivetrain}
+            </Text>
+          )}
+          {transmission && (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="tune" size="12" /> {transmission}
+            </Text>
+          )}
+          {seats && (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="airline-seat-recline-extra" size="12" /> {seats}{" "}
+              Seats
+            </Text>
+          )}
+          {zeroToSixty && (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="timer" size="12" /> 0-60: {zeroToSixty}s
+            </Text>
+          )}
         </View>
         <View style={{ paddingBottom: 8 }}>
           <Text style={styles.Pro}>

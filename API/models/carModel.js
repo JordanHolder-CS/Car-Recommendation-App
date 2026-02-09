@@ -3,7 +3,7 @@ const pool = require("../config/pool");
 const carModel = {
   findAll: async () => {
     const result = await pool.query(
-      `SELECT c.car_id, c.name as car_name, b.name as brand_name
+      `SELECT c.car_id, c.name AS car_name, b.name AS brand_name
        FROM "Car Data".car c
        JOIN "Car Data".brands b ON b.brand_id = c.brand_id`,
     );
@@ -12,7 +12,11 @@ const carModel = {
 
   findSpecs: async () => {
     const result = await pool.query(
-      'SELECT c.car_id, c.name, s.* FROM "Car Data".car c  JOIN "Car Data".car_specs s ON s.car_id = c.car_id WHERE s.horsepower IS NOT NULL',
+      `SELECT c.car_id, c.name AS car_name, b.name AS brand_name, s.* 
+       FROM "Car Data".car c
+       JOIN "Car Data".car_specs s ON s.car_id = c.car_id
+       JOIN "Car Data".brands b ON b.brand_id = c.brand_id
+       WHERE s.horsepower IS NOT NULL`,
     );
     return result.rows;
   },
