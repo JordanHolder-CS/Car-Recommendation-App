@@ -89,18 +89,17 @@ export const ResultScreen = ({ navigation, route }) => {
     <Screen>
       <SafeAreaView style={styles.Header} edges={["top"]}>
         <BackButton onBack={onBack} />
-        <Text style={styles.HeaderTitle}>Top {cars.length} Matches</Text>
+        <View style={styles.HeaderText}>
+          <Text style={styles.HeaderTitle}>Top {cars.length} Matches</Text>
+          {cars.length && primaryDriverType ? (
+            <Text style={styles.HeaderSubtitle}>
+              Based on: {primaryDriverType.replace(/_/g, " ")}
+            </Text>
+          ) : null}
+        </View>
         <View style={{ width: 44 }} />
       </SafeAreaView>
       <View style={styles.SafeArea}>
-        {primaryDriverType ? (
-          <View style={styles.TypeBanner}>
-            <Text style={styles.TypeLabel}>Driver type</Text>
-            <Text style={styles.TypeValue}>
-              {primaryDriverType.replace(/_/g, " ")}
-            </Text>
-          </View>
-        ) : null}
         {cars.length ? (
           <ScrollView>
             <RecommendationList cars={cars} />
@@ -112,10 +111,12 @@ export const ResultScreen = ({ navigation, route }) => {
               Try changing a hard filter like budget, transmission, or fuel
               type.
             </Text>
-            <Button
-              label="Retake Questionnaire"
-              onPress={() => navigation.navigate("Questionnaire")}
-            />
+            <View style={styles.EmptyButtonWrap}>
+              <Button
+                label="Retake Questionnaire"
+                onPress={() => navigation.navigate("Questionnaire")}
+              />
+            </View>
           </View>
         )}
       </View>
@@ -133,9 +134,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: "white",
   },
+  HeaderText: {
+    alignItems: "center",
+  },
   HeaderTitle: {
     fontSize: 17,
     fontWeight: "600",
+  },
+  HeaderSubtitle: {
+    marginTop: 2,
+    fontSize: 11,
+    color: "#6B7280",
+    textTransform: "capitalize",
   },
   CenterContainer: {
     flex: 1,
@@ -153,25 +163,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 20,
   },
-  TypeBanner: {
-    backgroundColor: "#EFF6FF",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 12,
-  },
-  TypeLabel: {
-    fontSize: 12,
-    color: "#1D4ED8",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-  TypeValue: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
-    textTransform: "capitalize",
-  },
   EmptyTitle: {
     fontSize: 20,
     fontWeight: "700",
@@ -183,6 +174,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 24,
+  },
+  EmptyButtonWrap: {
+    width: 220,
   },
 });
 

@@ -27,10 +27,10 @@ export const RecommendationContent = ({
   topReasons = [],
 }) => {
   const formatPrice = (value) =>
-    value ? `GBP ${Number(value).toLocaleString("en-GB")}` : "Price unavailable";
+    value ? `£${Number(value).toLocaleString("en-GB")}` : "Price unavailable";
 
   const formatCost = (value) =>
-    value ? `GBP ${Number(value).toLocaleString("en-GB")}` : "N/A";
+    value ? `£${Number(value).toLocaleString("en-GB")}` : "N/A";
 
   const matchPercent =
     typeof score === "number" ? `${Math.round(score * 100)}% match` : null;
@@ -54,7 +54,7 @@ export const RecommendationContent = ({
         {matchPercent ? <Text style={styles.MatchText}>{matchPercent}</Text> : null}
         {primaryDriverType ? (
           <Text style={styles.TypeText}>
-            Best for {primaryDriverType.replace(/_/g, " ")}
+            {primaryDriverType.replace(/_/g, " ")}
           </Text>
         ) : null}
         <Text style={styles.PriceText}>{formatPrice(price)}</Text>
@@ -102,7 +102,9 @@ export const RecommendationContent = ({
         </View>
 
         <View style={styles.Section}>
-          <Text style={styles.SectionTitle}>Why it matches</Text>
+          <Text style={styles.ProTitle}>
+            <Icons icon="thumb-up" size="10" style="Pro" /> Why it matches
+          </Text>
           {topReasons.length ? (
             topReasons.map((reason) => (
               <View style={styles.Item} key={`${name}-${reason}`}>
@@ -169,8 +171,8 @@ const styles = StyleSheet.create({
   },
   TypeText: {
     marginTop: 2,
-    fontSize: 13,
-    color: "#4B5563",
+    fontSize: 11,
+    color: "#6B7280",
     textTransform: "capitalize",
   },
   PriceText: {
@@ -182,6 +184,11 @@ const styles = StyleSheet.create({
   SectionTitle: {
     fontWeight: "600",
     color: "#111827",
+    fontSize: 14,
+  },
+  ProTitle: {
+    fontWeight: "600",
+    color: "#25cb00",
     fontSize: 14,
   },
   Bullet: {
