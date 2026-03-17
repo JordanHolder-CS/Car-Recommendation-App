@@ -39,7 +39,6 @@ export const ResultScreen = ({ navigation }) => {
         }
 
         const data = await response.json();
-        console.log("First car data:", data[0]); // See exact field names
         setCars(data);
       } catch (err) {
         console.error("Error fetching cars:", err);
