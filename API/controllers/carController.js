@@ -13,7 +13,8 @@ const getCars = async (req, res) => {
 
 const getFilteredCars = async (req, res) => {
   try {
-    const cars = await carModel.findFiltered(req.query);
+    const filters = req.query;
+    const cars = await carModel.findFiltered(filters);
     res.status(200).json(cars);
   } catch (error) {
     res

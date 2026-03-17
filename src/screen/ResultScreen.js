@@ -19,11 +19,19 @@ export const ResultScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  //hardcoded query params for testing - replace with dynamic values from questionnaire
+  const queryParams = new URLSearchParams({
+    body_style: "SUV",
+    min_price: "30000",
+    max_price: "50000",
+    is_ev: "true",
+  }).toString();
+
   useEffect(() => {
     const fetchCars = async () => {
       try {
         const response = await fetch(
-          "https://car-recommendation-database.co.uk/api/car/specs",
+          `https://car-recommendation-database.co.uk/api/car/filtered?${queryParams}`,
         );
 
         if (!response.ok) {
@@ -31,6 +39,7 @@ export const ResultScreen = ({ navigation }) => {
         }
 
         const data = await response.json();
+        console.log("First car data:", data[0]); // See exact field names
         setCars(data);
       } catch (err) {
         console.error("Error fetching cars:", err);
