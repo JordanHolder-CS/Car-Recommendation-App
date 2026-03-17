@@ -12,7 +12,7 @@ export const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Questionnaire"
+        initialRouteName="ResultScreen"
         // screenOptions={{
         //   headerStyle: { backgroundColor: "black" },
         //   headerTintColor: "white",

@@ -126,18 +126,24 @@ const carModel = {
         conditions.push(`LOWER(car.${baseKey}) = LOWER($${values.length})`);
       }
     });
-
     const whereClause = conditions.length
       ? ` WHERE ${conditions.join(" AND ")}`
       : "";
 
     const query = `
-      SELECT car.*, specs.*
-      FROM "Car Data".car car
-      LEFT JOIN "Car Data".car_specs specs
-        ON specs.car_id = car.car_id
-      ${whereClause}
-    `;
+  SELECT 
+    car.car_id,
+    car.name AS car_name,
+    brands.name AS brand_name,
+    car.brand_id,
+    specs.*
+  FROM "Car Data".car car
+  JOIN "Car Data".car_specs specs
+    ON specs.car_id = car.car_id
+  JOIN "Car Data".brands brands
+    ON brands.brand_id = car.brand_id
+  ${whereClause}
+`;
 
     const result = await pool.query(query, values);
     return result.rows;
