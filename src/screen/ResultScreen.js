@@ -8,40 +8,49 @@ import {
 } from "react-native";
 import Button from "../ui/Navigation/ContinueButton.js";
 import BackButton from "../ui/Navigation/BackButton.js";
-import { ButtonTray } from "../ui/Navigation/ContinueButton.js";
 import { SafeAreaView } from "react-native-safe-area-context";
-import RecommendationContent from "../ui/RecommendationCard/Content.js";
 import RecommendationList from "../Lists/RecommendationList.js";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export const ResultScreen = ({ navigation }) => {
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
+  "https://car-recommendation-database.co.uk/api";
+const CAR_API_URL = `${API_BASE_URL}/car`;
+
+export const ResultScreen = ({ navigation, route }) => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  //hardcoded query params for testing - replace with dynamic values from questionnaire
-  const queryParams = new URLSearchParams({
-    body_style: "SUV",
-    min_price: "30000",
-    max_price: "50000",
-    is_ev: "true",
-  }).toString();
+  const [primaryDriverType, setPrimaryDriverType] = useState("");
+  const answers = route?.params?.answers || {};
+  const serializedAnswers = JSON.stringify(answers);
 
   useEffect(() => {
     const fetchCars = async () => {
       try {
-        const response = await fetch(
-          `https://car-recommendation-database.co.uk/api/car/filter?${queryParams}`,
-        );
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(`${CAR_API_URL}/recommend`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            answers: JSON.parse(serializedAnswers),
+            limit: 5,
+          }),
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        setCars(data);
+        setCars(data.recommendations || []);
+        setPrimaryDriverType(data.primaryDriverType || "");
       } catch (err) {
-        console.error("Error fetching cars:", err);
+        console.error("Error fetching recommendations:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -49,7 +58,7 @@ export const ResultScreen = ({ navigation }) => {
     };
 
     fetchCars();
-  }, []);
+  }, [serializedAnswers]);
 
   const onBack = () => {
     navigation.goBack();
@@ -60,7 +69,7 @@ export const ResultScreen = ({ navigation }) => {
       <Screen>
         <View style={styles.CenterContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.LoadingText}>Loading cars...</Text>
+          <Text style={styles.LoadingText}>Loading recommendations...</Text>
         </View>
       </Screen>
     );
@@ -84,9 +93,31 @@ export const ResultScreen = ({ navigation }) => {
         <View style={{ width: 44 }} />
       </SafeAreaView>
       <View style={styles.SafeArea}>
-        <ScrollView>
-          <RecommendationList cars={cars} />
-        </ScrollView>
+        {primaryDriverType ? (
+          <View style={styles.TypeBanner}>
+            <Text style={styles.TypeLabel}>Driver type</Text>
+            <Text style={styles.TypeValue}>
+              {primaryDriverType.replace(/_/g, " ")}
+            </Text>
+          </View>
+        ) : null}
+        {cars.length ? (
+          <ScrollView>
+            <RecommendationList cars={cars} />
+          </ScrollView>
+        ) : (
+          <View style={styles.CenterContainer}>
+            <Text style={styles.EmptyTitle}>No exact matches found</Text>
+            <Text style={styles.EmptyText}>
+              Try changing a hard filter like budget, transmission, or fuel
+              type.
+            </Text>
+            <Button
+              label="Retake Questionnaire"
+              onPress={() => navigation.navigate("Questionnaire")}
+            />
+          </View>
+        )}
       </View>
     </Screen>
   );
@@ -94,11 +125,6 @@ export const ResultScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   SafeArea: { marginHorizontal: 15, flex: 1 },
-  Content: { rowGap: 12, paddingBottom: 12, flex: 1 },
-  BottomTray: {
-    paddingBottom: 30,
-    backgroundColor: "white",
-  },
   Header: {
     flexDirection: "row",
     alignItems: "center",
@@ -126,6 +152,37 @@ const styles = StyleSheet.create({
     color: "#FF3B30",
     textAlign: "center",
     paddingHorizontal: 20,
+  },
+  TypeBanner: {
+    backgroundColor: "#EFF6FF",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  TypeLabel: {
+    fontSize: 12,
+    color: "#1D4ED8",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  TypeValue: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    textTransform: "capitalize",
+  },
+  EmptyTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  EmptyText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 20,
+    paddingHorizontal: 24,
   },
 });
 

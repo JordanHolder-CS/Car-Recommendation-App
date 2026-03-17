@@ -29,7 +29,7 @@ const carModel = {
     };
     const specFields = {
       zero_to_sixty_mph: "number",
-      horsepower: "string",
+      horsepower: "number",
       seat_count: "number",
       boot_space_liters: "number",
       body_style: "string",
@@ -55,6 +55,7 @@ const carModel = {
       cargo_capacity: "number",
       model_year: "number",
       standard_engine: "string",
+      transmission: "string",
     };
 
     const parseBoolean = (value) => {
@@ -132,10 +133,9 @@ const carModel = {
 
     const query = `
   SELECT 
-    car.car_id,
     car.name AS car_name,
     brands.name AS brand_name,
-    car.brand_id,
+    car.*,
     specs.*
   FROM "Car Data".car car
   JOIN "Car Data".car_specs specs

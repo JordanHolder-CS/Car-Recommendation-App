@@ -24,6 +24,9 @@ const RecommendationItem = ({ car }) => {
         reliability={car.reliability}
         serviceCost={car.service_cost}
         insuranceEstimate={car.insurance_estimate}
+        score={car.score}
+        primaryDriverType={car.primaryDriverType}
+        topReasons={car.topReasons}
       />
     </View>
   );

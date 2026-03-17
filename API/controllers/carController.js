@@ -1,4 +1,8 @@
 const carModel = require("../models/carModel");
+const {
+  recommendCars,
+  translateAnswersToHardFilters,
+} = require("../services/recommendationService");
 
 const getCars = async (req, res) => {
   try {
@@ -20,6 +24,35 @@ const getFilteredCars = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error filtering cars", error: error.message });
+  }
+};
+
+const getRecommendedCars = async (req, res) => {
+  try {
+    const answers =
+      req.method === "GET"
+        ? req.query || {}
+        : req.body?.answers || req.body || {};
+    const rawLimit = req.method === "GET" ? req.query?.limit : req.body?.limit;
+    const parsedLimit = Number.parseInt(rawLimit, 10);
+    const limit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 5;
+    const { dbFilters } = translateAnswersToHardFilters(answers);
+    const cars = await carModel.findFiltered(dbFilters);
+    const recommendationResult = recommendCars(cars, answers, limit);
+
+    res.status(200).json({
+      answers,
+      primaryDriverType: recommendationResult.primaryDriverType,
+      typeScores: recommendationResult.typeScores,
+      recommendations: recommendationResult.recommendations,
+      totalCandidates: cars.length,
+      totalMatches: recommendationResult.recommendations.length,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error recommending cars", error: error.message });
   }
 };
 const getSpecs = async (req, res) => {
@@ -45,4 +78,10 @@ const getCarByType = async (req, res) => {
   }
 };
 
-module.exports = { getCars, getCarByType, getSpecs, getFilteredCars };
+module.exports = {
+  getCars,
+  getCarByType,
+  getSpecs,
+  getFilteredCars,
+  getRecommendedCars,
+};

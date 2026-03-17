@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image, ScrollView, Text } from "react-native";
+import { StyleSheet, View, Image, Text } from "react-native";
 import Icons from "../Icons/Icons";
 import Button, { ButtonTray } from "../Navigation/ContinueButton";
 
@@ -22,10 +22,19 @@ export const RecommendationContent = ({
   reliability,
   serviceCost,
   insuranceEstimate,
+  score,
+  primaryDriverType,
+  topReasons = [],
 }) => {
-  const formatPrice = (price) => {
-    return price ? `£${Number(price).toLocaleString("en-GB")}` : "";
-  };
+  const formatPrice = (value) =>
+    value ? `GBP ${Number(value).toLocaleString("en-GB")}` : "Price unavailable";
+
+  const formatCost = (value) =>
+    value ? `GBP ${Number(value).toLocaleString("en-GB")}` : "N/A";
+
+  const matchPercent =
+    typeof score === "number" ? `${Math.round(score * 100)}% match` : null;
+
   return (
     <View style={styles.Container}>
       <View style={styles.HeaderWrapper}>
@@ -42,96 +51,92 @@ export const RecommendationContent = ({
         <Text style={styles.NameText}>
           {brand} {name}
         </Text>
+        {matchPercent ? <Text style={styles.MatchText}>{matchPercent}</Text> : null}
+        {primaryDriverType ? (
+          <Text style={styles.TypeText}>
+            Best for {primaryDriverType.replace(/_/g, " ")}
+          </Text>
+        ) : null}
         <Text style={styles.PriceText}>{formatPrice(price)}</Text>
+
         <View style={styles.CoolStatsContainer}>
-          {horsepower && (
+          {horsepower ? (
             <Text style={styles.CoolStatsText}>
-              <Icons icon="speed" size="12" /> {horsepower}
+              <Icons icon="speed" size="12" /> {horsepower} hp
             </Text>
-          )}
+          ) : null}
           {isEV && evRange ? (
             <Text style={styles.CoolStatsText}>
               <Icons icon="battery-charging-full" size="12" /> {evRange} mi
-              range
             </Text>
           ) : mpg ? (
             <Text style={styles.CoolStatsText}>
               <Icons icon="local-gas-station" size="12" /> {mpg} MPG
             </Text>
           ) : null}
-          {engine && (
-            <Text style={styles.CoolStatsText}>
-              <Icons icon="settings" size="12" /> {engine}
-            </Text>
-          )}
-          {drivetrain && (
-            <Text style={styles.CoolStatsText}>
-              <Icons icon="directions-car" size="12" /> {drivetrain}
-            </Text>
-          )}
-          {transmission && (
+          {transmission ? (
             <Text style={styles.CoolStatsText}>
               <Icons icon="tune" size="12" /> {transmission}
             </Text>
-          )}
-          {seats && (
+          ) : null}
+          {seats ? (
             <Text style={styles.CoolStatsText}>
-              <Icons icon="airline-seat-recline-extra" size="12" /> {seats}{" "}
-              Seats
+              <Icons icon="airline-seat-recline-extra" size="12" /> {seats} seats
             </Text>
-          )}
-          {zeroToSixty && (
+          ) : null}
+          {zeroToSixty ? (
             <Text style={styles.CoolStatsText}>
-              <Icons icon="timer" size="12" /> 0-60: {zeroToSixty}s
+              <Icons icon="timer" size="12" /> 0-60 {zeroToSixty}s
+            </Text>
+          ) : null}
+          {topSpeed ? (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="rocket-launch" size="12" /> {topSpeed} mph
+            </Text>
+          ) : null}
+          {torque ? (
+            <Text style={styles.CoolStatsText}>
+              <Icons icon="build" size="12" /> {torque} Nm
+            </Text>
+          ) : null}
+        </View>
+
+        <View style={styles.Section}>
+          <Text style={styles.SectionTitle}>Why it matches</Text>
+          {topReasons.length ? (
+            topReasons.map((reason) => (
+              <View style={styles.Item} key={`${name}-${reason}`}>
+                <Text style={styles.Bullet}>-</Text>
+                <Text style={styles.ItemText}>{reason}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.MetaText}>
+              Balanced fit across your selected priorities.
             </Text>
           )}
         </View>
-        <View style={{ paddingBottom: 8 }}>
-          <Text style={styles.Pro}>
-            <Icons icon="thumb-up" size="10" style="Pro" /> Pros
+
+        <View style={styles.Section}>
+          <Text style={styles.SectionTitle}>Key details</Text>
+          <Text style={styles.MetaText}>
+            Engine: {engine || "N/A"}{"\n"}
+            Drivetrain: {drivetrain || "N/A"}{"\n"}
+            Body style: {bodyStyle || "N/A"}{"\n"}
+            Top speed: {topSpeed || "N/A"}{"\n"}
+            Torque: {torque || "N/A"}{"\n"}
+            Reliability: {reliability || "N/A"}
           </Text>
-          <View style={styles.Item}>
-            <Text style={styles.ProBullet}>•</Text>
-            <Text style={styles.ItemText}>
-              Legendary inline-6 engine with smooth power delivery
-            </Text>
-          </View>
-          <View style={styles.Item}>
-            <Text style={styles.ProBullet}>•</Text>
-            <Text style={styles.ItemText}>
-              Sharp handling and excellent chassis balance
-            </Text>
-          </View>
-          <View style={styles.Item}>
-            <Text style={styles.ProBullet}>•</Text>
-            <Text style={styles.ItemText}>
-              Premium interior with modern tech features
-            </Text>
-          </View>
         </View>
-        <View style={{ paddingBottom: 8 }}>
-          <Text style={styles.Con}>
-            <Icons icon="thumb-down" size="10" style="Con" /> Cons
+
+        <View style={styles.Section}>
+          <Text style={styles.SectionTitle}>Running costs</Text>
+          <Text style={styles.MetaText}>
+            Service: {formatCost(serviceCost)}{"\n"}
+            Insurance: {formatCost(insuranceEstimate)}
           </Text>
-          <View style={styles.Item}>
-            <Text style={styles.ConBullet}>•</Text>
-            <Text style={styles.ItemText}>
-              Limited rear seat space and practicality
-            </Text>
-          </View>
-          <View style={styles.Item}>
-            <Text style={styles.ConBullet}>•</Text>
-            <Text style={styles.ItemText}>
-              Firm ride quality may be uncomfortable on rough roads
-            </Text>
-          </View>
-          <View style={styles.Item}>
-            <Text style={styles.ConBullet}>•</Text>
-            <Text style={styles.ItemText}>
-              Higher maintenance costs compared to mainstream cars
-            </Text>
-          </View>
         </View>
+
         <ButtonTray trayStyle={styles.BottomTray}>
           <Button label="View Details" />
         </ButtonTray>
@@ -141,12 +146,10 @@ export const RecommendationContent = ({
 };
 
 const styles = StyleSheet.create({
-  Icon: { paddingRight: 53 },
   TextWrapper: {
     padding: 9,
   },
   HeaderWrapper: {
-    // flexDirection: "column",
     alignItems: "center",
   },
   ImageHeader: {
@@ -154,24 +157,56 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 12,
   },
-  NameText: { fontWeight: "700", fontSize: 20 },
+  NameText: {
+    fontWeight: "700",
+    fontSize: 20,
+  },
+  MatchText: {
+    marginTop: 4,
+    fontWeight: "700",
+    fontSize: 13,
+    color: "#0F766E",
+  },
+  TypeText: {
+    marginTop: 2,
+    fontSize: 13,
+    color: "#4B5563",
+    textTransform: "capitalize",
+  },
   PriceText: {
-    paddinTop: 4,
+    paddingTop: 4,
     fontWeight: "500",
     fontSize: 18,
     color: "#007BFF",
   },
-  Pro: { fontWeight: "500", color: "#25cb00", fontSize: 14 },
-  ProBullet: { color: "#25cb00", fontSize: 22, lineHeight: 22, marginRight: 5 },
+  SectionTitle: {
+    fontWeight: "600",
+    color: "#111827",
+    fontSize: 14,
+  },
+  Bullet: {
+    color: "#25cb00",
+    fontSize: 20,
+    lineHeight: 20,
+    marginRight: 6,
+  },
   Item: {
     flexDirection: "row",
     paddingLeft: 2,
     marginTop: 7,
     alignItems: "flex-start",
   },
-  ItemText: { fontSize: 14, lineHeight: 22, flex: 1 },
-  ConBullet: { color: "#d50000", fontSize: 22, lineHeight: 22, marginRight: 5 },
-  Con: { fontWeight: "500", color: "#d50000", fontSize: 14 },
+  ItemText: {
+    fontSize: 14,
+    lineHeight: 20,
+    flex: 1,
+  },
+  MetaText: {
+    marginTop: 6,
+    fontSize: 13,
+    color: "#4B5563",
+    lineHeight: 20,
+  },
   Container: {
     borderWidth: 1,
     borderColor: "white",
@@ -196,6 +231,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     borderRadius: 6,
     textAlign: "center",
+  },
+  Section: {
+    paddingBottom: 8,
   },
 });
 
