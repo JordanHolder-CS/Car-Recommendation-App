@@ -28,28 +28,18 @@ export const Questions = {
 
   Q2: [
     {
-      id: "q2_under_5k",
-      QuestionTitle: "Under £5,000",
+      id: "budget_range",
+      type: "slider",
+      QuestionTitle: "Set your maximum budget",
       QuestionDescription:
-        "Best for older used cars; prioritise reliability and running costs.",
-    },
-    {
-      id: "q2_5k_10k",
-      QuestionTitle: "£5,000 – £10,000",
-      QuestionDescription:
-        "A wider used selection with better spec and lower mileage options.",
-    },
-    {
-      id: "q2_10k_20k",
-      QuestionTitle: "£10,000 – £20,000",
-      QuestionDescription:
-        "Modern used cars with strong safety tech and efficient engines.",
-    },
-    {
-      id: "q2_20k_plus",
-      QuestionTitle: "£20,000+",
-      QuestionDescription:
-        "Newer models, higher trims, and more hybrids/EVs become realistic.",
+        "Choose the highest amount you are willing to spend, or drag to the top for any price.",
+      min: 5000,
+      max: 100_000,
+      step: 100,
+      format: "currency",
+      suffix: "",
+      minimumLabel: "5k",
+      maximumLabel: "Any price",
     },
   ],
 
@@ -82,7 +72,7 @@ export const Questions = {
       id: "q3_no_pref",
       QuestionTitle: "No preference",
       QuestionDescription:
-        "We’ll recommend the best match based on your driving style and budget.",
+        "We'll recommend the best match based on your driving style and budget.",
     },
   ],
 
@@ -103,34 +93,67 @@ export const Questions = {
       id: "q4_either",
       QuestionTitle: "No preference",
       QuestionDescription:
-        "We won’t filter by transmission unless it conflicts with your choices.",
+        "We won't filter by transmission unless it conflicts with your choices.",
     },
   ],
 
   Q5: [
     {
-      id: "q5_small",
-      QuestionTitle: "Just me (small car)",
+      id: "q5_coupe",
+      QuestionTitle: "Coupe / convertible",
       QuestionDescription:
-        "Compact and easy to park; ideal for solo driving and city use.",
+        "Smaller, sportier body styles that suit solo use or two people better than full family duty.",
     },
     {
-      id: "q5_couple",
-      QuestionTitle: "Two people + small boot",
+      id: "q5_hatchback",
+      QuestionTitle: "Hatchback / compact",
       QuestionDescription:
-        "Comfort for two with space for shopping and a few bags.",
+        "Compact and easy to park, with flexible everyday practicality for town driving.",
     },
     {
-      id: "q5_family",
-      QuestionTitle: "Family-friendly (4–5 seats)",
+      id: "q5_sedan",
+      QuestionTitle: "Saloon / sedan",
       QuestionDescription:
-        "Room for passengers and everyday practicality for regular use.",
+        "A more mature all-rounder with a separate boot, better road-trip comfort, and everyday usability.",
     },
     {
-      id: "q5_large_boot",
-      QuestionTitle: "Need a big boot / luggage space",
+      id: "q5_suv",
+      QuestionTitle: "SUV / crossover",
       QuestionDescription:
-        "Better for prams, sports gear, frequent luggage, or bulky items.",
+        "Higher ride height, easier access, and family-friendly space for regular daily use.",
+    },
+    {
+      id: "q5_estate",
+      QuestionTitle: "Estate / wagon",
+      QuestionDescription:
+        "Best if you want a bigger boot and long-body practicality for luggage, dogs, or bulky gear.",
+    },
+    {
+      id: "q5_pickup",
+      QuestionTitle: "Pickup / utility",
+      QuestionDescription:
+        "Better for work gear, dirty loads, towing, or open-bed practicality over comfort.",
+    },
+  ],
+
+  Q5Size: [
+    {
+      id: "q_size_small",
+      QuestionTitle: "Smaller / lighter",
+      QuestionDescription:
+        "Prefer the tighter, lighter version of this body style if it feels easier, sharper, or less bulky.",
+    },
+    {
+      id: "q_size_medium",
+      QuestionTitle: "Mid-size / balanced",
+      QuestionDescription:
+        "A middle ground between easy everyday use and enough space to live with comfortably.",
+    },
+    {
+      id: "q_size_large",
+      QuestionTitle: "Larger / roomier",
+      QuestionDescription:
+        "Prefer the bigger, roomier version of this body style if comfort, presence, or carrying ability matters more.",
     },
   ],
 
@@ -139,64 +162,25 @@ export const Questions = {
       id: "q6_running_costs",
       QuestionTitle: "Low running costs",
       QuestionDescription:
-        "Prioritise fuel economy, reliability, and lower maintenance costs.",
+        "Prioritise higher MPG and a lower purchase price, with sensible upkeep costs.",
     },
     {
       id: "q6_comfort",
       QuestionTitle: "Comfort",
       QuestionDescription:
-        "Smoother ride, quieter cabin, and relaxed long-distance driving.",
+        "Favour refined SUVs and saloons that feel more relaxed and premium, even if they cost a bit more.",
     },
     {
       id: "q6_performance",
       QuestionTitle: "Performance",
       QuestionDescription:
-        "Stronger acceleration and handling for a more engaging drive.",
+        "Prioritise horsepower and lower weight so the car feels stronger for its size.",
     },
     {
       id: "q6_practicality",
       QuestionTitle: "Practicality",
       QuestionDescription:
-        "Space, flexibility, and everyday usefulness over sporty features.",
-    },
-    {
-      id: "q6_tech",
-      QuestionTitle: "Technology & safety",
-      QuestionDescription:
-        "Modern infotainment plus driver-assist features and safety ratings.",
-    },
-  ],
-
-  Q7: [
-    {
-      id: "q7_carplay",
-      QuestionTitle: "Apple CarPlay / Android Auto",
-      QuestionDescription:
-        "Seamless phone integration for maps, music, calls, and messaging.",
-    },
-    {
-      id: "q7_parking",
-      QuestionTitle: "Parking sensors / camera",
-      QuestionDescription:
-        "Helps with tight parking spaces and improves confidence in town.",
-    },
-    {
-      id: "q7_adaptive_cruise",
-      QuestionTitle: "Cruise control (adaptive if possible)",
-      QuestionDescription:
-        "Reduces fatigue on motorway journeys and long commutes.",
-    },
-    {
-      id: "q7_heated",
-      QuestionTitle: "Heated seats / steering wheel",
-      QuestionDescription:
-        "Extra comfort in cold weather, especially for early-morning driving.",
-    },
-    {
-      id: "q7_none",
-      QuestionTitle: "No specific features",
-      QuestionDescription:
-        "We’ll focus on the essentials: value, reliability, and suitability.",
+        "Prioritise cargo space and SUV or estate-style usefulness over sporty looks.",
     },
   ],
 
@@ -232,5 +216,39 @@ export const Questions = {
         "Space, safety, and convenience features become the priority.",
     },
   ],
+
+  Q9: [
+    {
+      id: "q9_daily",
+      QuestionTitle: "Sensible daily driver",
+      QuestionDescription:
+        "Prioritise reliability, running costs, and everyday practicality over badge appeal or pace.",
+    },
+    {
+      id: "q9_balanced",
+      QuestionTitle: "Balanced with some excitement",
+      QuestionDescription:
+        "Keep it easy to live with, but leave room for stronger styling, performance, and desirability.",
+    },
+    {
+      id: "q9_fun",
+      QuestionTitle: "Weekend / fun-first car",
+      QuestionDescription:
+        "I can give up some comfort or practicality if the car feels special and enjoyable to drive.",
+    },
+    {
+      id: "q9_luxury",
+      QuestionTitle: "Luxury / status",
+      QuestionDescription:
+        "Prioritise prestige, cabin quality, and premium marques like Bentley, Ferrari, Lexus, or Aston Martin over pure value.",
+    },
+    {
+      id: "q9_pure_performance",
+      QuestionTitle: "Pure performance",
+      QuestionDescription:
+        "Focus on speed, drama, and driver appeal first, even if comfort, economy, and practicality take a hit.",
+    },
+  ],
 };
+
 export default Questions;

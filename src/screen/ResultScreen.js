@@ -13,16 +13,20 @@ import RecommendationList from "../Lists/RecommendationList.js";
 import { useEffect, useState } from "react";
 
 const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ||
-  "https://car-recommendation-database.co.uk/api";
+  process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
 const CAR_API_URL = `${API_BASE_URL}/car`;
 
 export const ResultScreen = ({ navigation, route }) => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [primaryDriverType, setPrimaryDriverType] = useState("");
+  const [useCase, setUseCase] = useState("");
+  const [intent, setIntent] = useState("");
+  const [profileLabel, setProfileLabel] = useState("");
+  const [budgetFallbackApplied, setBudgetFallbackApplied] = useState(false);
+  const [recommendationNote, setRecommendationNote] = useState("");
   const answers = route?.params?.answers || {};
+  const requestKey = route?.params?.requestKey || "";
   const serializedAnswers = JSON.stringify(answers);
 
   useEffect(() => {
@@ -30,6 +34,7 @@ export const ResultScreen = ({ navigation, route }) => {
       try {
         setLoading(true);
         setError(null);
+        setCars([]);
 
         const response = await fetch(`${CAR_API_URL}/recommend`, {
           method: "POST",
@@ -48,7 +53,11 @@ export const ResultScreen = ({ navigation, route }) => {
 
         const data = await response.json();
         setCars(data.recommendations || []);
-        setPrimaryDriverType(data.primaryDriverType || "");
+        setUseCase(data.useCase || "");
+        setIntent(data.intent || "");
+        setProfileLabel(data.profileLabel || "");
+        setBudgetFallbackApplied(Boolean(data.budgetFallbackApplied));
+        setRecommendationNote(data.recommendationNote || "");
       } catch (err) {
         console.error("Error fetching recommendations:", err);
         setError(err.message);
@@ -58,7 +67,7 @@ export const ResultScreen = ({ navigation, route }) => {
     };
 
     fetchCars();
-  }, [serializedAnswers]);
+  }, [requestKey, serializedAnswers]);
 
   const onBack = () => {
     navigation.goBack();
@@ -90,10 +99,21 @@ export const ResultScreen = ({ navigation, route }) => {
       <SafeAreaView style={styles.Header} edges={["top"]}>
         <BackButton onBack={onBack} />
         <View style={styles.HeaderText}>
-          <Text style={styles.HeaderTitle}>Top {cars.length} Matches</Text>
-          {cars.length && primaryDriverType ? (
+          <Text style={styles.HeaderTitle}>
+            Top {cars.length} Matches
+            {budgetFallbackApplied ? " (Budget Assessed)" : ""}
+          </Text>
+          {profileLabel ? (
+            <Text style={styles.HeaderProfile}>{profileLabel}</Text>
+          ) : null}
+          {recommendationNote ? (
+            <Text style={styles.HeaderNotice}>{recommendationNote}</Text>
+          ) : null}
+          {cars.length && (useCase || intent) ? (
             <Text style={styles.HeaderSubtitle}>
-              Based on: {primaryDriverType.replace(/_/g, " ")}
+              {useCase ? `Use case: ${useCase.replace(/_/g, " ")}` : ""}
+              {useCase && intent ? " | " : ""}
+              {intent ? `Intent: ${intent.replace(/_/g, " ")}` : ""}
             </Text>
           ) : null}
         </View>
@@ -141,11 +161,24 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
   },
+  HeaderProfile: {
+    marginTop: 3,
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#111827",
+  },
   HeaderSubtitle: {
     marginTop: 2,
     fontSize: 11,
     color: "#6B7280",
     textTransform: "capitalize",
+  },
+  HeaderNotice: {
+    marginTop: 4,
+    maxWidth: 260,
+    fontSize: 11,
+    color: "#92400E",
+    textAlign: "center",
   },
   CenterContainer: {
     flex: 1,

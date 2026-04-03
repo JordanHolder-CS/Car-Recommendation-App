@@ -23,6 +23,10 @@ export const RecommendationContent = ({
   serviceCost,
   insuranceEstimate,
   score,
+  matchScore,
+  useCase,
+  intent,
+  profileLabel,
   primaryDriverType,
   topReasons = [],
 }) => {
@@ -33,7 +37,22 @@ export const RecommendationContent = ({
     value ? `£${Number(value).toLocaleString("en-GB")}` : "N/A";
 
   const matchPercent =
-    typeof score === "number" ? `${Math.round(score * 100)}% match` : null;
+    typeof matchScore === "number"
+      ? `${Math.round(matchScore * 100)}% match`
+      : typeof score === "number"
+        ? `${Math.round(score * 100)}% match`
+        : null;
+  const profileMeta =
+    useCase || intent
+      ? [
+          useCase ? `Use case: ${useCase.replace(/_/g, " ")}` : null,
+          intent ? `Intent: ${intent.replace(/_/g, " ")}` : null,
+        ]
+          .filter(Boolean)
+          .join(" | ")
+      : primaryDriverType
+        ? primaryDriverType.replace(/_/g, " ")
+        : null;
 
   return (
     <View style={styles.Container}>
@@ -52,9 +71,10 @@ export const RecommendationContent = ({
           {brand} {name}
         </Text>
         {matchPercent ? <Text style={styles.MatchText}>{matchPercent}</Text> : null}
-        {primaryDriverType ? (
+        {profileLabel ? <Text style={styles.ProfileText}>{profileLabel}</Text> : null}
+        {profileMeta ? (
           <Text style={styles.TypeText}>
-            {primaryDriverType.replace(/_/g, " ")}
+            {profileMeta}
           </Text>
         ) : null}
         <Text style={styles.PriceText}>{formatPrice(price)}</Text>
@@ -168,6 +188,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 13,
     color: "#0F766E",
+  },
+  ProfileText: {
+    marginTop: 3,
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#111827",
   },
   TypeText: {
     marginTop: 2,

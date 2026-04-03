@@ -45,9 +45,23 @@ const getRecommendedCars = async (req, res) => {
       answers,
       primaryDriverType: recommendationResult.primaryDriverType,
       typeScores: recommendationResult.typeScores,
+      useCase: recommendationResult.useCase,
+      useCaseScores: recommendationResult.useCaseScores,
+      intent: recommendationResult.intent,
+      intentScores: recommendationResult.intentScores,
+      profileLabel: recommendationResult.profileLabel,
       recommendations: recommendationResult.recommendations,
       totalCandidates: cars.length,
       totalMatches: recommendationResult.recommendations.length,
+      exactMatchCount: recommendationResult.exactMatchCount,
+      budgetFallbackApplied: recommendationResult.budgetFallbackApplied,
+      recommendationNote: recommendationResult.recommendationNote,
+      requestedCriteria: recommendationResult.requestedCriteria,
+      effectiveCriteria: recommendationResult.criteria,
+      criteriaAdjustments: recommendationResult.criteriaAdjustments,
+      requestedHardFilterBreakdown:
+        recommendationResult.requestedHardFilterBreakdown,
+      hardFilterBreakdown: recommendationResult.hardFilterBreakdown,
     });
   } catch (error) {
     res

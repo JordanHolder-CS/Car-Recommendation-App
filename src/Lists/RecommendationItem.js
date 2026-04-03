@@ -25,6 +25,10 @@ const RecommendationItem = ({ car }) => {
         serviceCost={car.service_cost}
         insuranceEstimate={car.insurance_estimate}
         score={car.score}
+        matchScore={car.matchScore}
+        useCase={car.useCase}
+        intent={car.intent}
+        profileLabel={car.profileLabel}
         primaryDriverType={car.primaryDriverType}
         topReasons={car.topReasons}
       />
