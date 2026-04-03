@@ -1,6 +1,10 @@
 const carModel = require("../models/carModel");
+const {
+  recommendCars,
+  translateAnswersToHardFilters,
+} = require("../services/recommendationService");
 
-const getAllCars = async (req, res) => {
+const getCars = async (req, res) => {
   try {
     const cars = await carModel.findAll();
     res.status(200).json(cars);
@@ -8,6 +12,71 @@ const getAllCars = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error retrieving cars", error: error.message });
+  }
+};
+
+const getFilteredCars = async (req, res) => {
+  try {
+    const filters = req.query;
+    const cars = await carModel.findFiltered(filters);
+    res.status(200).json(cars);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error filtering cars", error: error.message });
+  }
+};
+
+const getRecommendedCars = async (req, res) => {
+  try {
+    const answers =
+      req.method === "GET"
+        ? req.query || {}
+        : req.body?.answers || req.body || {};
+    const rawLimit = req.method === "GET" ? req.query?.limit : req.body?.limit;
+    const parsedLimit = Number.parseInt(rawLimit, 10);
+    const limit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 5;
+    const { dbFilters } = translateAnswersToHardFilters(answers);
+    const cars = await carModel.findFiltered(dbFilters);
+    const recommendationResult = recommendCars(cars, answers, limit);
+
+    res.status(200).json({
+      answers,
+      primaryDriverType: recommendationResult.primaryDriverType,
+      typeScores: recommendationResult.typeScores,
+      useCase: recommendationResult.useCase,
+      useCaseScores: recommendationResult.useCaseScores,
+      intent: recommendationResult.intent,
+      intentScores: recommendationResult.intentScores,
+      profileLabel: recommendationResult.profileLabel,
+      recommendations: recommendationResult.recommendations,
+      totalCandidates: cars.length,
+      totalMatches: recommendationResult.recommendations.length,
+      exactMatchCount: recommendationResult.exactMatchCount,
+      budgetFallbackApplied: recommendationResult.budgetFallbackApplied,
+      recommendationNote: recommendationResult.recommendationNote,
+      requestedCriteria: recommendationResult.requestedCriteria,
+      effectiveCriteria: recommendationResult.criteria,
+      criteriaAdjustments: recommendationResult.criteriaAdjustments,
+      requestedHardFilterBreakdown:
+        recommendationResult.requestedHardFilterBreakdown,
+      hardFilterBreakdown: recommendationResult.hardFilterBreakdown,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error recommending cars", error: error.message });
+  }
+};
+const getSpecs = async (req, res) => {
+  try {
+    const specs = await carModel.findSpecs(req.query);
+    res.status(200).json(specs);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving specs", error: error.message });
   }
 };
 
@@ -23,4 +92,10 @@ const getCarByType = async (req, res) => {
   }
 };
 
-module.exports = { getAllCars, getCarByType };
+module.exports = {
+  getCars,
+  getCarByType,
+  getSpecs,
+  getFilteredCars,
+  getRecommendedCars,
+};

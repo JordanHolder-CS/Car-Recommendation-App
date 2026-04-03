@@ -1,7 +1,10 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import QuestionItem from "./QuestionItem";
 
-const QuestionList = ({ questions, selectedId, onSelect }) => {
+const QuestionList = ({ questions, selectedId, onSelect, value, onChange }) => {
+  const currentValue = value ?? selectedId ?? null;
+  const handleChange = onChange ?? onSelect;
+
   return (
     <View>
       {questions.map((question) => (
@@ -9,8 +12,8 @@ const QuestionList = ({ questions, selectedId, onSelect }) => {
           key={question.id}
           question={question}
           id={question.id}
-          selectedId={selectedId}
-          onPress={onSelect}
+          value={currentValue}
+          onChange={handleChange}
         />
       ))}
     </View>
