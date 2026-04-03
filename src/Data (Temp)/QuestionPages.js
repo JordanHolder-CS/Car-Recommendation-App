@@ -10,8 +10,8 @@ export const QPages = [
 
   {
     key: "budget_range",
-    title: "What’s your budget range?",
-    desc: "This helps filter cars that match what you’re comfortable spending.",
+    title: "What's your maximum budget?",
+    desc: "We treat this as your spending ceiling unless you drag it to the top, which means any price. If nothing matches exactly, we can show the closest options just above budget.",
     questions: Questions.Q2,
   },
 
@@ -31,9 +31,16 @@ export const QPages = [
 
   {
     key: "passengers_space",
-    title: "How much space do you need?",
-    desc: "We’ll prioritise cars that fit your passengers, boot space, and daily needs.",
+    title: "Which body style fits you best?",
+    desc: "Choose the shape of car you naturally lean toward, and we'll still use the description to guide how practical or sporty it should feel.",
     questions: Questions.Q5,
+  },
+
+  {
+    key: "vehicle_size",
+    title: "What size within that body style?",
+    desc: "This lets us sort within that shape, so for example you can still prefer a smaller, lighter coupe or a larger, roomier SUV.",
+    questions: Questions.Q5Size,
   },
 
   {
@@ -44,16 +51,16 @@ export const QPages = [
   },
 
   {
-    key: "features",
-    title: "Which features do you care about?",
-    desc: "Pick what you’d like most so we can match the right trim level and tech.",
-    questions: Questions.Q7,
-  },
-
-  {
     key: "usage_pattern",
     title: "How will you use the car most often?",
     desc: "Your usage pattern helps us balance comfort, practicality, and cost.",
     questions: Questions.Q8,
+  },
+
+  {
+    key: "ownership_intent",
+    title: "What kind of car do you actually want?",
+    desc: "This tells us whether to lean toward sensible value, premium marque appeal, or outright performance.",
+    questions: Questions.Q9,
   },
 ];

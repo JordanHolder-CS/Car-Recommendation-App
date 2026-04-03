@@ -6,12 +6,7 @@ const RecommendationList = ({ cars }) => {
   return (
     <View>
       {cars.map((car) => (
-        <RecommendationItem
-          Name={car.Name}
-          Model={car.Model}
-          Brand={car.Brand}
-          Image={car.Image}
-        />
+        <RecommendationItem key={car.car_id} car={car} />
       ))}
     </View>
   );

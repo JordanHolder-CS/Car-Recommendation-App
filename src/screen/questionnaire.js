@@ -1,7 +1,7 @@
 import Screen from "../ui/Layout/screen.js";
 import { useState } from "react";
 import QuestionList from "../Lists/QuestionListing.js";
-import { ScrollView, Text, StyleSheet, View } from "react-native";
+import { Text, StyleSheet, View } from "react-native";
 import Button from "../ui/Navigation/ContinueButton.js";
 import BackButton from "../ui/Navigation/BackButton.js";
 import { ButtonTray } from "../ui/Navigation/ContinueButton.js";
@@ -17,21 +17,23 @@ export const QuestionScreen = ({ navigation }) => {
 
   const step = steps[stepIndex];
   const selectedId = answers[step.key] ?? null;
+  const hasAnswer = selectedId !== null && selectedId !== undefined;
 
   const onSelect = (optionIdOrNull) => {
     setAnswers((prev) => ({ ...prev, [step.key]: optionIdOrNull ?? null }));
   };
 
-  const goToResultScreen = () => navigation.navigate("ResultScreen");
-
   const onBack = () => {
     if (stepIndex > 0) setStepIndex((i) => i - 1);
   };
   const onContinue = () => {
-    if (!selectedId) return;
+    if (!hasAnswer) return;
     if (stepIndex < steps.length - 1) setStepIndex((i) => i + 1);
     else {
-      navigation.navigate("ResultScreen");
+      navigation.push("ResultScreen", {
+        answers,
+        requestKey: Date.now().toString(),
+      });
     }
   };
   return (
