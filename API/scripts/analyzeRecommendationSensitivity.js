@@ -4,7 +4,10 @@ const path = require("node:path");
 require("dotenv").config({ path: "./API/config/.env" });
 
 const carModel = require("../models/carModel");
-const { recommendCars } = require("../services/recommendationService");
+const {
+  recommendCars,
+  translateAnswersToHardFilters,
+} = require("../services/recommendationService");
 
 const TOP_N = 5;
 const BREAKDOWN_N = 6;
@@ -293,15 +296,73 @@ const loadCarsFromJson = (carsPath) => {
 
 const loadCars = async (options = {}) => {
   if (options.carsPath) {
-    return { cars: loadCarsFromJson(options.carsPath), source: options.carsPath };
+    return {
+      cars: loadCarsFromJson(options.carsPath),
+      source: options.carsPath,
+      mode: "array",
+    };
   }
 
   if (!options.demo && process.env.DATABASE_URL) {
     const cars = await carModel.findFiltered({});
-    return { cars, source: "database" };
+    return { cars, source: "database", mode: "database" };
   }
 
-  return { cars: buildDemoCars(), source: "demo-fixture" };
+  return { cars: buildDemoCars(), source: "demo-fixture", mode: "array" };
+};
+
+const getComparableValue = (car, key) => {
+  if (key === "min_price" || key === "max_price") return car.price;
+  return car[key];
+};
+
+const valuesMatch = (carValue, filterValue) => {
+  if (typeof filterValue === "boolean") {
+    return carValue === filterValue;
+  }
+
+  if (typeof filterValue === "number") {
+    return Number(carValue) === filterValue;
+  }
+
+  return String(carValue || "").toLowerCase() === String(filterValue).toLowerCase();
+};
+
+const matchesDbFilters = (car, dbFilters = {}) =>
+  Object.entries(dbFilters).every(([key, filterValue]) => {
+    const carValue = getComparableValue(car, key);
+
+    if (key.startsWith("min_")) {
+      return Number.isFinite(Number(carValue)) && Number(carValue) >= filterValue;
+    }
+
+    if (key.startsWith("max_")) {
+      return Number.isFinite(Number(carValue)) && Number(carValue) <= filterValue;
+    }
+
+    return valuesMatch(carValue, filterValue);
+  });
+
+const findCandidateCars = async (catalog, answers = {}) => {
+  const { dbFilters } = translateAnswersToHardFilters(answers);
+
+  if (catalog.mode === "database") {
+    return carModel.findFiltered(dbFilters);
+  }
+
+  return catalog.cars.filter((car) => matchesDbFilters(car, dbFilters));
+};
+
+const getRecommendationResponse = async (catalog, answers = {}, limit = TOP_N) => {
+  const candidateCars = await findCandidateCars(catalog, answers);
+  const recommendationResult = recommendCars(candidateCars, answers, limit);
+
+  return {
+    answers,
+    ...recommendationResult,
+    totalCandidates: candidateCars.length,
+    totalMatches: recommendationResult.recommendations.length,
+  };
 };
 
 const getTopIds = (recommendations = [], limit = TOP_N) =>
@@ -434,7 +495,7 @@ const printSummaryTable = (summaryEntries = []) => {
   });
 };
 
-const analyzeSensitivity = (cars) => {
+const analyzeSensitivity = async (catalog) => {
   const summaries = Object.fromEntries(
     Object.keys(QUESTION_OPTIONS).map((questionKey) => [questionKey, createAccumulator()]),
   );
@@ -444,15 +505,17 @@ const analyzeSensitivity = (cars) => {
   let highFitLowImpactCount = 0;
   let highFitLowImpactComparisonCount = 0;
 
-  BASE_PROFILES.forEach(({ answers }) => {
-    const baselineResult = recommendCars(cars, answers, TOP_N);
+  for (const { answers } of BASE_PROFILES) {
+    const baselineResult = await getRecommendationResponse(catalog, answers, TOP_N);
 
-    Object.entries(QUESTION_OPTIONS).forEach(([questionKey, options]) => {
-      options
-        .filter((value) => value !== answers[questionKey])
-        .forEach((value) => {
+    for (const [questionKey, options] of Object.entries(QUESTION_OPTIONS)) {
+      for (const value of options.filter((option) => option !== answers[questionKey])) {
           const variantAnswers = { ...answers, [questionKey]: value };
-          const variantResult = recommendCars(cars, variantAnswers, TOP_N);
+          const variantResult = await getRecommendationResponse(
+            catalog,
+            variantAnswers,
+            TOP_N,
+          );
           const accumulator = summaries[questionKey];
           const baselineIds = getTopIds(baselineResult.recommendations);
           const variantIds = getTopIds(variantResult.recommendations);
@@ -518,9 +581,9 @@ const analyzeSensitivity = (cars) => {
               highFitLowImpactCount += 1;
             }
           }
-        });
-    });
-  });
+      }
+    }
+  }
 
   const summaryEntries = Object.entries(summaries).map(([questionKey, stats]) => ({
     questionKey,
@@ -563,10 +626,12 @@ const analyzeSensitivity = (cars) => {
 
 const main = async () => {
   const args = parseArgs();
-  const { cars, source } = await loadCars(args);
-  const analysis = analyzeSensitivity(cars);
+  const catalog = await loadCars(args);
+  const analysis = await analyzeSensitivity(catalog);
 
-  console.log(`Analyzed ${cars.length} cars from ${source}.`);
+  console.log(
+    `Analyzed ${catalog.cars.length} cars from ${catalog.source} using the controller-equivalent recommendation pipeline.`,
+  );
   console.log(
     `Compared ${analysis.sampleCount} answer mutations across ${BASE_PROFILES.length} base profiles.`,
   );
