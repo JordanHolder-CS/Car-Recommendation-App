@@ -94,6 +94,7 @@ const INTENT_ORDER = [
   "value",
   "balanced",
 ];
+const DISPLAY_COMPARISON_POOL_SIZE = 15;
 
 // -----------------------------------------------------------------------------
 // Profile inference (use case + ownership intent)
@@ -603,6 +604,51 @@ const getCriteriaAdjustmentNote = (criteriaAdjustments = []) =>
         .join(" ")
     : null;
 
+const buildRankedRecommendations = ({
+  candidateCars,
+  weights,
+  matchScoreNormalizer,
+  useCase,
+  intent,
+  profileLabel,
+  answers,
+  criteria,
+  includeReasons,
+  buildScoredCars,
+}) => {
+  const initiallyRankedCars = buildScoredCars(
+    candidateCars,
+    weights,
+    matchScoreNormalizer,
+    useCase,
+    intent,
+    profileLabel,
+    answers,
+    criteria,
+    includeReasons,
+    candidateCars,
+  ).sort((a, b) => b.score - a.score);
+
+  if (initiallyRankedCars.length <= DISPLAY_COMPARISON_POOL_SIZE) {
+    return initiallyRankedCars;
+  }
+
+  const comparisonCars = initiallyRankedCars.slice(0, DISPLAY_COMPARISON_POOL_SIZE);
+
+  return buildScoredCars(
+    candidateCars,
+    weights,
+    matchScoreNormalizer,
+    useCase,
+    intent,
+    profileLabel,
+    answers,
+    criteria,
+    includeReasons,
+    comparisonCars,
+  ).sort((a, b) => b.score - a.score);
+};
+
 const buildBudgetFallbackResult = ({
   recommendations,
   hardFilteredCarsCount,
@@ -622,7 +668,7 @@ const buildBudgetFallbackResult = ({
     passesHardFilters,
     filterRecommendationPool,
     sortCarsByBudgetGap,
-    buildScoredCars,
+    buildRankedRecommendations,
     formatCurrency,
   } = helpers;
 
@@ -660,17 +706,18 @@ const buildBudgetFallbackResult = ({
 
   return {
     recommendations: sortCarsByBudgetGap(
-      buildScoredCars(
-        relaxedMatches,
+      buildRankedRecommendations({
+        candidateCars: relaxedMatches,
         weights,
         matchScoreNormalizer,
         useCase,
         intent,
         profileLabel,
         answers,
-        relaxedCriteria,
+        criteria: relaxedCriteria,
         includeReasons,
-      ),
+        buildScoredCars: helpers.buildScoredCars,
+      }),
       criteria.maxPrice,
     ).slice(0, limit),
     budgetFallbackApplied: true,
@@ -722,8 +769,8 @@ const recommendCars = (cars = [], answers = {}, limit = 5, options = {}) => {
     answers,
     criteria,
   );
-  let recommendations = buildScoredCars(
-    exactMatches,
+  let recommendations = buildRankedRecommendations({
+    candidateCars: exactMatches,
     weights,
     matchScoreNormalizer,
     useCase,
@@ -732,9 +779,8 @@ const recommendCars = (cars = [], answers = {}, limit = 5, options = {}) => {
     answers,
     criteria,
     includeReasons,
-  )
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
+    buildScoredCars,
+  }).slice(0, limit);
   const criteriaAdjustmentNote = getCriteriaAdjustmentNote(criteriaAdjustments);
   const {
     recommendations: fallbackRecommendations,
@@ -757,6 +803,7 @@ const recommendCars = (cars = [], answers = {}, limit = 5, options = {}) => {
       passesHardFilters,
       filterRecommendationPool,
       sortCarsByBudgetGap,
+      buildRankedRecommendations,
       buildScoredCars,
       formatCurrency,
     },

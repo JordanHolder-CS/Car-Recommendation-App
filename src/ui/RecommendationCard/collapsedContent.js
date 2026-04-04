@@ -29,13 +29,16 @@ export const RecommendationContent = ({
   profileLabel,
   primaryDriverType,
   topReasons = [],
+  children,
   onViewDetails = () => {},
   actionLabel = "View Details",
   fullScreen = false,
   detailsAnimatedStyle,
 }) => {
   const formatPrice = (value) =>
-    value ? `\u00A3${Number(value).toLocaleString("en-GB")}` : "Price unavailable";
+    value
+      ? `\u00A3${Number(value).toLocaleString("en-GB")}`
+      : "Price unavailable";
 
   const formatCost = (value) =>
     value ? `\u00A3${Number(value).toLocaleString("en-GB")}` : "N/A";
@@ -63,7 +66,10 @@ export const RecommendationContent = ({
     <View style={[styles.Container, fullScreen && styles.FullScreenContainer]}>
       <View style={styles.HeaderWrapper}>
         <Image
-          style={[styles.ImageHeader, fullScreen && styles.FullScreenImageHeader]}
+          style={[
+            styles.ImageHeader,
+            fullScreen && styles.FullScreenImageHeader,
+          ]}
           source={{
             uri:
               image ||
@@ -87,7 +93,9 @@ export const RecommendationContent = ({
         {profileLabel ? (
           <Text style={styles.ProfileText}>{profileLabel}</Text>
         ) : null}
-        {profileMeta ? <Text style={styles.TypeText}>{profileMeta}</Text> : null}
+        {profileMeta ? (
+          <Text style={styles.TypeText}>{profileMeta}</Text>
+        ) : null}
         <Text style={styles.PriceText}>{formatPrice(price)}</Text>
 
         <View style={styles.CoolStatsContainer}>
@@ -112,7 +120,8 @@ export const RecommendationContent = ({
           ) : null}
           {seats ? (
             <Text style={styles.CoolStatsText}>
-              <Icons icon="airline-seat-recline-extra" size="12" /> {seats} seats
+              <Icons icon="airline-seat-recline-extra" size="12" /> {seats}{" "}
+              seats
             </Text>
           ) : null}
           {zeroToSixty ? (
@@ -153,19 +162,27 @@ export const RecommendationContent = ({
         <View style={styles.Section}>
           <Text style={styles.SectionTitle}>Key details</Text>
           <Text style={styles.MetaText}>
-            Engine: {engine || "N/A"}{"\n"}
-            Drivetrain: {drivetrain || "N/A"}{"\n"}
-            Body style: {bodyStyle || "N/A"}{"\n"}
-            Top speed: {topSpeed || "N/A"}{"\n"}
-            Torque: {torque || "N/A"}{"\n"}
+            Engine: {engine || "N/A"}
+            {"\n"}
+            Drivetrain: {drivetrain || "N/A"}
+            {"\n"}
+            Body style: {bodyStyle || "N/A"}
+            {"\n"}
+            Top speed: {topSpeed || "N/A"}
+            {"\n"}
+            Torque: {torque || "N/A"}
+            {"\n"}
             Reliability: {reliability || "N/A"}
           </Text>
         </View>
 
+        {children}
+
         <View style={styles.Section}>
           <Text style={styles.SectionTitle}>Running costs</Text>
           <Text style={styles.MetaText}>
-            Service: {formatCost(serviceCost)}{"\n"}
+            Service: {formatCost(serviceCost)}
+            {"\n"}
             Insurance: {formatCost(insuranceEstimate)}
           </Text>
         </View>

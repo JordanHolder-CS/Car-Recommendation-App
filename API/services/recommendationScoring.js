@@ -33,6 +33,42 @@ const createRecommendationScoring = ({
   isLuxuryBrand,
   getKnownPrice,
 }) => {
+  const METRIC_LABELS = {
+    acceleration: "Acceleration",
+    balancedFit: "Balanced fit",
+    bootSpace: "Boot space",
+    cityFit: "City fit",
+    comfort: "Comfort / refinement",
+    comfortFit: "Comfort fit",
+    commuteFit: "Commute fit",
+    dailyFit: "Daily-use fit",
+    drivetrain: "Drivetrain fit",
+    economy: "Fuel economy",
+    familyFit: "Family fit",
+    horsepower: "Horsepower",
+    insurance: "Insurance costs",
+    luxuryFit: "Luxury fit",
+    performanceFit: "Performance fit",
+    powerToWeight: "Power-to-weight",
+    practicalFit: "Practicality fit",
+    range: "Driving range",
+    reliability: "Reliability",
+    roadTripFit: "Road-trip fit",
+    runningCostFit: "Running-cost fit",
+    seating: "Seating",
+    serviceCost: "Service costs",
+    sizeFit: "Size fit",
+    spaceFit: "Passenger / space fit",
+    techFit: "Technology fit",
+    workFit: "Work fit",
+  };
+
+  const formatMetricLabel = (key) =>
+    METRIC_LABELS[key] ||
+    key
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/^./, (value) => value.toUpperCase());
+
   // Build dynamic min/max ranges only for metrics relevant to the active
   // scoring weights, plus any dependent metrics required by composite fits.
   const buildRanges = (cars, weightKeys) => {
@@ -123,26 +159,35 @@ const createRecommendationScoring = ({
       ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
       : 0;
   };
-  // Keeps matchScore more stable by normalizing against the strongest weighted
-  // factors rather than all factors equally.
-  const getMatchScoreNormalizer = (weights = {}) => {
-    const sortedWeights = Object.values(weights)
-      .filter((weight) => Number.isFinite(weight) && weight > 0)
-      .sort((a, b) => b - a);
+  const getCoreWeightEntries = (weights = {}) => {
+    const sortedWeights = Object.entries(weights)
+      .filter(([, weight]) => Number.isFinite(weight) && weight > 0)
+      .sort(([, weightA], [, weightB]) => weightB - weightA);
+    const coreEntries = [];
     let coreWeight = 0;
-    let factorCount = 0;
-    for (const weight of sortedWeights) {
+
+    for (const [key, weight] of sortedWeights) {
       if (
-        factorCount < MATCH_SCORE_MIN_FACTORS ||
+        coreEntries.length < MATCH_SCORE_MIN_FACTORS ||
         (coreWeight < MATCH_SCORE_TARGET_WEIGHT &&
-          factorCount < MATCH_SCORE_MAX_FACTORS)
+          coreEntries.length < MATCH_SCORE_MAX_FACTORS)
       ) {
+        coreEntries.push([key, weight]);
         coreWeight += weight;
-        factorCount += 1;
         continue;
       }
       break;
     }
+
+    return {
+      coreEntries,
+      coreWeight: Number(coreWeight.toFixed(4)),
+    };
+  };
+  // Keeps matchScore more stable by normalizing against the strongest weighted
+  // factors rather than all factors equally.
+  const getMatchScoreNormalizer = (weights = {}) => {
+    const { coreWeight } = getCoreWeightEntries(weights);
     if (!coreWeight) return 1;
     return Number(
       (coreWeight + (1 - coreWeight) * MATCH_SCORE_SECONDARY_FACTOR).toFixed(4),
@@ -625,6 +670,7 @@ const createRecommendationScoring = ({
     car,
     weights,
     ranges,
+    displayRanges,
     matchScoreNormalizer,
     useCase,
     intent,
@@ -632,11 +678,11 @@ const createRecommendationScoring = ({
     criteria,
     includeReasons = true,
   ) => {
-    const getWeightedMetricScore = (metricKey) => {
+    const getWeightedMetricScore = (metricKey, activeRanges = ranges) => {
       if (LOWER_IS_BETTER_METRICS.has(metricKey)) {
         return normalizeMetric(
           getMetricValue(car, metricKey),
-          ranges[metricKey],
+          activeRanges[metricKey],
           false,
         );
       }
@@ -646,15 +692,18 @@ const createRecommendationScoring = ({
           criteria,
           useCase,
           intent,
-          ranges,
+          ranges: activeRanges,
         });
       }
       return normalizeMetric(
         getMetricValue(car, metricKey),
-        ranges[metricKey],
+        activeRanges[metricKey],
         true,
       );
     };
+    const priorityKeys = new Set(
+      getCoreWeightEntries(weights).coreEntries.map(([key]) => key),
+    );
     const contributions = Object.entries(weights).map(([key, weight]) => {
       const value = getWeightedMetricScore(key);
       return {
@@ -667,12 +716,43 @@ const createRecommendationScoring = ({
     const score = Number(
       contributions.reduce((sum, item) => sum + item.value, 0).toFixed(4),
     );
+    const sortedContributions = [...contributions].sort((a, b) => b.value - a.value);
+    const recommendationBreakdown = sortedContributions.map((item) => {
+      const displayRawScore = getWeightedMetricScore(item.key, displayRanges);
+      const fitScore = Math.max(
+        0,
+        Math.min(100, Math.round(displayRawScore * 100)),
+      );
+      const impactPercent =
+        score > 0 && item.value > 0
+          ? Math.max(1, Math.round((item.value / score) * 100))
+          : 0;
+      const reason = getReasonText(item.key, car, {
+        answers,
+        criteria,
+        rawScore: item.rawScore,
+      });
+
+      return {
+        key: item.key,
+        label: formatMetricLabel(item.key),
+        fitScore,
+        impactPercent,
+        priority: priorityKeys.has(item.key),
+        weight: Number(item.weight.toFixed(4)),
+        contribution: Number(item.value.toFixed(4)),
+        note: [impactPercent ? `${impactPercent}% impact` : null, reason]
+          .filter(Boolean)
+          .join(" | "),
+      };
+    });
+
     return {
       score,
       matchScore: calculateMatchScore(score, matchScoreNormalizer),
+      recommendationBreakdown,
       topReasons: includeReasons
-        ? contributions
-            .sort((a, b) => b.value - a.value)
+        ? sortedContributions
             .map((item) =>
               getReasonText(item.key, car, {
                 answers,
@@ -697,14 +777,17 @@ const createRecommendationScoring = ({
     answers,
     criteria,
     includeReasons = true,
+    comparisonCars = cars,
   ) => {
     const ranges = buildRanges(cars, Object.keys(weights));
+    const displayRanges = buildRanges(comparisonCars, Object.keys(weights));
     return cars.map((car) => ({
       ...car,
       ...scoreCar(
         car,
         weights,
         ranges,
+        displayRanges,
         matchScoreNormalizer,
         useCase,
         intent,
