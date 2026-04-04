@@ -1,4 +1,4 @@
-import Screen from "../ui/Layout/screen.js";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
   Text,
@@ -6,11 +6,11 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Screen from "../ui/Layout/screen.js";
 import Button from "../ui/Navigation/ContinueButton.js";
 import BackButton from "../ui/Navigation/BackButton.js";
-import { SafeAreaView } from "react-native-safe-area-context";
 import RecommendationList from "../Lists/RecommendationList.js";
-import { useEffect, useState } from "react";
 
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
@@ -73,6 +73,10 @@ export const ResultScreen = ({ navigation, route }) => {
     navigation.goBack();
   };
 
+  const onSelectRecommendation = (car) => {
+    navigation.navigate("ExpandedResult", { selectedCar: car });
+  };
+
   if (loading) {
     return (
       <Screen>
@@ -117,12 +121,12 @@ export const ResultScreen = ({ navigation, route }) => {
             </Text>
           ) : null}
         </View>
-        <View style={{ width: 44 }} />
+        <View style={styles.HeaderSpacer} />
       </SafeAreaView>
       <View style={styles.SafeArea}>
         {cars.length ? (
           <ScrollView>
-            <RecommendationList cars={cars} />
+            <RecommendationList cars={cars} onSelect={onSelectRecommendation} />
           </ScrollView>
         ) : (
           <View style={styles.CenterContainer}>
@@ -179,6 +183,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#92400E",
     textAlign: "center",
+  },
+  HeaderSpacer: {
+    width: 44,
   },
   CenterContainer: {
     flex: 1,

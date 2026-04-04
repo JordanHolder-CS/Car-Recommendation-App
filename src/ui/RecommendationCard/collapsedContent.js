@@ -1,6 +1,6 @@
 import { StyleSheet, View, Image, Text } from "react-native";
+import Animated from "react-native-reanimated";
 import Icons from "../Icons/Icons";
-import Button, { ButtonTray } from "../Navigation/ContinueButton";
 
 export const RecommendationContent = ({
   name,
@@ -29,12 +29,16 @@ export const RecommendationContent = ({
   profileLabel,
   primaryDriverType,
   topReasons = [],
+  onViewDetails = () => {},
+  actionLabel = "View Details",
+  fullScreen = false,
+  detailsAnimatedStyle,
 }) => {
   const formatPrice = (value) =>
-    value ? `£${Number(value).toLocaleString("en-GB")}` : "Price unavailable";
+    value ? `\u00A3${Number(value).toLocaleString("en-GB")}` : "Price unavailable";
 
   const formatCost = (value) =>
-    value ? `£${Number(value).toLocaleString("en-GB")}` : "N/A";
+    value ? `\u00A3${Number(value).toLocaleString("en-GB")}` : "N/A";
 
   const matchPercent =
     typeof matchScore === "number"
@@ -42,6 +46,7 @@ export const RecommendationContent = ({
       : typeof score === "number"
         ? `${Math.round(score * 100)}% match`
         : null;
+
   const profileMeta =
     useCase || intent
       ? [
@@ -55,10 +60,10 @@ export const RecommendationContent = ({
         : null;
 
   return (
-    <View style={styles.Container}>
+    <View style={[styles.Container, fullScreen && styles.FullScreenContainer]}>
       <View style={styles.HeaderWrapper}>
         <Image
-          style={styles.ImageHeader}
+          style={[styles.ImageHeader, fullScreen && styles.FullScreenImageHeader]}
           source={{
             uri:
               image ||
@@ -66,17 +71,23 @@ export const RecommendationContent = ({
           }}
         />
       </View>
-      <View style={styles.TextWrapper}>
+      <Animated.View
+        style={[
+          styles.TextWrapper,
+          fullScreen && styles.FullScreenTextWrapper,
+          detailsAnimatedStyle,
+        ]}
+      >
         <Text style={styles.NameText}>
           {brand} {name}
         </Text>
-        {matchPercent ? <Text style={styles.MatchText}>{matchPercent}</Text> : null}
-        {profileLabel ? <Text style={styles.ProfileText}>{profileLabel}</Text> : null}
-        {profileMeta ? (
-          <Text style={styles.TypeText}>
-            {profileMeta}
-          </Text>
+        {matchPercent ? (
+          <Text style={styles.MatchText}>{matchPercent}</Text>
         ) : null}
+        {profileLabel ? (
+          <Text style={styles.ProfileText}>{profileLabel}</Text>
+        ) : null}
+        {profileMeta ? <Text style={styles.TypeText}>{profileMeta}</Text> : null}
         <Text style={styles.PriceText}>{formatPrice(price)}</Text>
 
         <View style={styles.CoolStatsContainer}>
@@ -159,10 +170,12 @@ export const RecommendationContent = ({
           </Text>
         </View>
 
-        <ButtonTray trayStyle={styles.BottomTray}>
-          <Button label="View Details" />
-        </ButtonTray>
-      </View>
+        {/* <ButtonTray
+          trayStyle={[styles.BottomTray, fullScreen && styles.FullScreenBottomTray]}
+        >
+          <Button label={actionLabel} onPress={onViewDetails} />
+        </ButtonTray> */}
+      </Animated.View>
     </View>
   );
 };
@@ -214,11 +227,11 @@ const styles = StyleSheet.create({
   },
   ProTitle: {
     fontWeight: "600",
-    color: "#25cb00",
+    color: "#25CB00",
     fontSize: 14,
   },
   Bullet: {
-    color: "#25cb00",
+    color: "#25CB00",
     fontSize: 20,
     lineHeight: 20,
     marginRight: 6,
@@ -244,11 +257,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "white",
     borderRadius: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#FFFFFF",
     padding: 5,
     marginVertical: 7,
     flexDirection: "column",
     gap: 7,
+  },
+  FullScreenContainer: {
+    flex: 1,
+    marginVertical: 0,
+    borderWidth: 0,
+    borderRadius: 0,
+    padding: 0,
   },
   CoolStatsContainer: {
     flexDirection: "row",
@@ -261,12 +281,29 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     marginRight: 8,
     marginBottom: 8,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#F0F0F0",
     borderRadius: 6,
     textAlign: "center",
   },
   Section: {
     paddingBottom: 8,
+  },
+  FullScreenImageHeader: {
+    height: 220,
+    borderRadius: 0,
+  },
+  FullScreenTextWrapper: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 16,
+  },
+  BottomTray: {
+    marginTop: 8,
+  },
+  FullScreenBottomTray: {
+    marginTop: "auto",
+    paddingTop: 12,
   },
 });
 

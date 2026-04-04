@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
-import RecommendationContent from "../ui/RecommendationCard/Content";
+import Selector from "../ui/Navigation/Selector";
+import RecommendationContent from "../ui/RecommendationCard/collapsedContent";
 
-const RecommendationItem = ({ car }) => {
+const RecommendationItem = ({ car, onSelect = () => {} }) => {
   return (
-    <View>
+    <Selector onPress={() => onSelect(car)}>
       <RecommendationContent
         name={car.car_name}
         brand={car.brand_name}
@@ -32,7 +32,7 @@ const RecommendationItem = ({ car }) => {
         primaryDriverType={car.primaryDriverType}
         topReasons={car.topReasons}
       />
-    </View>
+    </Selector>
   );
 };
 
