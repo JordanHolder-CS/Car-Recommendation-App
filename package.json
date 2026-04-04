@@ -5,6 +5,8 @@
   "scripts": {
     "test": "node API/tests/recommendationService.test.js",
     "test:recommendations": "node API/tests/recommendationService.test.js",
+    "analyze:recommendations": "node API/scripts/analyzeRecommendationSensitivity.js",
+    "analyze:recommendations:demo": "node API/scripts/analyzeRecommendationSensitivity.js --demo",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

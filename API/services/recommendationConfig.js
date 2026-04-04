@@ -1,16 +1,16 @@
 const USE_CASE_RULES = {
   drive_style: {
-    q1_long_distance: { long_distance: 2 },
-    q1_city: { city: 2 },
-    q1_mixed: { long_distance: 1.5, city: 1 },
-    q1_weekend: { weekend: 2 },
+    q1_long_distance: { long_distance: 3.5 },
+    q1_city: { city: 3.5 },
+    q1_mixed: { long_distance: 2.5, city: 2 },
+    q1_weekend: { weekend: 3.5 },
   },
   usage_pattern: {
-    q8_commute: { long_distance: 2 },
-    q8_errands: { city: 2 },
-    q8_roadtrips: { long_distance: 2, weekend: 1 },
-    q8_work: { work: 3 },
-    q8_family: { family: 3 },
+    q8_commute: { long_distance: 2.5 },
+    q8_errands: { city: 2.5 },
+    q8_roadtrips: { long_distance: 2.5, weekend: 1.5 },
+    q8_work: { work: 3.5 },
+    q8_family: { family: 3.5 },
   },
   passengers_space: {
     q5_coupe: { weekend: 2 },
@@ -133,6 +133,32 @@ const PROFILE_LABELS = {
 };
 
 const MODIFIERS = {
+  drive_style: {
+    q1_long_distance: {
+      roadTripFit: 0.2,
+      range: 0.08,
+      comfortFit: 0.06,
+      bootSpace: 0.04,
+    },
+    q1_city: {
+      cityFit: 0.2,
+      economy: 0.06,
+      serviceCost: 0.05,
+      reliability: 0.04,
+    },
+    q1_mixed: {
+      balancedFit: 0.16,
+      dailyFit: 0.06,
+      comfortFit: 0.04,
+      practicalFit: 0.04,
+    },
+    q1_weekend: {
+      performanceFit: 0.22,
+      horsepower: 0.1,
+      acceleration: 0.08,
+      drivetrain: 0.06,
+    },
+  },
   priority: {
     q6_running_costs: {
       runningCostFit: 0.22,
@@ -154,15 +180,15 @@ const MODIFIERS = {
     },
   },
   usage_pattern: {
-    q8_commute: { commuteFit: 0.18, economy: 0.05, reliability: 0.04 },
-    q8_errands: { commuteFit: 0.12, cityFit: 0.1 },
-    q8_roadtrips: { roadTripFit: 0.18, range: 0.08, bootSpace: 0.05 },
-    q8_work: { workFit: 0.22, practicalFit: 0.08, reliability: 0.04 },
+    q8_commute: { commuteFit: 0.22, economy: 0.06, reliability: 0.05 },
+    q8_errands: { commuteFit: 0.16, cityFit: 0.12 },
+    q8_roadtrips: { roadTripFit: 0.24, range: 0.1, bootSpace: 0.06 },
+    q8_work: { workFit: 0.28, practicalFit: 0.1, reliability: 0.05 },
     q8_family: {
-      familyFit: 0.18,
-      seating: 0.08,
-      practicalFit: 0.06,
-      cityFit: 0.04,
+      familyFit: 0.24,
+      seating: 0.1,
+      practicalFit: 0.08,
+      cityFit: 0.05,
     },
   },
   ownership_intent: {
@@ -387,7 +413,7 @@ PASSENGER_SPACE_RULES.q5_large_boot = PASSENGER_SPACE_RULES.q5_estate;
 
 const VEHICLE_SIZE_RULES = {
   q_size_small: {
-    weights: { sizeFit: 0.22, cityFit: 0.03 },
+    weights: { sizeFit: 0.3, cityFit: 0.05 },
     label: "smaller-lighter fit",
     reasonThreshold: 0.55,
     details: ["curbWeight", "seating", "bootSpace"],
@@ -415,7 +441,7 @@ const VEHICLE_SIZE_RULES = {
     ],
   },
   q_size_medium: {
-    weights: { sizeFit: 0.2, balancedFit: 0.04 },
+    weights: { sizeFit: 0.28, balancedFit: 0.06 },
     label: "mid-size balance fit",
     reasonThreshold: 0.5,
     details: ["curbWeight", "seating", "bootSpace"],
@@ -442,7 +468,7 @@ const VEHICLE_SIZE_RULES = {
     ],
   },
   q_size_large: {
-    weights: { sizeFit: 0.22, familyFit: 0.04, practicalFit: 0.04 },
+    weights: { sizeFit: 0.3, familyFit: 0.06, practicalFit: 0.06 },
     label: "larger-roomier fit",
     reasonThreshold: 0.55,
     details: ["curbWeight", "seating", "bootSpace"],
@@ -483,11 +509,12 @@ const VEHICLE_SIZE_WEIGHTS = Object.fromEntries(
 );
 
 const QUESTION_WEIGHT_GROUPS = [
+  { answerKey: "drive_style", options: MODIFIERS.drive_style, factor: 1.4 },
   { answerKey: "priority", options: MODIFIERS.priority, factor: 1.15 },
   {
     answerKey: "usage_pattern",
     options: MODIFIERS.usage_pattern,
-    factor: 1.35,
+    factor: 1.7,
   },
   {
     answerKey: "ownership_intent",
@@ -502,7 +529,7 @@ const QUESTION_WEIGHT_GROUPS = [
   {
     answerKey: "vehicle_size",
     options: VEHICLE_SIZE_WEIGHTS,
-    factor: 1.15,
+    factor: 1.45,
   },
 ];
 
