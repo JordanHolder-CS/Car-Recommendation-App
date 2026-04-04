@@ -133,6 +133,36 @@ const PROFILE_LABELS = {
 };
 
 const MODIFIERS = {
+  drive_style: {
+    q1_long_distance: {
+      roadTripFit: 0.18,
+      range: 0.1,
+      comfortFit: 0.08,
+      reliability: 0.06,
+      economy: 0.04,
+    },
+    q1_city: {
+      cityFit: 0.18,
+      commuteFit: 0.08,
+      runningCostFit: 0.08,
+      economy: 0.05,
+      serviceCost: 0.04,
+    },
+    q1_mixed: {
+      balancedFit: 0.14,
+      dailyFit: 0.08,
+      comfortFit: 0.06,
+      practicalFit: 0.05,
+    },
+    q1_weekend: {
+      performanceFit: 0.24,
+      horsepower: 0.14,
+      acceleration: 0.12,
+      powerToWeight: 0.08,
+      luxuryFit: 0.1,
+      drivetrain: 0.08,
+    },
+  },
   priority: {
     q6_running_costs: {
       runningCostFit: 0.22,
@@ -483,6 +513,7 @@ const VEHICLE_SIZE_WEIGHTS = Object.fromEntries(
 );
 
 const QUESTION_WEIGHT_GROUPS = [
+  { answerKey: "drive_style", options: MODIFIERS.drive_style, factor: 0.85 },
   { answerKey: "priority", options: MODIFIERS.priority, factor: 1.15 },
   {
     answerKey: "usage_pattern",

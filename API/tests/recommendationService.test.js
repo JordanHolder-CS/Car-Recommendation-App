@@ -152,6 +152,66 @@ const extractReasonText = (note = "") => {
   return parts.join(" | ") || null;
 };
 
+const driveStyleReorderCars = [
+  {
+    car_id: 101,
+    car_name: "Family Eco SUV",
+    brand_name: "Pragma",
+    price: 41800,
+    body_style: "suv",
+    horsepower: 178,
+    zero_to_sixty_mph: 8.9,
+    combined_mpg: 50,
+    reliability: 89,
+    service_cost: 380,
+    insurance_estimate: 690,
+    max_seating_capacity: 7,
+    boot_space_liters: 690,
+    model_year: 2024,
+    curb_weight: 1710,
+    drivetrain: "FWD",
+    transmission: "Automatic",
+  },
+  {
+    car_id: 102,
+    car_name: "Family Sport Touring",
+    brand_name: "Jaguar",
+    price: 48900,
+    body_style: "suv",
+    horsepower: 286,
+    zero_to_sixty_mph: 6.2,
+    combined_mpg: 36,
+    reliability: 80,
+    service_cost: 560,
+    insurance_estimate: 930,
+    max_seating_capacity: 5,
+    boot_space_liters: 610,
+    model_year: 2024,
+    curb_weight: 1650,
+    drivetrain: "AWD",
+    transmission: "Automatic",
+  },
+  {
+    car_id: 103,
+    car_name: "Family Middle Ground",
+    brand_name: "Summit",
+    price: 45200,
+    body_style: "suv",
+    horsepower: 228,
+    zero_to_sixty_mph: 7.4,
+    combined_mpg: 42,
+    reliability: 84,
+    service_cost: 460,
+    insurance_estimate: 810,
+    max_seating_capacity: 5,
+    boot_space_liters: 640,
+    model_year: 2024,
+    curb_weight: 1680,
+    drivetrain: "AWD",
+    transmission: "Automatic",
+  },
+];
+
 const runTest = (name, callback) => {
   try {
     callback();
@@ -213,6 +273,48 @@ runTest("breakdown stays aligned with scoring output and visible reasons", () =>
         );
       });
     },
+  );
+});
+
+runTest("drive style can reorder comparable family recommendations", () => {
+  const baseAnswers = {
+    budget_range: 50000,
+    fuel_preference: "q3_petrol",
+    transmission: "q4_auto",
+    passengers_space: "q5_suv",
+    vehicle_size: "q_size_large",
+    priority: "q6_practicality",
+    usage_pattern: "q8_family",
+    ownership_intent: "q9_balanced",
+  };
+
+  const cityResult = recommendCars(
+    driveStyleReorderCars,
+    { ...baseAnswers, drive_style: "q1_city" },
+    3,
+  );
+  const weekendResult = recommendCars(
+    driveStyleReorderCars,
+    { ...baseAnswers, drive_style: "q1_weekend" },
+    3,
+  );
+
+  assert.deepEqual(
+    cityResult.recommendations.map((car) => car.car_id).sort(),
+    weekendResult.recommendations.map((car) => car.car_id).sort(),
+  );
+  assert.equal(cityResult.recommendations[0]?.car_name, "Family Eco SUV");
+
+  const cityOrder = cityResult.recommendations.map((car) => car.car_name);
+  const weekendOrder = weekendResult.recommendations.map((car) => car.car_name);
+
+  assert.ok(
+    cityOrder.indexOf("Family Sport Touring") >
+      cityOrder.indexOf("Family Middle Ground"),
+  );
+  assert.ok(
+    weekendOrder.indexOf("Family Sport Touring") <
+      weekendOrder.indexOf("Family Middle Ground"),
   );
 });
 

@@ -272,6 +272,11 @@ const parseArgs = () => {
   const parsed = {};
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
+    if (arg === "--endpoint") {
+      parsed.endpoint = args[index + 1];
+      index += 1;
+      continue;
+    }
     if (arg === "--cars") {
       parsed.carsPath = args[index + 1];
       index += 1;
@@ -282,6 +287,17 @@ const parseArgs = () => {
     }
   }
   return parsed;
+};
+
+const normalizeEndpointUrl = (endpoint) => {
+  const trimmed = String(endpoint || "").trim().replace(/\/+$/, "");
+  if (!trimmed) {
+    throw new Error("Expected a value for --endpoint");
+  }
+  if (trimmed.endsWith("/recommend")) return trimmed;
+  if (trimmed.endsWith("/car")) return `${trimmed}/recommend`;
+  if (trimmed.endsWith("/api")) return `${trimmed}/car/recommend`;
+  return `${trimmed}/car/recommend`;
 };
 
 const loadCarsFromJson = (carsPath) => {
@@ -295,6 +311,14 @@ const loadCarsFromJson = (carsPath) => {
 };
 
 const loadCars = async (options = {}) => {
+  if (options.endpoint) {
+    return {
+      cars: [],
+      source: normalizeEndpointUrl(options.endpoint),
+      mode: "endpoint",
+    };
+  }
+
   if (options.carsPath) {
     return {
       cars: loadCarsFromJson(options.carsPath),
@@ -346,6 +370,10 @@ const matchesDbFilters = (car, dbFilters = {}) =>
 const findCandidateCars = async (catalog, answers = {}) => {
   const { dbFilters } = translateAnswersToHardFilters(answers);
 
+  if (catalog.mode === "endpoint") {
+    return null;
+  }
+
   if (catalog.mode === "database") {
     return carModel.findFiltered(dbFilters);
   }
@@ -354,6 +382,22 @@ const findCandidateCars = async (catalog, answers = {}) => {
 };
 
 const getRecommendationResponse = async (catalog, answers = {}, limit = TOP_N) => {
+  if (catalog.mode === "endpoint") {
+    const response = await fetch(catalog.source, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers, limit }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Endpoint request failed with ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
   const candidateCars = await findCandidateCars(catalog, answers);
   const recommendationResult = recommendCars(candidateCars, answers, limit);
 
@@ -629,9 +673,13 @@ const main = async () => {
   const catalog = await loadCars(args);
   const analysis = await analyzeSensitivity(catalog);
 
-  console.log(
-    `Analyzed ${catalog.cars.length} cars from ${catalog.source} using the controller-equivalent recommendation pipeline.`,
-  );
+  if (catalog.mode === "endpoint") {
+    console.log(`Analyzed endpoint responses from ${catalog.source}.`);
+  } else {
+    console.log(
+      `Analyzed ${catalog.cars.length} cars from ${catalog.source} using the controller-equivalent recommendation pipeline.`,
+    );
+  }
   console.log(
     `Compared ${analysis.sampleCount} answer mutations across ${BASE_PROFILES.length} base profiles.`,
   );
