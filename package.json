@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test": "node API/tests/recommendationService.test.js",
+    "test:recommendations": "node API/tests/recommendationService.test.js",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

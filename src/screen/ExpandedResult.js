@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 import { CommonActions } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
@@ -47,17 +47,21 @@ const ExpandedResult = ({ navigation, route }) => {
     <View style={styles.Screen}>
       <Animated.View style={[styles.ExpandedCard, cardStyle]}>
         <Animated.View style={[styles.ExpandedContent, contentStyle]}>
-          <ExpandedContent
-            selectedCar={selectedCar}
-            detailsAnimatedStyle={detailsStyle}
-          />
+          <ScrollView contentInsetAdjustmentBehavior="automatic">
+            <ExpandedContent
+              selectedCar={selectedCar}
+              detailsAnimatedStyle={detailsStyle}
+            />
+          </ScrollView>
         </Animated.View>
         <Animated.View style={[styles.BackButtonWrap, backButtonStyle]}>
-          <SafeAreaView edges={["top"]}>
-            <View style={styles.BackButtonChip}>
-              <BackButton onBack={() => close()} />
-            </View>
-          </SafeAreaView>
+          <ScrollView contentInsetAdjustmentBehavior="automatic">
+            <SafeAreaView edges={["top"]}>
+              <View style={styles.BackButtonChip}>
+                <BackButton onBack={() => close()} />
+              </View>
+            </SafeAreaView>
+          </ScrollView>
         </Animated.View>
       </Animated.View>
     </View>
