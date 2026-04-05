@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ScrollView } from "react-native";
 import { CommonActions } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
@@ -47,13 +47,18 @@ const ExpandedResult = ({ navigation, route }) => {
     <View style={styles.Screen}>
       <Animated.View style={[styles.ExpandedCard, cardStyle]}>
         <Animated.View style={[styles.ExpandedContent, contentStyle]}>
-          <ExpandedContent
-            selectedCar={selectedCar}
-            detailsAnimatedStyle={detailsStyle}
-          />
+          <ScrollView contentInsetAdjustmentBehavior="automatic">
+            <ExpandedContent
+              selectedCar={selectedCar}
+              detailsAnimatedStyle={detailsStyle}
+            />
+          </ScrollView>
         </Animated.View>
-        <Animated.View style={[styles.BackButtonWrap, backButtonStyle]}>
-          <SafeAreaView edges={["top"]}>
+        <Animated.View
+          pointerEvents="box-none"
+          style={[styles.BackButtonWrap, backButtonStyle]}
+        >
+          <SafeAreaView edges={["top"]} style={styles.BackButtonSafeArea}>
             <View style={styles.BackButtonChip}>
               <BackButton onBack={() => close()} />
             </View>
@@ -84,8 +89,13 @@ const styles = StyleSheet.create({
   BackButtonWrap: {
     position: "absolute",
     top: 0,
-    left: 8,
+    left: 0,
+    right: 0,
     zIndex: 3,
+  },
+  BackButtonSafeArea: {
+    alignItems: "flex-start",
+    paddingHorizontal: 8,
   },
   BackButtonChip: {
     marginTop: 8,
