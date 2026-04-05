@@ -54,14 +54,15 @@ const ExpandedResult = ({ navigation, route }) => {
             />
           </ScrollView>
         </Animated.View>
-        <Animated.View style={[styles.BackButtonWrap, backButtonStyle]}>
-          <ScrollView contentInsetAdjustmentBehavior="automatic">
-            <SafeAreaView edges={["top"]}>
-              <View style={styles.BackButtonChip}>
-                <BackButton onBack={() => close()} />
-              </View>
-            </SafeAreaView>
-          </ScrollView>
+        <Animated.View
+          pointerEvents="box-none"
+          style={[styles.BackButtonWrap, backButtonStyle]}
+        >
+          <SafeAreaView edges={["top"]} style={styles.BackButtonSafeArea}>
+            <View style={styles.BackButtonChip}>
+              <BackButton onBack={() => close()} />
+            </View>
+          </SafeAreaView>
         </Animated.View>
       </Animated.View>
     </View>
@@ -88,8 +89,13 @@ const styles = StyleSheet.create({
   BackButtonWrap: {
     position: "absolute",
     top: 0,
-    left: 8,
+    left: 0,
+    right: 0,
     zIndex: 3,
+  },
+  BackButtonSafeArea: {
+    alignItems: "flex-start",
+    paddingHorizontal: 8,
   },
   BackButtonChip: {
     marginTop: 8,
