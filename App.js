@@ -3,13 +3,14 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ResultScreen from "./src/screen/ResultScreen";
 import ExpandedResult from "./src/screen/ExpandedResult";
 import QuestionScreen from "./src/screen/questionnaire";
+import DealerScreen from "./src/screen/DealerScreen.js";
 const Stack = createNativeStackNavigator();
 
 export const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Questionnaire"
+        initialRouteName="DealerScreen"
         // screenOptions={{
         //   headerStyle: { backgroundColor: "black" },
         //   headerTintColor: "white",
@@ -37,6 +38,14 @@ export const App = () => {
           component={QuestionScreen}
           options={{
             title: "Questionnaire",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="DealerScreen"
+          component={DealerScreen}
+          options={{
+            title: "Dealership",
             headerShown: false,
           }}
         />
