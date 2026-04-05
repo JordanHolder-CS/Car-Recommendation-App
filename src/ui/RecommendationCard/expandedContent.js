@@ -1,13 +1,17 @@
 import { StyleSheet, Text, View } from "react-native";
 import RecommendationContent from "./collapsedContent";
 
+const MAX_BREAKDOWN_ITEMS = 6;
+
 const buildRecommendationBreakdown = (selectedCar) =>
   Array.isArray(selectedCar?.recommendationBreakdown)
-    ? selectedCar.recommendationBreakdown.map((metric) => ({
-        label: metric.priority ? `${metric.label} (priority)` : metric.label,
-        score: `${Math.max(0, Math.min(100, Math.round(metric.fitScore || 0)))}/100`,
-        note: metric.note,
-      }))
+    ? selectedCar.recommendationBreakdown
+        .slice(0, MAX_BREAKDOWN_ITEMS)
+        .map((metric) => ({
+          label: metric.priority ? `${metric.label} (priority)` : metric.label,
+          score: `${Math.max(0, Math.min(100, Math.round(metric.fitScore || 0)))}/100`,
+          note: metric.note,
+        }))
     : [];
 
 const ExpandedContent = ({ selectedCar, detailsAnimatedStyle }) => {
