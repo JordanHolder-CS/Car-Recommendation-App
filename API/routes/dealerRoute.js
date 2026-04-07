@@ -3,11 +3,11 @@ const router = express.Router();
 
 const {
   getDealers,
-  getFilteredDealers,
   getDealerById,
+  getDealerListings,
 } = require("../controllers/dealersController");
 
-router.get("/filter", getFilteredDealers);
+router.get("/:dealerId/listings", getDealerListings);
 router.get("/:dealerId", getDealerById);
 router.get("/", getDealers);
 
