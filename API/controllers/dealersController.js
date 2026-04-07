@@ -2,7 +2,15 @@ const dealerModel = require("../models/dealerModel");
 
 const getDealers = async (req, res) => {
   try {
-    const dealers = await dealerModel.findAll();
+    const rawCarIds =
+      typeof req.query.carIds === "string" ? req.query.carIds : "";
+    const carIds = rawCarIds
+      .split(",")
+      .map((value) => Number.parseInt(value, 10))
+      .filter(Number.isFinite);
+    const dealers = carIds.length
+      ? await dealerModel.findByCarIds(carIds)
+      : await dealerModel.findAll();
     res.status(200).json(dealers);
   } catch (error) {
     res
