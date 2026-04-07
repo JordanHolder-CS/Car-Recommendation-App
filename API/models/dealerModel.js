@@ -31,7 +31,6 @@ const DEALER_LISTINGS_QUERY = `
     brands.name AS brand_name,
     car.name AS car_name,
     car.model,
-    specs.body_style,
     dealerlisting.price,
     dealerlisting.milage,
     dealerlisting.year,
@@ -43,8 +42,6 @@ const DEALER_LISTINGS_QUERY = `
     ON car.car_id = dealerinventory.car_id
   LEFT JOIN "Car Data".brands brands
     ON brands.brand_id = car.brand_id
-  LEFT JOIN "Car Data".car_specs specs
-    ON specs.car_id = car.car_id
   LEFT JOIN "Car Data".dealerlisting dealerlisting
     ON dealerlisting.dealerinventory_id = dealerinventory.dealerinventory_id
     AND dealerlisting.dealer_id = dealerinventory.dealer_id
