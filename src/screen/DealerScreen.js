@@ -55,6 +55,12 @@ export const DealerScreen = ({ navigation }) => {
     navigation.goBack();
   };
 
+  const onSelectDealer = (dealer) => {
+    navigation.navigate("ExpandedDealer", {
+      selectedDealer: dealer,
+    });
+  };
+
   if (loading) {
     return (
       <Screen>
@@ -88,7 +94,7 @@ export const DealerScreen = ({ navigation }) => {
       <View style={styles.SafeArea}>
         {dealers.length ? (
           <ScrollView>
-            <DealerList dealers={dealers} />
+            <DealerList dealers={dealers} onSelect={onSelectDealer} />
           </ScrollView>
         ) : (
           <View style={styles.CenterContainer}>

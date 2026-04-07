@@ -1,111 +1,78 @@
 const pool = require("../config/pool");
 
+const DEALER_SUMMARY_SELECT = `
+  SELECT
+    dealership.dealer_id,
+    dealership.dealer_name,
+    dealership.location,
+    dealership.is_franchised,
+    COUNT(dealerinventory.dealerinventory_id)::int AS inventory_count
+  FROM "Car Data".dealership dealership
+  LEFT JOIN "Car Data".dealerinventory dealerinventory
+    ON dealerinventory.dealer_id = dealership.dealer_id
+`;
+
+const DEALER_SUMMARY_GROUP_BY = `
+  GROUP BY
+    dealership.dealer_id,
+    dealership.dealer_name,
+    dealership.location,
+    dealership.is_franchised
+`;
+
+const DEALER_LISTINGS_QUERY = `
+  SELECT
+    dealerinventory.dealerinventory_id,
+    dealerinventory.dealer_id,
+    dealerinventory.car_id,
+    dealership.dealer_name,
+    dealership.location,
+    dealership.is_franchised,
+    brands.name AS brand_name,
+    car.name AS car_name,
+    car.model,
+    specs.body_style,
+    dealerlisting.price,
+    dealerlisting.milage,
+    dealerlisting.year,
+    dealerlisting.condition::text AS condition
+  FROM "Car Data".dealerinventory dealerinventory
+  INNER JOIN "Car Data".dealership dealership
+    ON dealership.dealer_id = dealerinventory.dealer_id
+  INNER JOIN "Car Data".car car
+    ON car.car_id = dealerinventory.car_id
+  LEFT JOIN "Car Data".brands brands
+    ON brands.brand_id = car.brand_id
+  LEFT JOIN "Car Data".car_specs specs
+    ON specs.car_id = car.car_id
+  LEFT JOIN "Car Data".dealerlisting dealerlisting
+    ON dealerlisting.dealerinventory_id = dealerinventory.dealerinventory_id
+    AND dealerlisting.dealer_id = dealerinventory.dealer_id
+`;
+
 const dealerModel = {
   findAll: async () => {
     const result = await pool.query(
-      `${BASE_DEALER_QUERY} ORDER BY dealership.dealer_name ASC`,
-    );
-    return result.rows;
-  },
-
-  findFiltered: async (filters = {}) => {
-    const { whereClause, values } = buildDealerFilterQuery(filters);
-    const result = await pool.query(
-      `${BASE_DEALER_QUERY}${whereClause} ORDER BY dealership.dealer_name ASC`,
-      values,
+      `${DEALER_SUMMARY_SELECT}${DEALER_SUMMARY_GROUP_BY} ORDER BY dealership.dealer_name ASC`,
     );
     return result.rows;
   },
 
   findById: async (dealerId) => {
     const result = await pool.query(
-      `${BASE_DEALER_QUERY} WHERE dealership.dealer_id = $1`,
+      `${DEALER_SUMMARY_SELECT} WHERE dealership.dealer_id = $1${DEALER_SUMMARY_GROUP_BY}`,
       [dealerId],
     );
     return result.rows[0] || null;
   },
+
+  findListingsByDealerId: async (dealerId) => {
+    const result = await pool.query(
+      `${DEALER_LISTINGS_QUERY} WHERE dealerinventory.dealer_id = $1 ORDER BY brands.name ASC, car.name ASC, dealerinventory.dealerinventory_id ASC`,
+      [dealerId],
+    );
+    return result.rows;
+  },
 };
-
-const DEALER_FIELDS = {
-  dealer_id: "number",
-  dealer_name: "string",
-  location: "string",
-  is_franchised: "boolean",
-};
-
-const parseBoolean = (value) => {
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === "true" || normalized === "1") {
-      return true;
-    }
-    if (normalized === "false" || normalized === "0") {
-      return false;
-    }
-  }
-
-  return undefined;
-};
-
-const buildDealerFilterQuery = (filters = {}) => {
-  const conditions = [];
-  const values = [];
-
-  Object.entries(filters).forEach(([key, rawValue]) => {
-    if (
-      rawValue === undefined ||
-      rawValue === null ||
-      `${rawValue}`.trim().length === 0
-    ) {
-      return;
-    }
-
-    const fieldType = DEALER_FIELDS[key];
-    if (!fieldType) {
-      return;
-    }
-
-    if (fieldType === "number") {
-      const parsedValue = Number.parseInt(rawValue, 10);
-      if (!Number.isFinite(parsedValue)) {
-        return;
-      }
-      values.push(parsedValue);
-      conditions.push(`dealership.${key} = $${values.length}`);
-      return;
-    }
-
-    if (fieldType === "boolean") {
-      const parsedValue = parseBoolean(rawValue);
-      if (parsedValue === undefined) {
-        return;
-      }
-      values.push(parsedValue);
-      conditions.push(`dealership.${key} = $${values.length}`);
-      return;
-    }
-
-    values.push(rawValue);
-    conditions.push(`LOWER(dealership.${key}) = LOWER($${values.length})`);
-  });
-
-  return {
-    whereClause: conditions.length ? ` WHERE ${conditions.join(" AND ")}` : "",
-    values,
-  };
-};
-
-const BASE_DEALER_QUERY = `
-  SELECT
-    dealership.dealer_id,
-    dealership.dealer_name,
-    dealership.location,
-    dealership.is_franchised
-  FROM "Car Data".dealership dealership
-`;
 
 module.exports = dealerModel;

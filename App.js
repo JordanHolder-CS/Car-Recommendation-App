@@ -4,6 +4,7 @@ import ResultScreen from "./src/screen/ResultScreen";
 import ExpandedResult from "./src/screen/ExpandedResult";
 import QuestionScreen from "./src/screen/questionnaire";
 import DealerScreen from "./src/screen/DealerScreen.js";
+import ExpandedDealerScreen from "./src/screen/ExpandedDealer.js";
 const Stack = createNativeStackNavigator();
 
 export const App = () => {
@@ -46,6 +47,14 @@ export const App = () => {
           component={DealerScreen}
           options={{
             title: "Dealership",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ExpandedDealer"
+          component={ExpandedDealerScreen}
+          options={{
+            title: "Dealer",
             headerShown: false,
           }}
         />
