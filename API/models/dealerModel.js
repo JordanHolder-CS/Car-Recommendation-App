@@ -58,6 +58,28 @@ const dealerModel = {
     return result.rows;
   },
 
+  findByCarIds: async (carIds = []) => {
+    if (!Array.isArray(carIds) || !carIds.length) {
+      return [];
+    }
+
+    const result = await pool.query(
+      `
+        ${DEALER_SUMMARY_SELECT}
+        INNER JOIN (
+          SELECT DISTINCT dealer_id
+          FROM "Car Data".dealerinventory
+          WHERE car_id = ANY($1::int[])
+        ) matching_inventory
+          ON matching_inventory.dealer_id = dealership.dealer_id
+        ${DEALER_SUMMARY_GROUP_BY}
+        ORDER BY dealership.dealer_name ASC
+      `,
+      [carIds],
+    );
+    return result.rows;
+  },
+
   findById: async (dealerId) => {
     const result = await pool.query(
       `${DEALER_SUMMARY_SELECT} WHERE dealership.dealer_id = $1${DEALER_SUMMARY_GROUP_BY}`,

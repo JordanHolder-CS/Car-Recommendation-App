@@ -5,10 +5,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import ExpandedContent from "../ui/RecommendationCard/expandedContent";
 import BackButton from "../ui/Navigation/BackButton";
+import Button from "../ui/Navigation/ContinueButton";
 import useExpandTransition from "../ui/Animation/useExpandTransition";
 
 const ExpandedResult = ({ navigation, route }) => {
   const selectedCar = route?.params?.selectedCar || null;
+  const recommendedCars = Array.isArray(route?.params?.recommendedCars)
+    ? route.params.recommendedCars
+    : [];
 
   const handleCloseComplete = useCallback(
     (action) => {
@@ -43,6 +47,13 @@ const ExpandedResult = ({ navigation, route }) => {
     return <View style={styles.Screen} />;
   }
 
+  const onFindDealers = () => {
+    navigation.navigate("DealerScreen", {
+      selectedCar,
+      recommendedCars,
+    });
+  };
+
   return (
     <View style={styles.Screen}>
       <Animated.View style={[styles.ExpandedCard, cardStyle]}>
@@ -52,6 +63,9 @@ const ExpandedResult = ({ navigation, route }) => {
               selectedCar={selectedCar}
               detailsAnimatedStyle={detailsStyle}
             />
+            <View style={styles.ButtonWrap}>
+              <Button label="Find dealers" onPress={onFindDealers} />
+            </View>
           </ScrollView>
         </Animated.View>
         <Animated.View
@@ -106,6 +120,10 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
+  },
+  ButtonWrap: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
   },
 });
 

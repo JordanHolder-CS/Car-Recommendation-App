@@ -74,7 +74,10 @@ export const ResultScreen = ({ navigation, route }) => {
   };
 
   const onSelectRecommendation = (car) => {
-    navigation.navigate("ExpandedResult", { selectedCar: car });
+    navigation.navigate("ExpandedResult", {
+      selectedCar: car,
+      recommendedCars: cars,
+    });
   };
 
   if (loading) {

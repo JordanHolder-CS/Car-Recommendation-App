@@ -15,10 +15,25 @@ const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
 const DEALER_API_URL = `${API_BASE_URL}/dealers`;
 
-export const DealerScreen = ({ navigation }) => {
+export const DealerScreen = ({ navigation, route }) => {
   const [dealers, setDealers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const selectedCar = route?.params?.selectedCar || null;
+  const recommendedCars = Array.isArray(route?.params?.recommendedCars)
+    ? route.params.recommendedCars
+    : [];
+  const candidateCars = recommendedCars.length
+    ? recommendedCars
+    : selectedCar
+      ? [selectedCar]
+      : [];
+  const recommendedCarIds = [...new Set(
+    candidateCars
+      .map((car) => Number.parseInt(car?.car_id, 10))
+      .filter(Number.isFinite),
+  )];
+  const serializedCarIds = JSON.stringify(recommendedCarIds);
 
   useEffect(() => {
     const fetchDealers = async () => {
@@ -27,7 +42,11 @@ export const DealerScreen = ({ navigation }) => {
         setError(null);
         setDealers([]);
 
-        const response = await fetch(DEALER_API_URL, {
+        const query = recommendedCarIds.length
+          ? `?carIds=${recommendedCarIds.join(",")}`
+          : "";
+
+        const response = await fetch(`${DEALER_API_URL}${query}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -49,7 +68,7 @@ export const DealerScreen = ({ navigation }) => {
     };
 
     fetchDealers();
-  }, []);
+  }, [serializedCarIds]);
 
   const onBack = () => {
     navigation.goBack();
@@ -87,7 +106,14 @@ export const DealerScreen = ({ navigation }) => {
       <SafeAreaView style={styles.Header} edges={["top"]}>
         <BackButton onBack={onBack} />
         <View style={styles.HeaderText}>
-          <Text style={styles.HeaderTitle}>Dealers</Text>
+          <Text style={styles.HeaderTitle}>
+            {recommendedCarIds.length ? "Matching Dealers" : "Dealers"}
+          </Text>
+          {selectedCar ? (
+            <Text style={styles.HeaderSubtitle}>
+              Showing dealers for {selectedCar.brand_name} {selectedCar.car_name}
+            </Text>
+          ) : null}
         </View>
         <View style={styles.HeaderSpacer} />
       </SafeAreaView>
@@ -100,7 +126,9 @@ export const DealerScreen = ({ navigation }) => {
           <View style={styles.CenterContainer}>
             <Text style={styles.EmptyTitle}>No dealers found</Text>
             <Text style={styles.EmptyText}>
-              Try again once the dealer endpoint is available.
+              {recommendedCarIds.length
+                ? "No dealerships currently stock any of these recommended cars."
+                : "Try again once the dealer endpoint is available."}
             </Text>
           </View>
         )}
