@@ -6,6 +6,7 @@ import Animated from "react-native-reanimated";
 import ExpandedContent from "../ui/RecommendationCard/expandedContent";
 import BackButton from "../ui/Navigation/BackButton";
 import Button from "../ui/Navigation/ContinueButton";
+import { ButtonTray } from "../ui/Navigation/ContinueButton";
 import useExpandTransition from "../ui/Animation/useExpandTransition";
 
 const ExpandedResult = ({ navigation, route }) => {
@@ -56,6 +57,15 @@ const ExpandedResult = ({ navigation, route }) => {
     );
   };
 
+  const onCompare = () => {
+    close(
+      StackActions.replace("CompareScreen", {
+        selectedCar,
+        recommendedCars,
+      }),
+    );
+  };
+
   return (
     <View style={styles.Screen}>
       <Animated.View style={[styles.ExpandedCard, cardStyle]}>
@@ -66,7 +76,10 @@ const ExpandedResult = ({ navigation, route }) => {
               detailsAnimatedStyle={detailsStyle}
             />
             <View style={styles.ButtonWrap}>
-              <Button label="Find dealers" onPress={onFindDealers} />
+              <ButtonTray trayStyle={styles.ActionTray}>
+                <Button label="Compare" onPress={onCompare} />
+                <Button label="Find dealers" onPress={onFindDealers} />
+              </ButtonTray>
             </View>
           </ScrollView>
         </Animated.View>
@@ -126,6 +139,9 @@ const styles = StyleSheet.create({
   ButtonWrap: {
     paddingHorizontal: 16,
     paddingBottom: 24,
+  },
+  ActionTray: {
+    gap: 12,
   },
 });
 

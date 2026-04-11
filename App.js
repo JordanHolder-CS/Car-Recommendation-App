@@ -2,6 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ResultScreen from "./src/screen/ResultScreen";
 import ExpandedResult from "./src/screen/ExpandedResult";
+import CompareScreen from "./src/screen/CompareScreen";
 import QuestionScreen from "./src/screen/questionnaire";
 import BookingScreen from "./src/screen/BookingScreen.js";
 import DealerScreen from "./src/screen/DealerScreen.js";
@@ -41,6 +42,16 @@ export const App = () => {
           options={{
             title: "Questionnaire",
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="CompareScreen"
+          component={CompareScreen}
+          options={{
+            title: "Compare cars",
+            headerShown: false,
+            presentation: "card",
+            contentStyle: { backgroundColor: "#ffffff" },
           }}
         />
         <Stack.Screen

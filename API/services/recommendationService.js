@@ -15,8 +15,10 @@ const {
   MIN_TRANSMISSION_COVERAGE,
   OPEN_ENDED_BUDGET_VALUE,
   HARD_FILTERS,
-} = require("./recommendationConfig");
-const { createRecommendationScoring } = require("./recommendationScoring");
+} = require("../../src/ScoringConfigs/recommendationConfig");
+const {
+  createRecommendationScoring,
+} = require("../../src/ScoringConfigs/recommendationScoring");
 
 // -----------------------------------------------------------------------------
 // Generic parsing / text helpers
@@ -633,7 +635,10 @@ const buildRankedRecommendations = ({
     return initiallyRankedCars;
   }
 
-  const comparisonCars = initiallyRankedCars.slice(0, DISPLAY_COMPARISON_POOL_SIZE);
+  const comparisonCars = initiallyRankedCars.slice(
+    0,
+    DISPLAY_COMPARISON_POOL_SIZE,
+  );
 
   return buildScoredCars(
     candidateCars,
