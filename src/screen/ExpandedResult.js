@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
-import { CommonActions } from "@react-navigation/native";
+import { CommonActions, StackActions } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import ExpandedContent from "../ui/RecommendationCard/expandedContent";
@@ -48,10 +48,12 @@ const ExpandedResult = ({ navigation, route }) => {
   }
 
   const onFindDealers = () => {
-    navigation.navigate("DealerScreen", {
-      selectedCar,
-      recommendedCars,
-    });
+    close(
+      StackActions.replace("DealerScreen", {
+        selectedCar,
+        recommendedCars,
+      }),
+    );
   };
 
   return (

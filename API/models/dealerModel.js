@@ -6,10 +6,21 @@ const DEALER_SUMMARY_SELECT = `
     dealership.dealer_name,
     dealership.location,
     dealership.is_franchised,
-    COUNT(dealerinventory.dealerinventory_id)::int AS inventory_count
+    COUNT(DISTINCT dealerinventory.dealerinventory_id)::int AS inventory_count,
+    COALESCE(
+      ARRAY_TO_STRING(
+        ARRAY_AGG(DISTINCT dealer_brands.name ORDER BY dealer_brands.name),
+        ', '
+      ),
+      ''
+    ) AS brand_names
   FROM "Car Data".dealership dealership
   LEFT JOIN "Car Data".dealerinventory dealerinventory
     ON dealerinventory.dealer_id = dealership.dealer_id
+  LEFT JOIN "Car Data".dealerbrands dealerbrands
+    ON dealerbrands.dealer_id = dealership.dealer_id
+  LEFT JOIN "Car Data".brands dealer_brands
+    ON dealer_brands.brand_id = dealerbrands.brand_id
 `;
 
 const DEALER_SUMMARY_GROUP_BY = `

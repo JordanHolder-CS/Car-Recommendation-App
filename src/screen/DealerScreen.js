@@ -75,7 +75,7 @@ export const DealerScreen = ({ navigation, route }) => {
   };
 
   const onSelectDealer = (dealer) => {
-    navigation.navigate("ExpandedDealer", {
+    navigation.push("ExpandedDealer", {
       selectedDealer: dealer,
     });
   };

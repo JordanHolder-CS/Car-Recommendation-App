@@ -65,6 +65,13 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
     fetchDealerListings();
   }, [selectedDealer?.dealer_id]);
 
+  const handleSelectListing = (listing) => {
+    navigation.push("BookingScreen", {
+      bookingContext: listing,
+      selectedDealer,
+    });
+  };
+
   return (
     <Screen>
       <SafeAreaView style={styles.Header} edges={["top"]}>
@@ -89,7 +96,10 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
                 ) : error ? (
                   <Text style={styles.ErrorText}>Error: {error}</Text>
                 ) : listings.length ? (
-                  <DealerInventList listings={listings} />
+                  <DealerInventList
+                    listings={listings}
+                    onSelect={handleSelectListing}
+                  />
                 ) : (
                   <Text style={styles.StatusText}>No listings found.</Text>
                 )}

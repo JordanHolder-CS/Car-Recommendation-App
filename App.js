@@ -12,7 +12,7 @@ export const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="BookingScreen"
+        initialRouteName="Questionnaire"
         // screenOptions={{
         //   headerStyle: { backgroundColor: "black" },
         //   headerTintColor: "white",
@@ -49,6 +49,8 @@ export const App = () => {
           options={{
             title: "Dealership",
             headerShown: false,
+            presentation: "card",
+            contentStyle: { backgroundColor: "#ffffff" },
           }}
         />
         <Stack.Screen
@@ -57,6 +59,8 @@ export const App = () => {
           options={{
             title: "Dealer",
             headerShown: false,
+            presentation: "card",
+            contentStyle: { backgroundColor: "#ffffff" },
           }}
         />
         <Stack.Screen
@@ -65,6 +69,8 @@ export const App = () => {
           options={{
             title: "Book a test drive",
             headerShown: false,
+            presentation: "card",
+            contentStyle: { backgroundColor: "#ffffff" },
           }}
         />
       </Stack.Navigator>
