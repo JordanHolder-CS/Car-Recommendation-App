@@ -1,29 +1,38 @@
 import { StyleSheet, View, Image, Text } from "react-native";
+import BrandLogo from "../BrandLogo/BrandLogo";
 
 const DEFAULT_DEALER_IMAGE =
   "https://www.palmcoastford.com/static/dealer-16495/Used_car_dealer_33_banner.jpg";
 
-const getDealerBrandsLabel = (dealer = {}) => {
-  if (Array.isArray(dealer.brand_names)) {
-    const brands = dealer.brand_names
-      .map((brand) => `${brand}`.trim())
+const parseBrandValue = (brand = "") =>
+  `${brand}`.replace(/^"+|"+$/g, "").trim();
+
+const getDealerBrandNames = (dealer = {}) => {
+  const rawBrandNames = dealer.brand_names ?? dealer.brands ?? [];
+
+  if (Array.isArray(rawBrandNames)) {
+    return rawBrandNames.map(parseBrandValue).filter(Boolean);
+  }
+
+  if (typeof rawBrandNames === "string" && rawBrandNames.trim()) {
+    return rawBrandNames
+      .replace(/^\{|\}$/g, "")
+      .split(",")
+      .map(parseBrandValue)
       .filter(Boolean);
-
-    return brands.length ? brands.join(", ") : "Brands unavailable";
   }
 
-  if (typeof dealer.brand_names === "string" && dealer.brand_names.trim()) {
-    return dealer.brand_names.trim();
-  }
-
-  return "Brands unavailable";
+  return [];
 };
 
 export const DealerContent = ({ dealer = {} }) => {
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
-  const brandNames = getDealerBrandsLabel(dealer);
+  const brandNames = getDealerBrandNames(dealer);
+  const visibleBrandNames = brandNames.slice(0, 4);
+  const hiddenBrandCount = Math.max(0, brandNames.length - visibleBrandNames.length);
+  const brandLabel = brandNames.length ? brandNames.join(", ") : "Brands unavailable";
 
   return (
     <View style={styles.Container}>
@@ -43,7 +52,26 @@ export const DealerContent = ({ dealer = {} }) => {
         <Text style={styles.ProfileText}>
           {dealer.location || "Location unavailable"}
         </Text>
-        <Text style={styles.TypeText}>Brands: {brandNames}</Text>
+        <View style={styles.BrandSection}>
+          <Text style={styles.BrandTitle}>Brands</Text>
+          {visibleBrandNames.length ? (
+            <View style={styles.BrandLogoRow}>
+              {visibleBrandNames.map((brandName) => (
+                <BrandLogo
+                  key={`${dealer.dealer_id ?? dealer.dealer_name ?? "dealer"}-${brandName}`}
+                  brand={brandName}
+                  size={42}
+                />
+              ))}
+              {hiddenBrandCount ? (
+                <View style={styles.BrandOverflowBadge}>
+                  <Text style={styles.BrandOverflowText}>+{hiddenBrandCount}</Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+          <Text style={styles.TypeText}>{brandLabel}</Text>
+        </View>
         <Text style={styles.PriceText}>
           Dealer ID: {dealer.dealer_id ?? "N/A"}
         </Text>
@@ -81,10 +109,42 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   TypeText: {
-    marginTop: 2,
+    marginTop: 6,
     fontSize: 11,
     color: "#6B7280",
     textTransform: "capitalize",
+  },
+  BrandSection: {
+    marginTop: 8,
+  },
+  BrandTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#374151",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  BrandLogoRow: {
+    marginTop: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  BrandOverflowBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#F9FAFB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  BrandOverflowText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#4B5563",
   },
   PriceText: {
     paddingTop: 4,
