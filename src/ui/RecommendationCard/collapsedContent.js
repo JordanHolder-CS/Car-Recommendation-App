@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image, Text } from "react-native";
+import { StyleSheet, View, ImageBackground, Text } from "react-native";
 import Animated from "react-native-reanimated";
 import Icons from "../Icons/Icons";
 
@@ -62,20 +62,30 @@ export const RecommendationContent = ({
         ? primaryDriverType.replace(/_/g, " ")
         : null;
 
+  const vehicleBrand = brand || "";
+  const vehicleName = name || "Vehicle unavailable";
+
   return (
     <View style={[styles.Container, fullScreen && styles.FullScreenContainer]}>
-      <View style={styles.HeaderWrapper}>
-        <Image
-          style={[
-            styles.ImageHeader,
-            fullScreen && styles.FullScreenImageHeader,
-          ]}
+      <View style={styles.HeroWrap}>
+        <ImageBackground
+          style={[styles.HeroCard, fullScreen && styles.FullScreenHeroCard]}
+          imageStyle={[styles.HeroImage, fullScreen && styles.FullScreenHeroImage]}
           source={{
             uri:
               image ||
               "https://hips.hearstapps.com/hmg-prod/images/2024-mercedes-amg-gt63-643-66b52543c907c.jpg?crop=0.683xw:0.511xh;0.0976xw,0.409xh&resize=1200:*",
           }}
-        />
+        >
+          <View style={styles.HeroOverlay}>
+            <View style={styles.HeroBottom}>
+              {vehicleBrand ? (
+                <Text style={styles.HeroBrandText}>{vehicleBrand}</Text>
+              ) : null}
+              <Text style={styles.HeroNameText}>{vehicleName}</Text>
+            </View>
+          </View>
+        </ImageBackground>
       </View>
       <Animated.View
         style={[
@@ -84,9 +94,6 @@ export const RecommendationContent = ({
           detailsAnimatedStyle,
         ]}
       >
-        <Text style={styles.NameText}>
-          {brand} {name}
-        </Text>
         {matchPercent ? (
           <Text style={styles.MatchText}>{matchPercent}</Text>
         ) : null}
@@ -201,20 +208,45 @@ const styles = StyleSheet.create({
   TextWrapper: {
     padding: 9,
   },
-  HeaderWrapper: {
+  HeroWrap: {
     alignItems: "center",
   },
-  ImageHeader: {
-    height: 120,
+  HeroCard: {
+    minHeight: 180,
     width: "100%",
-    borderRadius: 12,
+    borderRadius: 18,
+    overflow: "hidden",
+    backgroundColor: "#1f2937",
   },
-  NameText: {
-    fontWeight: "700",
-    fontSize: 20,
+  HeroImage: {
+    borderRadius: 18,
+  },
+  HeroOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 14,
+    backgroundColor: "rgba(10, 14, 20, 0.42)",
+  },
+  HeroBottom: {
+    alignItems: "flex-start",
+  },
+  HeroBrandText: {
+    maxWidth: "88%",
+    fontSize: 16,
+    lineHeight: 19,
+    color: "rgba(255, 255, 255, 0.82)",
+    fontWeight: "300",
+  },
+  HeroNameText: {
+    marginTop: 2,
+    maxWidth: "88%",
+    fontSize: 23,
+    lineHeight: 27,
+    color: "#ffffff",
+    fontWeight: "300",
   },
   MatchText: {
-    marginTop: 4,
+    marginTop: 2,
     fontWeight: "700",
     fontSize: 13,
     color: "#0F766E",
@@ -305,8 +337,11 @@ const styles = StyleSheet.create({
   Section: {
     paddingBottom: 8,
   },
-  FullScreenImageHeader: {
-    height: 220,
+  FullScreenHeroCard: {
+    minHeight: 210,
+    borderRadius: 0,
+  },
+  FullScreenHeroImage: {
     borderRadius: 0,
   },
   FullScreenTextWrapper: {

@@ -3,10 +3,27 @@ import { StyleSheet, View, Image, Text } from "react-native";
 const DEFAULT_DEALER_IMAGE =
   "https://www.palmcoastford.com/static/dealer-16495/Used_car_dealer_33_banner.jpg";
 
+const getDealerBrandsLabel = (dealer = {}) => {
+  if (Array.isArray(dealer.brand_names)) {
+    const brands = dealer.brand_names
+      .map((brand) => `${brand}`.trim())
+      .filter(Boolean);
+
+    return brands.length ? brands.join(", ") : "Brands unavailable";
+  }
+
+  if (typeof dealer.brand_names === "string" && dealer.brand_names.trim()) {
+    return dealer.brand_names.trim();
+  }
+
+  return "Brands unavailable";
+};
+
 export const DealerContent = ({ dealer = {} }) => {
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
+  const brandNames = getDealerBrandsLabel(dealer);
 
   return (
     <View style={styles.Container}>
@@ -26,6 +43,7 @@ export const DealerContent = ({ dealer = {} }) => {
         <Text style={styles.ProfileText}>
           {dealer.location || "Location unavailable"}
         </Text>
+        <Text style={styles.TypeText}>Brands: {brandNames}</Text>
         <Text style={styles.PriceText}>
           Dealer ID: {dealer.dealer_id ?? "N/A"}
         </Text>

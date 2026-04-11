@@ -7,6 +7,7 @@
     "test:recommendations": "node API/tests/recommendationService.test.js",
     "analyze:recommendations": "node API/scripts/analyzeRecommendationSensitivity.js",
     "analyze:recommendations:demo": "node API/scripts/analyzeRecommendationSensitivity.js --demo",
+    "clean:car-dump": "node API/scripts/cleanCarDump.js",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
