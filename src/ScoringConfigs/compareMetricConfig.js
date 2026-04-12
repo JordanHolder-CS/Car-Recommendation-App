@@ -1,4 +1,9 @@
 export const SCORE_ROW_CONFIGS = {
+  brandFit: {
+    label: "Brand fit",
+    description:
+      "Shows whether the car matches one of the brands you explicitly preferred.",
+  },
   commuteFit: {
     label: "Commute fit",
     description:

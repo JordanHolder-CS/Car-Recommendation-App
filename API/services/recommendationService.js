@@ -11,6 +11,8 @@ const {
   BODY_STYLE_POOL_RULES,
   LUXURY_BRAND_TERMS,
   HIGH_END_PRICE_THRESHOLD,
+  PREFERRED_BRAND_WEIGHT,
+  PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP,
   BASE_USE_CASE_STRENGTH,
   MIN_TRANSMISSION_COVERAGE,
   OPEN_ENDED_BUDGET_VALUE,
@@ -214,6 +216,14 @@ const applyWeightModifiers = (baseWeights, answers = {}) => {
   CONDITIONAL_WEIGHT_RULES.forEach(({ matches, weights: extraWeights }) => {
     if (matches(answers)) addScores(weights, extraWeights);
   });
+
+  if (
+    Array.isArray(answers.preferred_brands) &&
+    answers.preferred_brands.filter(Boolean).length
+  ) {
+    weights.brandFit = (weights.brandFit || 0) + PREFERRED_BRAND_WEIGHT;
+  }
+
   return normalizeWeights(weights);
 };
 const getBudgetCriteria = (budgetAnswer) => {
@@ -281,6 +291,52 @@ const filterRecommendationPool = (cars, answers = {}, criteria = {}) => {
     });
   }
   return [];
+};
+const getPreferredBrandKeys = (answers = {}) =>
+  Array.isArray(answers.preferred_brands)
+    ? answers.preferred_brands
+        .map((brand) => normalizeLookupText(brand))
+        .filter(Boolean)
+    : [];
+const isPreferredBrandCar = (car, preferredBrandKeys = []) =>
+  preferredBrandKeys.includes(normalizeLookupText(car?.brand_name));
+const promotePreferredBrandLead = (rankedCars = [], answers = {}) => {
+  if (rankedCars.length < 2) return rankedCars;
+
+  const preferredBrandKeys = getPreferredBrandKeys(answers);
+  if (!preferredBrandKeys.length) return rankedCars;
+
+  const leadCar = rankedCars[0];
+  if (isPreferredBrandCar(leadCar, preferredBrandKeys)) {
+    return rankedCars;
+  }
+
+  const preferredBrandCandidate = rankedCars.find((car) =>
+    isPreferredBrandCar(car, preferredBrandKeys),
+  );
+
+  if (!preferredBrandCandidate) {
+    return rankedCars;
+  }
+
+  const leadMatchScore = parseNumber(leadCar?.matchScore ?? leadCar?.score);
+  const preferredBrandMatchScore = parseNumber(
+    preferredBrandCandidate?.matchScore ?? preferredBrandCandidate?.score,
+  );
+
+  if (
+    leadMatchScore === null ||
+    preferredBrandMatchScore === null ||
+    leadMatchScore - preferredBrandMatchScore >
+      PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP
+  ) {
+    return rankedCars;
+  }
+
+  return [
+    preferredBrandCandidate,
+    ...rankedCars.filter((car) => car !== preferredBrandCandidate),
+  ];
 };
 const translateAnswersToHardFilters = (answers = {}) => {
   const dbFilters = {};
@@ -630,17 +686,22 @@ const buildRankedRecommendations = ({
     includeReasons,
     candidateCars,
   ).sort((a, b) => b.score - a.score);
+  const promotedInitiallyRankedCars = promotePreferredBrandLead(
+    initiallyRankedCars,
+    answers,
+  );
 
-  if (initiallyRankedCars.length <= DISPLAY_COMPARISON_POOL_SIZE) {
-    return initiallyRankedCars;
+  if (promotedInitiallyRankedCars.length <= DISPLAY_COMPARISON_POOL_SIZE) {
+    return promotedInitiallyRankedCars;
   }
 
-  const comparisonCars = initiallyRankedCars.slice(
+  const comparisonCars = promotedInitiallyRankedCars.slice(
     0,
     DISPLAY_COMPARISON_POOL_SIZE,
   );
 
-  return buildScoredCars(
+  return promotePreferredBrandLead(
+    buildScoredCars(
     candidateCars,
     weights,
     matchScoreNormalizer,
@@ -651,7 +712,9 @@ const buildRankedRecommendations = ({
     criteria,
     includeReasons,
     comparisonCars,
-  ).sort((a, b) => b.score - a.score);
+  ).sort((a, b) => b.score - a.score),
+    answers,
+  );
 };
 
 const buildBudgetFallbackResult = ({
@@ -835,6 +898,7 @@ const recommendCars = (cars = [], answers = {}, limit = 5, options = {}) => {
     weights,
     recommendations,
     exactMatchCount: exactMatches.length,
+    exactMatchIds: exactMatches.map((car) => car.car_id).filter(Boolean),
     budgetFallbackApplied,
     recommendationNote,
     criteriaAdjustments,
