@@ -146,23 +146,6 @@ const carModel = {
     return result.rows;
   },
 
-  findByType: async (type) => {
-    const result = await pool.query(
-      `SELECT
-         car.name AS car_name,
-         brands.name AS brand_name,
-         car.*,
-         specs.*
-       FROM "Car Data".car car
-       JOIN "Car Data".car_specs specs
-         ON specs.car_id = car.car_id
-       JOIN "Car Data".brands brands
-         ON brands.brand_id = car.brand_id
-       WHERE LOWER(specs.body_style) = LOWER($1)`,
-      [type],
-    );
-    return result.rows;
-  },
 };
 
 module.exports = carModel;
