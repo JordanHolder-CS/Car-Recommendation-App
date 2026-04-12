@@ -4,6 +4,16 @@ const {
   translateAnswersToHardFilters,
 } = require("../services/recommendationService");
 
+const parseBoolean = (value) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1") return true;
+    if (normalized === "false" || normalized === "0") return false;
+  }
+  return false;
+};
+
 const getCars = async (req, res) => {
   try {
     const cars = await carModel.findAll();
@@ -37,32 +47,46 @@ const getRecommendedCars = async (req, res) => {
     const parsedLimit = Number.parseInt(rawLimit, 10);
     const limit =
       Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 5;
+    const includeDebug = parseBoolean(
+      req.method === "GET" ? req.query?.debug : req.body?.debug,
+    );
     const { dbFilters } = translateAnswersToHardFilters(answers);
     const cars = await carModel.findFiltered(dbFilters);
     const recommendationResult = recommendCars(cars, answers, limit);
 
-    res.status(200).json({
-      answers,
-      primaryDriverType: recommendationResult.primaryDriverType,
-      typeScores: recommendationResult.typeScores,
-      useCase: recommendationResult.useCase,
-      useCaseScores: recommendationResult.useCaseScores,
-      intent: recommendationResult.intent,
-      intentScores: recommendationResult.intentScores,
-      profileLabel: recommendationResult.profileLabel,
+    const responseBody = {
+      profile: {
+        useCase: recommendationResult.useCase,
+        intent: recommendationResult.intent,
+        label: recommendationResult.profileLabel,
+      },
+      meta: {
+        returnedCount: recommendationResult.recommendations.length,
+        budgetFallbackApplied: recommendationResult.budgetFallbackApplied,
+        recommendationNote: recommendationResult.recommendationNote || "",
+      },
       recommendations: recommendationResult.recommendations,
-      totalCandidates: cars.length,
-      totalMatches: recommendationResult.recommendations.length,
-      exactMatchCount: recommendationResult.exactMatchCount,
-      budgetFallbackApplied: recommendationResult.budgetFallbackApplied,
-      recommendationNote: recommendationResult.recommendationNote,
-      requestedCriteria: recommendationResult.requestedCriteria,
-      effectiveCriteria: recommendationResult.criteria,
-      criteriaAdjustments: recommendationResult.criteriaAdjustments,
-      requestedHardFilterBreakdown:
-        recommendationResult.requestedHardFilterBreakdown,
-      hardFilterBreakdown: recommendationResult.hardFilterBreakdown,
-    });
+    };
+
+    if (includeDebug) {
+      responseBody.debug = {
+        answers,
+        primaryDriverType: recommendationResult.primaryDriverType,
+        typeScores: recommendationResult.typeScores,
+        useCaseScores: recommendationResult.useCaseScores,
+        intentScores: recommendationResult.intentScores,
+        totalCandidates: cars.length,
+        exactMatchCount: recommendationResult.exactMatchCount,
+        requestedCriteria: recommendationResult.requestedCriteria,
+        effectiveCriteria: recommendationResult.criteria,
+        criteriaAdjustments: recommendationResult.criteriaAdjustments,
+        requestedHardFilterBreakdown:
+          recommendationResult.requestedHardFilterBreakdown,
+        hardFilterBreakdown: recommendationResult.hardFilterBreakdown,
+      };
+    }
+
+    res.status(200).json(responseBody);
   } catch (error) {
     res
       .status(500)
