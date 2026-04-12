@@ -10,7 +10,6 @@ const {
 
 router.get("/specs", getSpecs);
 router.get("/filter", getFilteredCars);
-router.get("/recommend", getRecommendedCars);
 router.post("/recommend", getRecommendedCars);
 router.get("/", getCars);
 
