@@ -31,9 +31,10 @@ export const QPages = [
 
   {
     key: "passengers_space",
-    title: "Which body style fits you best?",
-    desc: "Choose the shape of car you naturally lean toward, and we'll still use the description to guide how practical or sporty it should feel.",
+    title: "Which body styles fit you best?",
+    desc: "Choose one or more body styles you naturally lean toward, and we'll still use the description to guide how practical or sporty it should feel.",
     questions: Questions.Q5,
+    selectionMode: "multiple",
   },
 
   {

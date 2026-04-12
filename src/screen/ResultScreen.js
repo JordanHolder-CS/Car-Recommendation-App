@@ -10,14 +10,23 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Screen from "../ui/Layout/screen.js";
 import Button from "../ui/Navigation/ContinueButton.js";
 import BackButton from "../ui/Navigation/BackButton.js";
+import Selector from "../ui/Navigation/Selector.js";
 import RecommendationList from "../Lists/RecommendationList.js";
+
+const BATCH_SIZE = 5;
+const RESULT_LIMIT = 10;
+const MINIMUM_MATCH_SCORE = 0.5;
 
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
 const CAR_API_URL = `${API_BASE_URL}/car`;
 
+const isRecommendationMatch = (car) =>
+  typeof car?.matchScore === "number" && car.matchScore >= MINIMUM_MATCH_SCORE;
+
 export const ResultScreen = ({ navigation, route }) => {
   const [cars, setCars] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [useCase, setUseCase] = useState("");
@@ -35,6 +44,7 @@ export const ResultScreen = ({ navigation, route }) => {
         setLoading(true);
         setError(null);
         setCars([]);
+        setVisibleCount(BATCH_SIZE);
 
         const response = await fetch(`${CAR_API_URL}/recommend`, {
           method: "POST",
@@ -43,7 +53,7 @@ export const ResultScreen = ({ navigation, route }) => {
           },
           body: JSON.stringify({
             answers: JSON.parse(serializedAnswers),
-            limit: 5,
+            limit: RESULT_LIMIT,
           }),
         });
 
@@ -52,7 +62,7 @@ export const ResultScreen = ({ navigation, route }) => {
         }
 
         const data = await response.json();
-        setCars(data.recommendations || []);
+        setCars((data.recommendations || []).filter(isRecommendationMatch));
         setUseCase(data.useCase || "");
         setIntent(data.intent || "");
         setProfileLabel(data.profileLabel || "");
@@ -72,6 +82,9 @@ export const ResultScreen = ({ navigation, route }) => {
   const onBack = () => {
     navigation.goBack();
   };
+
+  const visibleCars = cars.slice(0, visibleCount);
+  const canShowMore = visibleCount < cars.length;
 
   const onSelectRecommendation = (car) => {
     navigation.navigate("ExpandedResult", {
@@ -107,7 +120,9 @@ export const ResultScreen = ({ navigation, route }) => {
         <BackButton onBack={onBack} />
         <View style={styles.HeaderText}>
           <Text style={styles.HeaderTitle}>
-            Top {cars.length} Matches
+            Top {visibleCars.length}
+            {cars.length > visibleCars.length ? ` of ${cars.length}` : ""}{" "}
+            Matches
             {budgetFallbackApplied ? " (Budget Assessed)" : ""}
           </Text>
           {profileLabel ? (
@@ -129,7 +144,31 @@ export const ResultScreen = ({ navigation, route }) => {
       <View style={styles.SafeArea}>
         {cars.length ? (
           <ScrollView>
-            <RecommendationList cars={cars} onSelect={onSelectRecommendation} />
+            <RecommendationList
+              cars={visibleCars}
+              onSelect={onSelectRecommendation}
+            />
+            {canShowMore ? (
+              <Selector
+                onPress={() =>
+                  setVisibleCount((currentCount) =>
+                    Math.min(currentCount + BATCH_SIZE, cars.length),
+                  )
+                }
+                style={styles.ShowMoreCard}
+                pressedStyle={styles.ShowMoreCardPressed}
+              >
+                <View style={styles.ShowMoreIcon}>
+                  <Text style={styles.ShowMoreIconText}>+</Text>
+                </View>
+                <Text style={styles.ShowMoreTitle}>
+                  Show next {BATCH_SIZE} cars?
+                </Text>
+                <Text style={styles.ShowMoreSubtitle}>
+                  These are less likely to match your requirements
+                </Text>
+              </Selector>
+            ) : null}
           </ScrollView>
         ) : (
           <View style={styles.CenterContainer}>
@@ -220,6 +259,52 @@ const styles = StyleSheet.create({
   },
   EmptyButtonWrap: {
     width: 220,
+  },
+  MoreButtonWrap: {
+    marginTop: 4,
+    marginBottom: 24,
+  },
+  ShowMoreCard: {
+    marginTop: 6,
+    marginBottom: 20,
+    borderRadius: 14,
+    backgroundColor: "#1F1F1F",
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  ShowMoreCardPressed: {
+    backgroundColor: "#2B2B2B",
+  },
+  ShowMoreIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  ShowMoreIconText: {
+    fontSize: 20,
+    lineHeight: 22,
+    fontWeight: "500",
+    color: "#111111",
+  },
+  ShowMoreTitle: {
+    fontSize: 15,
+    lineHeight: 18,
+    color: "#FFFFFF",
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  ShowMoreSubtitle: {
+    marginTop: 4,
+    fontSize: 10,
+    lineHeight: 13,
+    color: "#D1D5DB",
+    textAlign: "center",
+    maxWidth: 190,
   },
 });
 

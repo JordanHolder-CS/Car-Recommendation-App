@@ -69,6 +69,12 @@ const createRecommendationScoring = ({
     key
       .replace(/([a-z])([A-Z])/g, "$1 $2")
       .replace(/^./, (value) => value.toUpperCase());
+  const getAnswerSelections = (answerValue) =>
+    Array.isArray(answerValue)
+      ? answerValue.filter(Boolean)
+      : answerValue !== undefined && answerValue !== null && `${answerValue}`.trim()
+        ? [answerValue]
+        : [];
 
   // Build dynamic min/max ranges only for metrics relevant to the active
   // scoring weights, plus any dependent metrics required by composite fits.
@@ -213,6 +219,40 @@ const createRecommendationScoring = ({
     }
     return fallback;
   };
+  const getSelectedPassengerSpaceRules = (answers = {}) =>
+    getAnswerSelections(answers.passengers_space)
+      .map((answerKey) => PASSENGER_SPACE_RULES[answerKey])
+      .filter(Boolean);
+  const getBestPassengerSpaceRuleMatch = (
+    answers = {},
+    getRuleScore = () => 0,
+  ) =>
+    getSelectedPassengerSpaceRules(answers).reduce((bestMatch, rule) => {
+      const score = getRuleScore(rule);
+      if (!Number.isFinite(score)) return bestMatch;
+      if (!bestMatch || score > bestMatch.score) {
+        return { rule, score };
+      }
+      return bestMatch;
+    }, null);
+  const getBestPassengerSpaceReasonRule = (answers = {}, car) => {
+    const bodyStyle = normalizeText(car?.body_style);
+    const bestMatch = getBestPassengerSpaceRuleMatch(answers, (rule) => {
+      const bodyStyleFactor = rule.factors.find(
+        (factor) => factor.type === "bodyStyle",
+      );
+      if (!bodyStyleFactor) return 0;
+      return (
+        matchRuleScore(
+          bodyStyle,
+          bodyStyleFactor.scores,
+          bodyStyleFactor.fallback ?? 0,
+        ) ?? 0
+      );
+    });
+
+    return bestMatch?.rule || null;
+  };
   // Composite metrics (cityFit, performanceFit, etc.) are computed from
   // multiple base signals and user context instead of raw DB fields.
   const getSpecialMetricScore = (car, key, context = {}) => {
@@ -329,8 +369,8 @@ const createRecommendationScoring = ({
         normalizeMetric(getMetricValue(car, "seating"), ranges.seating, true),
       ]);
     const scoreSpaceFit = () => {
-      const rule = PASSENGER_SPACE_RULES[answers.passengers_space];
-      return scoreRuleFactors(rule);
+      const bestMatch = getBestPassengerSpaceRuleMatch(answers, scoreRuleFactors);
+      return bestMatch?.score ?? 0;
     };
     const scoreSizeFit = () => {
       const rule = VEHICLE_SIZE_RULES[answers.vehicle_size];
@@ -639,7 +679,7 @@ const createRecommendationScoring = ({
         : "strong practicality fit";
     }
     if (key === "spaceFit") {
-      const rule = PASSENGER_SPACE_RULES[answers.passengers_space];
+      const rule = getBestPassengerSpaceReasonRule(answers, car);
       if (!rule || (context.rawScore ?? 0) < rule.reasonThreshold) return null;
       return buildRuleBasedReason(rule, car, bodyStyle);
     }

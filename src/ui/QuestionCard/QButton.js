@@ -3,10 +3,15 @@ import { Pressable } from "react-native";
 import RadioButton from "./RadioButton";
 
 export const QButton = ({ id, Title, Description, selectedId, onPress }) => {
-  const isSelected = selectedId === id;
+  const selectedValues = Array.isArray(selectedId)
+    ? selectedId
+    : selectedId !== null && selectedId !== undefined
+      ? [selectedId]
+      : [];
+  const isSelected = selectedValues.includes(id);
 
   const handlePress = () => {
-    onPress?.(isSelected ? undefined : id);
+    onPress?.(id);
   };
 
   return (
