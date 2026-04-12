@@ -36,6 +36,7 @@ const createRecommendationScoring = ({
   const METRIC_LABELS = {
     acceleration: "Acceleration",
     balancedFit: "Balanced fit",
+    brandFit: "Brand fit",
     bootSpace: "Boot space",
     cityFit: "City fit",
     comfort: "Comfort / refinement",
@@ -68,6 +69,12 @@ const createRecommendationScoring = ({
     key
       .replace(/([a-z])([A-Z])/g, "$1 $2")
       .replace(/^./, (value) => value.toUpperCase());
+  const getAnswerSelections = (answerValue) =>
+    Array.isArray(answerValue)
+      ? answerValue.filter(Boolean)
+      : answerValue !== undefined && answerValue !== null && `${answerValue}`.trim()
+        ? [answerValue]
+        : [];
 
   // Build dynamic min/max ranges only for metrics relevant to the active
   // scoring weights, plus any dependent metrics required by composite fits.
@@ -212,6 +219,40 @@ const createRecommendationScoring = ({
     }
     return fallback;
   };
+  const getSelectedPassengerSpaceRules = (answers = {}) =>
+    getAnswerSelections(answers.passengers_space)
+      .map((answerKey) => PASSENGER_SPACE_RULES[answerKey])
+      .filter(Boolean);
+  const getBestPassengerSpaceRuleMatch = (
+    answers = {},
+    getRuleScore = () => 0,
+  ) =>
+    getSelectedPassengerSpaceRules(answers).reduce((bestMatch, rule) => {
+      const score = getRuleScore(rule);
+      if (!Number.isFinite(score)) return bestMatch;
+      if (!bestMatch || score > bestMatch.score) {
+        return { rule, score };
+      }
+      return bestMatch;
+    }, null);
+  const getBestPassengerSpaceReasonRule = (answers = {}, car) => {
+    const bodyStyle = normalizeText(car?.body_style);
+    const bestMatch = getBestPassengerSpaceRuleMatch(answers, (rule) => {
+      const bodyStyleFactor = rule.factors.find(
+        (factor) => factor.type === "bodyStyle",
+      );
+      if (!bodyStyleFactor) return 0;
+      return (
+        matchRuleScore(
+          bodyStyle,
+          bodyStyleFactor.scores,
+          bodyStyleFactor.fallback ?? 0,
+        ) ?? 0
+      );
+    });
+
+    return bestMatch?.rule || null;
+  };
   // Composite metrics (cityFit, performanceFit, etc.) are computed from
   // multiple base signals and user context instead of raw DB fields.
   const getSpecialMetricScore = (car, key, context = {}) => {
@@ -222,6 +263,8 @@ const createRecommendationScoring = ({
       intent,
       ranges = {},
     } = context;
+    const normalizeBrandName = (value) =>
+      normalizeText(value).replace(/[^a-z0-9]+/g, "");
     const bodyStyle = normalizeText(car.body_style);
     const scoreRuleFactors = (rule) => {
       if (!rule) return 0;
@@ -326,8 +369,8 @@ const createRecommendationScoring = ({
         normalizeMetric(getMetricValue(car, "seating"), ranges.seating, true),
       ]);
     const scoreSpaceFit = () => {
-      const rule = PASSENGER_SPACE_RULES[answers.passengers_space];
-      return scoreRuleFactors(rule);
+      const bestMatch = getBestPassengerSpaceRuleMatch(answers, scoreRuleFactors);
+      return bestMatch?.score ?? 0;
     };
     const scoreSizeFit = () => {
       const rule = VEHICLE_SIZE_RULES[answers.vehicle_size];
@@ -424,6 +467,17 @@ const createRecommendationScoring = ({
           true,
         ),
       ]);
+    const scoreBrandFit = () => {
+      const preferredBrands = Array.isArray(answers.preferred_brands)
+        ? answers.preferred_brands
+            .map((brand) => normalizeBrandName(brand))
+            .filter(Boolean)
+        : [];
+
+      if (!preferredBrands.length) return 0;
+
+      return preferredBrands.includes(normalizeBrandName(car.brand_name)) ? 1 : 0;
+    };
     const scoreBalancedFit = () =>
       averageScores([
         matchRuleScore(bodyStyle, BALANCED_BODY_STYLE_SCORES, 0.55),
@@ -452,6 +506,7 @@ const createRecommendationScoring = ({
       familyFit: scoreFamilyFit,
       dailyFit: scoreDailyFit,
       balancedFit: scoreBalancedFit,
+      brandFit: scoreBrandFit,
     };
     if (key === "luxuryFit") {
       if (isLuxuryBrand(car.brand_name)) return 1;
@@ -556,6 +611,12 @@ const createRecommendationScoring = ({
       insurance: () => "lower insurance costs",
     };
     if (metricReasonBuilders[key]) return metricReasonBuilders[key]();
+    if (key === "brandFit") {
+      if ((context.rawScore ?? 0) < 0.5) return null;
+      return car.brand_name
+        ? `matches your preferred brand: ${car.brand_name}`
+        : "matches your preferred brand";
+    }
     if (key === "cityFit") {
       if ((context.rawScore ?? 0) < 0.55) return null;
       return bodyStyle
@@ -618,7 +679,7 @@ const createRecommendationScoring = ({
         : "strong practicality fit";
     }
     if (key === "spaceFit") {
-      const rule = PASSENGER_SPACE_RULES[answers.passengers_space];
+      const rule = getBestPassengerSpaceReasonRule(answers, car);
       if (!rule || (context.rawScore ?? 0) < rule.reasonThreshold) return null;
       return buildRuleBasedReason(rule, car, bodyStyle);
     }

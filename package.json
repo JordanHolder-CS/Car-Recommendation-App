@@ -7,12 +7,14 @@
     "test:recommendations": "node API/tests/recommendationService.test.js",
     "analyze:recommendations": "node API/scripts/analyzeRecommendationSensitivity.js",
     "analyze:recommendations:demo": "node API/scripts/analyzeRecommendationSensitivity.js --demo",
+    "clean:car-dump": "node API/scripts/cleanCarDump.js",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-community/slider": "5.0.1",
     "@react-navigation/native": "^7.1.27",
     "@react-navigation/native-stack": "^7.9.1",

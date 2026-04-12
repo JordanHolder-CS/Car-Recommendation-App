@@ -512,6 +512,9 @@ const VEHICLE_SIZE_WEIGHTS = Object.fromEntries(
   Object.entries(VEHICLE_SIZE_RULES).map(([key, rule]) => [key, rule.weights]),
 );
 
+const answerIncludes = (answer, expectedValue) =>
+  Array.isArray(answer) ? answer.includes(expectedValue) : answer === expectedValue;
+
 const QUESTION_WEIGHT_GROUPS = [
   { answerKey: "drive_style", options: MODIFIERS.drive_style, factor: 0.85 },
   { answerKey: "priority", options: MODIFIERS.priority, factor: 1.15 },
@@ -547,9 +550,9 @@ const CONDITIONAL_WEIGHT_RULES = [
   {
     matches: (answers) =>
       answers.drive_style === "q1_city" &&
-      (answers.passengers_space === "q5_suv" ||
-        answers.passengers_space === "q5_estate" ||
-        answers.passengers_space === "q5_family" ||
+      (answerIncludes(answers.passengers_space, "q5_suv") ||
+        answerIncludes(answers.passengers_space, "q5_estate") ||
+        answerIncludes(answers.passengers_space, "q5_family") ||
         answers.usage_pattern === "q8_family"),
     weights: { cityFit: 0.08 },
   },
@@ -674,6 +677,9 @@ const LUXURY_BRAND_TERMS = [
 ];
 
 const HIGH_END_PRICE_THRESHOLD = 80000;
+const PREFERRED_BRAND_WEIGHT = 0.16;
+const PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP = 0.12;
+const MINIMUM_RECOMMENDATION_MATCH_SCORE = 0.5;
 const MATCH_SCORE_MIN_FACTORS = 3;
 const MATCH_SCORE_MAX_FACTORS = 5;
 const MATCH_SCORE_TARGET_WEIGHT = 0.55;
@@ -704,6 +710,7 @@ const SPECIAL_METRICS = new Set([
   "dailyFit",
   "balancedFit",
   "luxuryFit",
+  "brandFit",
 ]);
 
 const HARD_FILTERS = {
@@ -755,6 +762,9 @@ module.exports = {
   BODY_STYLE_POOL_RULES,
   LUXURY_BRAND_TERMS,
   HIGH_END_PRICE_THRESHOLD,
+  PREFERRED_BRAND_WEIGHT,
+  PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP,
+  MINIMUM_RECOMMENDATION_MATCH_SCORE,
   MATCH_SCORE_MIN_FACTORS,
   MATCH_SCORE_MAX_FACTORS,
   MATCH_SCORE_TARGET_WEIGHT,
