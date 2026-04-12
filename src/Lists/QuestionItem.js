@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import QButton from "../ui/QuestionCard/QButton";
+import QBrandButton from "../ui/QuestionCard/QBrandButton";
 import QSlider from "../ui/QuestionCard/QSlider";
 
 const QuestionItem = ({ question, id, value, onChange }) => {
@@ -19,6 +20,19 @@ const QuestionItem = ({ question, id, value, onChange }) => {
           minimumLabel={question.minimumLabel}
           maximumLabel={question.maximumLabel}
           onChange={onChange}
+        />
+      </View>
+    );
+  }
+
+  if (question.type === "brand_tile") {
+    return (
+      <View>
+        <QBrandButton
+          id={id}
+          Title={question.QuestionTitle}
+          selectedValues={value}
+          onPress={onChange}
         />
       </View>
     );

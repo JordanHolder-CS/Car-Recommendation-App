@@ -1,3 +1,11 @@
+import { BRAND_OPTIONS } from "../ScoringConfigs/brandOptions.js";
+
+const BRAND_PREFERENCE_OPTIONS = BRAND_OPTIONS.map((brand) => ({
+  id: brand.label,
+  type: "brand_tile",
+  QuestionTitle: brand.label,
+}));
+
 export const Questions = {
   Q1: [
     {
@@ -183,6 +191,8 @@ export const Questions = {
         "Prioritise cargo space and SUV or estate-style usefulness over sporty looks.",
     },
   ],
+
+  Q7Brands: BRAND_PREFERENCE_OPTIONS,
 
   Q8: [
     {

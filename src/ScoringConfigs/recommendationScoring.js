@@ -36,6 +36,7 @@ const createRecommendationScoring = ({
   const METRIC_LABELS = {
     acceleration: "Acceleration",
     balancedFit: "Balanced fit",
+    brandFit: "Brand fit",
     bootSpace: "Boot space",
     cityFit: "City fit",
     comfort: "Comfort / refinement",
@@ -222,6 +223,8 @@ const createRecommendationScoring = ({
       intent,
       ranges = {},
     } = context;
+    const normalizeBrandName = (value) =>
+      normalizeText(value).replace(/[^a-z0-9]+/g, "");
     const bodyStyle = normalizeText(car.body_style);
     const scoreRuleFactors = (rule) => {
       if (!rule) return 0;
@@ -424,6 +427,17 @@ const createRecommendationScoring = ({
           true,
         ),
       ]);
+    const scoreBrandFit = () => {
+      const preferredBrands = Array.isArray(answers.preferred_brands)
+        ? answers.preferred_brands
+            .map((brand) => normalizeBrandName(brand))
+            .filter(Boolean)
+        : [];
+
+      if (!preferredBrands.length) return 0;
+
+      return preferredBrands.includes(normalizeBrandName(car.brand_name)) ? 1 : 0;
+    };
     const scoreBalancedFit = () =>
       averageScores([
         matchRuleScore(bodyStyle, BALANCED_BODY_STYLE_SCORES, 0.55),
@@ -452,6 +466,7 @@ const createRecommendationScoring = ({
       familyFit: scoreFamilyFit,
       dailyFit: scoreDailyFit,
       balancedFit: scoreBalancedFit,
+      brandFit: scoreBrandFit,
     };
     if (key === "luxuryFit") {
       if (isLuxuryBrand(car.brand_name)) return 1;
@@ -556,6 +571,12 @@ const createRecommendationScoring = ({
       insurance: () => "lower insurance costs",
     };
     if (metricReasonBuilders[key]) return metricReasonBuilders[key]();
+    if (key === "brandFit") {
+      if ((context.rawScore ?? 0) < 0.5) return null;
+      return car.brand_name
+        ? `matches your preferred brand: ${car.brand_name}`
+        : "matches your preferred brand";
+    }
     if (key === "cityFit") {
       if ((context.rawScore ?? 0) < 0.55) return null;
       return bodyStyle

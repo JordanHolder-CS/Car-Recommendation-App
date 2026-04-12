@@ -51,6 +51,16 @@ export const QPages = [
   },
 
   {
+    key: "preferred_brands",
+    title: "Any preferred brands?",
+    desc: "Choose up to 4 brands you naturally lean toward. This is a soft preference only, and you can leave it blank if you do not care about brand.",
+    questions: Questions.Q7Brands,
+    selectionMode: "multiple",
+    maxSelections: 4,
+    optional: true,
+  },
+
+  {
     key: "usage_pattern",
     title: "How will you use the car most often?",
     desc: "Your usage pattern helps us balance comfort, practicality, and cost.",

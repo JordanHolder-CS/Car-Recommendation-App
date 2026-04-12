@@ -1,7 +1,7 @@
 import Screen from "../ui/Layout/screen.js";
 import { useState } from "react";
 import QuestionList from "../Lists/QuestionListing.js";
-import { Text, StyleSheet, View } from "react-native";
+import { Text, StyleSheet, View, ScrollView } from "react-native";
 import Button from "../ui/Navigation/ContinueButton.js";
 import BackButton from "../ui/Navigation/BackButton.js";
 import { ButtonTray } from "../ui/Navigation/ContinueButton.js";
@@ -16,11 +16,34 @@ export const QuestionScreen = ({ navigation }) => {
   const [answers, setAnswers] = useState({});
 
   const step = steps[stepIndex];
-  const selectedId = answers[step.key] ?? null;
-  const hasAnswer = selectedId !== null && selectedId !== undefined;
+  const selectedValue =
+    step.selectionMode === "multiple"
+      ? Array.isArray(answers[step.key])
+        ? answers[step.key]
+        : []
+      : answers[step.key] ?? null;
+  const hasAnswer = step.optional
+    ? true
+    : Array.isArray(selectedValue)
+      ? selectedValue.length > 0
+      : selectedValue !== null && selectedValue !== undefined;
 
-  const onSelect = (optionIdOrNull) => {
-    setAnswers((prev) => ({ ...prev, [step.key]: optionIdOrNull ?? null }));
+  const onSelect = (nextValue) => {
+    setAnswers((prev) => {
+      if (step.selectionMode === "multiple") {
+        const currentValues = Array.isArray(prev[step.key]) ? prev[step.key] : [];
+        const isSelected = currentValues.includes(nextValue);
+        const updatedValues = isSelected
+          ? currentValues.filter((value) => value !== nextValue)
+          : step.maxSelections && currentValues.length >= step.maxSelections
+            ? currentValues
+            : [...currentValues, nextValue];
+
+        return { ...prev, [step.key]: updatedValues };
+      }
+
+      return { ...prev, [step.key]: nextValue ?? null };
+    });
   };
 
   const onBack = () => {
@@ -49,16 +72,19 @@ export const QuestionScreen = ({ navigation }) => {
         style={styles.ProgressBar}
       />
       <View style={styles.SafeArea}>
-        <View style={styles.Content}>
+        <ScrollView
+          style={styles.ContentScroll}
+          contentContainerStyle={styles.Content}
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.Title}>{step.title}</Text>
           <Text style={styles.Desc}>{step.desc}</Text>
           <QuestionList
             questions={step.questions}
-            selectedId={selectedId}
+            selectedId={selectedValue}
             onSelect={onSelect}
           />
-          {/* <QButton></QButton> */}
-        </View>
+        </ScrollView>
 
         <ButtonTray trayStyle={styles.BottomTray}>
           <Button label="Continue" onPress={onContinue} />
@@ -74,9 +100,16 @@ const styles = StyleSheet.create({
     marginTop: 0,
     color: "#6B7280",
     fontSize: 13,
+    lineHeight: 18,
   },
   SafeArea: { marginHorizontal: 15, flex: 1 },
-  Content: { rowGap: 12, paddingBottom: 12, flex: 1 },
+  ContentScroll: {
+    flex: 1,
+  },
+  Content: {
+    rowGap: 12,
+    paddingBottom: 12,
+  },
   BottomTray: {
     paddingBottom: 30,
   },
