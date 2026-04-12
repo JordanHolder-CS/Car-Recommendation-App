@@ -55,7 +55,6 @@ const DEALER_LISTINGS_QUERY = `
     ON brands.brand_id = car.brand_id
   LEFT JOIN "Car Data".dealerlisting dealerlisting
     ON dealerlisting.dealerinventory_id = dealerinventory.dealerinventory_id
-    AND dealerlisting.dealer_id = dealerinventory.dealer_id
 `;
 
 const dealerModel = {

@@ -24,9 +24,7 @@ const carModel = {
   findFiltered: async (filters = {}) => {
     const conditions = [];
     const values = [];
-    const carFields = {
-      type: "string",
-    };
+    const carFields = {};
     const specFields = {
       zero_to_sixty_mph: "number",
       horsepower: "number",
@@ -55,7 +53,6 @@ const carModel = {
       cargo_capacity: "number",
       model_year: "number",
       standard_engine: "string",
-      transmission: "string",
     };
 
     const parseBoolean = (value) => {
@@ -151,7 +148,17 @@ const carModel = {
 
   findByType: async (type) => {
     const result = await pool.query(
-      'SELECT * FROM "Car Data".car WHERE LOWER(type) = LOWER($1)',
+      `SELECT
+         car.name AS car_name,
+         brands.name AS brand_name,
+         car.*,
+         specs.*
+       FROM "Car Data".car car
+       JOIN "Car Data".car_specs specs
+         ON specs.car_id = car.car_id
+       JOIN "Car Data".brands brands
+         ON brands.brand_id = car.brand_id
+       WHERE LOWER(specs.body_style) = LOWER($1)`,
       [type],
     );
     return result.rows;
