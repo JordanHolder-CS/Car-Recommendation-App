@@ -1,14 +1,19 @@
 import { useCallback, useEffect } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
-import { CommonActions } from "@react-navigation/native";
+import { CommonActions, StackActions } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import ExpandedContent from "../ui/RecommendationCard/expandedContent";
 import BackButton from "../ui/Navigation/BackButton";
+import Button from "../ui/Navigation/ContinueButton";
+import { ButtonTray } from "../ui/Navigation/ContinueButton";
 import useExpandTransition from "../ui/Animation/useExpandTransition";
 
 const ExpandedResult = ({ navigation, route }) => {
   const selectedCar = route?.params?.selectedCar || null;
+  const recommendedCars = Array.isArray(route?.params?.recommendedCars)
+    ? route.params.recommendedCars
+    : [];
 
   const handleCloseComplete = useCallback(
     (action) => {
@@ -43,6 +48,24 @@ const ExpandedResult = ({ navigation, route }) => {
     return <View style={styles.Screen} />;
   }
 
+  const onFindDealers = () => {
+    close(
+      StackActions.replace("DealerScreen", {
+        selectedCar,
+        recommendedCars,
+      }),
+    );
+  };
+
+  const onCompare = () => {
+    close(
+      StackActions.replace("CompareScreen", {
+        selectedCar,
+        recommendedCars,
+      }),
+    );
+  };
+
   return (
     <View style={styles.Screen}>
       <Animated.View style={[styles.ExpandedCard, cardStyle]}>
@@ -52,6 +75,12 @@ const ExpandedResult = ({ navigation, route }) => {
               selectedCar={selectedCar}
               detailsAnimatedStyle={detailsStyle}
             />
+            <View style={styles.ButtonWrap}>
+              <ButtonTray trayStyle={styles.ActionTray}>
+                <Button label="Compare" onPress={onCompare} />
+                <Button label="Find dealers" onPress={onFindDealers} />
+              </ButtonTray>
+            </View>
           </ScrollView>
         </Animated.View>
         <Animated.View
@@ -106,6 +135,13 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
+  },
+  ButtonWrap: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  ActionTray: {
+    gap: 12,
   },
 });
 

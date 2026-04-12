@@ -31,9 +31,10 @@ export const QPages = [
 
   {
     key: "passengers_space",
-    title: "Which body style fits you best?",
-    desc: "Choose the shape of car you naturally lean toward, and we'll still use the description to guide how practical or sporty it should feel.",
+    title: "Which body styles fit you best?",
+    desc: "Choose one or more body styles you naturally lean toward, and we'll still use the description to guide how practical or sporty it should feel.",
     questions: Questions.Q5,
+    selectionMode: "multiple",
   },
 
   {
@@ -48,6 +49,16 @@ export const QPages = [
     title: "What matters most to you?",
     desc: "This helps us weight the recommendation to suit your priorities.",
     questions: Questions.Q6,
+  },
+
+  {
+    key: "preferred_brands",
+    title: "Any preferred brands?",
+    desc: "Choose up to 4 brands you naturally lean toward. This is a soft preference only, and you can leave it blank if you do not care about brand.",
+    questions: Questions.Q7Brands,
+    selectionMode: "multiple",
+    maxSelections: 4,
+    optional: true,
   },
 
   {
