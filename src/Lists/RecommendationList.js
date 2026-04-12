@@ -4,8 +4,12 @@ import RecommendationItem from "./RecommendationItem";
 const RecommendationList = ({ cars, onSelect = () => {} }) => {
   return (
     <View>
-      {cars.map((car) => (
-        <RecommendationItem key={car.car_id} car={car} onSelect={onSelect} />
+      {cars.map((car, index) => (
+        <RecommendationItem
+          key={car.listKey ?? `${car.car_id ?? "car"}-${index}`}
+          car={car}
+          onSelect={onSelect}
+        />
       ))}
     </View>
   );

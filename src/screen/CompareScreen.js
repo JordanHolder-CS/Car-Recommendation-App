@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { ImageBackground, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronDown } from "lucide-react-native";
 import BackButton from "../ui/Navigation/BackButton";
@@ -16,7 +22,7 @@ import {
   getVehicleImage,
   getVehicleName,
   resolveVehicleSelection,
-} from "../services/compareService";
+} from "../ScoringConfigs/compareService";
 
 const CompareVehicleCard = ({
   car,
@@ -35,7 +41,9 @@ const CompareVehicleCard = ({
         <View style={styles.VehicleHeroOverlay}>
           <View style={styles.VehicleHeroBottom}>
             {getVehicleBrand(car) ? (
-              <Text style={styles.VehicleBrandText}>{getVehicleBrand(car)}</Text>
+              <Text style={styles.VehicleBrandText}>
+                {getVehicleBrand(car)}
+              </Text>
             ) : null}
             <Text style={styles.VehicleNameText}>{getVehicleName(car)}</Text>
           </View>
@@ -61,10 +69,7 @@ const CompareVehicleCard = ({
             >
               {isDisabled ? "No other top matches" : "Choose vehicle"}
             </Text>
-            <ChevronDown
-              size={16}
-              color={isDisabled ? "#9CA3AF" : "#111827"}
-            />
+            <ChevronDown size={16} color={isDisabled ? "#9CA3AF" : "#111827"} />
           </View>
         ) : (
           <Text style={styles.VehicleMetaHint}>Selected vehicle</Text>
@@ -178,7 +183,9 @@ const CompareScreen = ({ navigation, route }) => {
       >
         <View style={styles.BannerCard}>
           <Text style={styles.BannerTitle}>Best for you because...</Text>
-          <Text style={styles.BannerText}>{buildRationaleMessage(focusCar)}</Text>
+          <Text style={styles.BannerText}>
+            {buildRationaleMessage(focusCar)}
+          </Text>
         </View>
 
         <View style={styles.VehicleCardsRow}>
