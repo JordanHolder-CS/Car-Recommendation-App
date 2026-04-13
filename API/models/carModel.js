@@ -1,6 +1,30 @@
 const pool = require("../config/pool");
 
+// Parses numeric filter values from query-string style input.
+const parseNumber = (value) => {
+  const parsedValue = Number.parseFloat(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+};
+
+// Parses boolean filter values from query-string style input.
+const parseBoolean = (value) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0") {
+      return false;
+    }
+  }
+  return undefined;
+};
+
 const carModel = {
+  // Returns the lightweight car catalogue without joining the full specs row.
   findAll: async () => {
     const result = await pool.query(
       `SELECT c.car_id, c.name AS car_name, b.name AS brand_name
@@ -10,6 +34,7 @@ const carModel = {
     return result.rows;
   },
 
+  // Returns the broader car/specs feed used by details and diagnostics.
   findSpecs: async () => {
     const result = await pool.query(
       `SELECT c.car_id, c.name AS car_name, b.name AS brand_name, s.* 
@@ -21,109 +46,56 @@ const carModel = {
     return result.rows;
   },
 
+  // Builds the coarse SQL candidate set before recommendation scoring begins.
   findFiltered: async (filters = {}) => {
     const conditions = [];
     const values = [];
-    const carFields = {};
-    const specFields = {
-      zero_to_sixty_mph: "number",
-      horsepower: "number",
-      seat_count: "number",
-      boot_space_liters: "number",
-      body_style: "string",
-      service_cost: "number",
-      insurance_estimate: "number",
-      reliability: "string",
-      price: "number",
-      curb_weight: "number",
-      top_speed: "number",
-      torque: "number",
-      combined_mpg: "number",
-      ev_range: "number",
-      epa_city: "number",
-      epa_mpg_hwy: "number",
-      epa_combined: "number",
-      estimated_electric_range: "number",
-      charge_time: "number",
-      drivetrain: "string",
-      max_seating_capacity: "number",
-      is_ev: "boolean",
-      battery_capacity: "number",
-      towing_capacity: "number",
-      cargo_capacity: "number",
-      model_year: "number",
-      standard_engine: "string",
-    };
+    const minPrice = parseNumber(filters.min_price);
+    const maxPrice = parseNumber(filters.max_price);
+    const isEv = parseBoolean(filters.is_ev);
+    const bodyStyle =
+      typeof filters.body_style === "string" && filters.body_style.trim()
+        ? filters.body_style.trim()
+        : "";
+    const standardEngine =
+      typeof filters.standard_engine === "string" && filters.standard_engine.trim()
+        ? filters.standard_engine.trim()
+        : "";
+    const fuelType =
+      typeof filters.fuel === "string" && filters.fuel.trim()
+        ? filters.fuel.trim()
+        : "";
 
-    const parseBoolean = (value) => {
-      if (typeof value === "boolean") {
-        return value;
-      }
-      if (typeof value === "string") {
-        const normalized = value.trim().toLowerCase();
-        if (normalized === "true" || normalized === "1") {
-          return true;
-        }
-        if (normalized === "false" || normalized === "0") {
-          return false;
-        }
-      }
-      return undefined;
-    };
+    if (minPrice !== null) {
+      values.push(minPrice);
+      conditions.push(`specs.price >= $${values.length}`);
+    }
 
-    Object.entries(filters).forEach(([key, rawValue]) => {
-      if (rawValue === undefined || rawValue === null || rawValue === "") {
-        return;
-      }
+    if (maxPrice !== null) {
+      values.push(maxPrice);
+      conditions.push(`specs.price <= $${values.length}`);
+    }
 
-      const isMin = key.startsWith("min_");
-      const isMax = key.startsWith("max_");
-      const baseKey = isMin || isMax ? key.slice(4) : key;
-      const specType = specFields[baseKey];
-      const carType = carFields[baseKey];
+    if (isEv !== undefined) {
+      values.push(isEv);
+      conditions.push(`specs.is_ev = $${values.length}`);
+    }
 
-      if ((isMin || isMax) && specType === "number") {
-        const parsedValue = Number.parseFloat(rawValue);
-        if (Number.isFinite(parsedValue)) {
-          values.push(parsedValue);
-          conditions.push(
-            `specs.${baseKey} ${isMin ? ">=" : "<="} $${values.length}`,
-          );
-        }
-        return;
-      }
+    if (bodyStyle) {
+      values.push(bodyStyle);
+      conditions.push(`LOWER(specs.body_style) = LOWER($${values.length})`);
+    }
 
-      if (specType) {
-        if (specType === "number") {
-          const parsedValue = Number.parseFloat(rawValue);
-          if (!Number.isFinite(parsedValue)) {
-            return;
-          }
-          values.push(parsedValue);
-          conditions.push(`specs.${baseKey} = $${values.length}`);
-          return;
-        }
+    if (standardEngine) {
+      values.push(`%${standardEngine}%`);
+      conditions.push(`LOWER(COALESCE(specs.standard_engine, '')) LIKE LOWER($${values.length})`);
+    }
 
-        if (specType === "boolean") {
-          const parsedValue = parseBoolean(rawValue);
-          if (parsedValue === undefined) {
-            return;
-          }
-          values.push(parsedValue);
-          conditions.push(`specs.${baseKey} = $${values.length}`);
-          return;
-        }
+    if (fuelType) {
+      values.push(`%${fuelType}%`);
+      conditions.push(`LOWER(COALESCE(specs.standard_engine, '')) LIKE LOWER($${values.length})`);
+    }
 
-        values.push(rawValue);
-        conditions.push(`LOWER(specs.${baseKey}) = LOWER($${values.length})`);
-        return;
-      }
-
-      if (carType === "string") {
-        values.push(rawValue);
-        conditions.push(`LOWER(car.${baseKey}) = LOWER($${values.length})`);
-      }
-    });
     const whereClause = conditions.length
       ? ` WHERE ${conditions.join(" AND ")}`
       : "";
