@@ -4,6 +4,7 @@ const {
   translateAnswersToHardFilters,
 } = require("../services/recommendationService");
 
+// Parses a debug flag from query/body input into a strict boolean.
 const parseBoolean = (value) => {
   if (typeof value === "boolean") return value;
   if (typeof value === "string") {
@@ -14,6 +15,7 @@ const parseBoolean = (value) => {
   return false;
 };
 
+// Returns the lightweight car list endpoint.
 const getCars = async (req, res) => {
   try {
     const cars = await carModel.findAll();
@@ -25,6 +27,7 @@ const getCars = async (req, res) => {
   }
 };
 
+// Exposes the raw SQL candidate query for manual filtering/debugging.
 const getFilteredCars = async (req, res) => {
   try {
     const filters = req.query;
@@ -37,6 +40,7 @@ const getFilteredCars = async (req, res) => {
   }
 };
 
+// Runs the recommendation pipeline and formats the public API response.
 const getRecommendedCars = async (req, res) => {
   try {
     const answers =
@@ -74,6 +78,7 @@ const getRecommendedCars = async (req, res) => {
         primaryDriverType: recommendationResult.primaryDriverType,
         typeScores: recommendationResult.typeScores,
         useCaseScores: recommendationResult.useCaseScores,
+        useCaseWeightBlend: recommendationResult.useCaseWeightBlend,
         intentScores: recommendationResult.intentScores,
         totalCandidates: cars.length,
         exactMatchCount: recommendationResult.exactMatchCount,
@@ -93,6 +98,8 @@ const getRecommendedCars = async (req, res) => {
       .json({ message: "Error recommending cars", error: error.message });
   }
 };
+
+// Returns the full specs feed used by the app and manual inspection.
 const getSpecs = async (req, res) => {
   try {
     const specs = await carModel.findSpecs(req.query);
