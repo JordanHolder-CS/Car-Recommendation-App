@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,10 +11,41 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Screen from "../ui/Layout/screen";
 import BackButton from "../ui/Navigation/BackButton";
 import ExpandedDealer from "../ui/DealerCard/expandedDealer";
+import { DealerContent } from "../ui/DealerCard/collapsedDealer";
 import DealerInventList from "../Lists/DealerInventList";
+import { DEFAULT_MAP_REGION } from "../ui/Maps/MapView";
+import Map from "../ui/Maps/MapView";
+import Selector from "../ui/Navigation/Selector";
+import useMapOverlayTransition from "../ui/Animation/useMapOverlayTransition";
 
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
+
+const getDealerMapRegion = (dealer) => {
+  const latitude = Number.parseFloat(dealer?.latitude);
+  const longitude = Number.parseFloat(dealer?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return DEFAULT_MAP_REGION;
+  }
+
+  return {
+    ...DEFAULT_MAP_REGION,
+    latitude,
+    longitude,
+  };
+};
+
+const getDealerMarkerCoordinate = (dealer) => {
+  const latitude = Number.parseFloat(dealer?.latitude);
+  const longitude = Number.parseFloat(dealer?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return { latitude, longitude };
+};
 
 const ExpandedDealerScreen = ({ navigation, route }) => {
   const selectedDealer =
@@ -21,6 +53,17 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const mapRegion = getDealerMapRegion(selectedDealer);
+  const markerCoordinate = getDealerMarkerCoordinate(selectedDealer);
+  const {
+    mapOriginRect,
+    isMapOverlayVisible,
+    animatedBackdropStyle,
+    animatedMapStyle,
+    animatedCardStyle,
+    openMapOverlay,
+    closeMapOverlay,
+  } = useMapOverlayTransition();
 
   useEffect(() => {
     const dealerId = selectedDealer?.dealer_id;
@@ -66,9 +109,20 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
   }, [selectedDealer?.dealer_id]);
 
   const handleSelectListing = (listing) => {
+    const bookingContext = {
+      vehicleName: [listing?.year, listing?.brand_name, listing?.car_name]
+        .filter(Boolean)
+        .join(" "),
+      image_url: listing?.image_url ?? listing?.image ?? null,
+      dealerName: selectedDealer?.dealer_name ?? listing?.dealer_name ?? null,
+      dealerAddress: selectedDealer?.location ?? listing?.location ?? null,
+      dealerId: selectedDealer?.dealer_id ?? listing?.dealer_id ?? null,
+      dealerInventoryId: listing?.dealerinventory_id ?? null,
+      carId: listing?.car_id ?? null,
+    };
+
     navigation.push("BookingScreen", {
-      bookingContext: listing,
-      selectedDealer,
+      bookingContext,
     });
   };
 
@@ -85,7 +139,12 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
       <View style={styles.SafeArea}>
         {selectedDealer ? (
           <ScrollView contentInsetAdjustmentBehavior="automatic">
-            <ExpandedDealer dealer={selectedDealer}>
+            <ExpandedDealer
+              dealer={selectedDealer}
+              mapRegion={mapRegion}
+              markerCoordinate={markerCoordinate}
+              onOpenMap={openMapOverlay}
+            >
               <View style={styles.Section}>
                 <Text style={styles.SectionTitle}>Current listings</Text>
                 {loading ? (
@@ -112,6 +171,28 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
           </View>
         )}
       </View>
+      {isMapOverlayVisible && mapOriginRect ? (
+        <View style={styles.MapOverlay}>
+          <Animated.View
+            style={[styles.MapOverlayBackdrop, animatedBackdropStyle]}
+          />
+          <Animated.View style={[styles.MapOverlayMapWrap, animatedMapStyle]}>
+            <Map
+              initialRegion={mapRegion}
+              markerCoordinate={markerCoordinate}
+            />
+          </Animated.View>
+          {selectedDealer ? (
+            <Animated.View
+              style={[styles.MapOverlayCardWrap, animatedCardStyle]}
+            >
+              <Selector onPress={closeMapOverlay}>
+                <DealerContent dealer={selectedDealer} />
+              </Selector>
+            </Animated.View>
+          ) : null}
+        </View>
+      ) : null}
     </Screen>
   );
 };
@@ -171,6 +252,24 @@ const styles = StyleSheet.create({
   EmptyText: {
     fontSize: 16,
     color: "#6B7280",
+  },
+  MapOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 20,
+  },
+  MapOverlayBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#FFFFFF",
+  },
+  MapOverlayMapWrap: {
+    position: "absolute",
+    overflow: "hidden",
+  },
+  MapOverlayCardWrap: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 24,
   },
 });
 

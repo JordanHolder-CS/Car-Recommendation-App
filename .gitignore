@@ -35,6 +35,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
+#settings
+settings.json
+
 # local env files
 .env*.local
 

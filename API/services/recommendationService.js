@@ -1,124 +1,24 @@
 const {
-  USE_CASE_RULES,
-  INTENT_RULES,
-  USE_CASE_BASE_WEIGHTS,
-  PROFILE_LABELS,
-  MODIFIERS,
-  PASSENGER_SPACE_RULES,
-  VEHICLE_SIZE_RULES,
-  QUESTION_WEIGHT_GROUPS,
-  CONDITIONAL_WEIGHT_RULES,
-  BODY_STYLE_POOL_RULES,
-  LUXURY_BRAND_TERMS,
-  HIGH_END_PRICE_THRESHOLD,
-  PREFERRED_BRAND_WEIGHT,
-  PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP,
-  MINIMUM_RECOMMENDATION_MATCH_SCORE,
-  BASE_USE_CASE_STRENGTH,
-  MIN_TRANSMISSION_COVERAGE,
-  OPEN_ENDED_BUDGET_VALUE,
+  DEFAULT_INTENT,
+  DEFAULT_USE_CASE,
   HARD_FILTERS,
+  INTENT_RULES,
+  INTENT_WEIGHT_MODIFIERS,
+  MINIMUM_RECOMMENDATION_MATCH_SCORE,
+  PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP,
+  PROFILE_LABELS,
+  QUESTION_WEIGHT_MODIFIERS,
+  USE_CASE_BLEND_MAX_SECONDARY_SHARE,
+  USE_CASE_BLEND_RUNNER_UP_RATIO,
+  USE_CASE_BASE_WEIGHTS,
+  USE_CASE_RULES,
+  normalizeBrandKey,
+  toSelections,
 } = require("../../src/ScoringConfigs/recommendationConfig");
 const {
   createRecommendationScoring,
 } = require("../../src/ScoringConfigs/recommendationScoring");
 
-// -----------------------------------------------------------------------------
-// Generic parsing / text helpers
-// -----------------------------------------------------------------------------
-const parseNumber = (value) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const match = value.match(/-?\d[\d,]*(?:\.\d+)?/);
-    if (!match) return null;
-    const parsed = Number.parseFloat(match[0].replace(/,/g, ""));
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-};
-const getKnownPrice = (car) => {
-  const price = parseNumber(car?.price);
-  return price !== null && price > 0 ? price : null;
-};
-const getPositiveNumber = (value) => {
-  const parsedValue = parseNumber(value);
-  return parsedValue !== null && parsedValue > 0 ? parsedValue : null;
-};
-const normalizeText = (value) =>
-  typeof value === "string" ? value.trim().toLowerCase() : "";
-const normalizeLookupText = (value) =>
-  normalizeText(value)
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-const getAnswerSelections = (answerValue) =>
-  Array.isArray(answerValue)
-    ? answerValue.filter(Boolean)
-    : answerValue !== undefined && answerValue !== null && `${answerValue}`.trim()
-      ? [answerValue]
-      : [];
-const textIncludesAny = (value, terms = []) =>
-  terms.some((term) => value.includes(term));
-const buildCarLookupText = (car, keys = []) =>
-  normalizeLookupText(
-    keys
-      .map((key) => car?.[key])
-      .filter(
-        (value) =>
-          value !== undefined && value !== null && `${value}`.trim().length > 0,
-      )
-      .join(" "),
-  );
-const formatStat = (value, fractionDigits = 0) => {
-  if (!Number.isFinite(value)) return null;
-  return Number(value).toLocaleString("en-GB", {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  });
-};
-const formatCurrency = (value) => {
-  if (!Number.isFinite(value)) return null;
-  return Number(value).toLocaleString("en-GB", {
-    style: "currency",
-    currency: "GBP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-};
-const addScores = (target, source = {}) => {
-  Object.entries(source).forEach(([key, value]) => {
-    target[key] = (target[key] || 0) + value;
-  });
-};
-const normalizeWeights = (weights) => {
-  const total = Object.values(weights).reduce((sum, value) => sum + value, 0);
-  if (!total) return weights;
-  return Object.fromEntries(
-    Object.entries(weights).map(([key, value]) => [key, value / total]),
-  );
-};
-const getAveragedRuleScores = (options = {}, answerValue) => {
-  const selectedAnswers = getAnswerSelections(answerValue);
-  if (!selectedAnswers.length) return {};
-
-  const mergedScores = {};
-  let matchedAnswerCount = 0;
-
-  selectedAnswers.forEach((answerKey) => {
-    const ruleScores = options?.[answerKey];
-    if (!ruleScores) return;
-    matchedAnswerCount += 1;
-    addScores(mergedScores, ruleScores);
-  });
-
-  if (!matchedAnswerCount) return {};
-
-  return Object.fromEntries(
-    Object.entries(mergedScores).map(([key, value]) => [
-      key,
-      value / matchedAnswerCount,
-    ]),
-  );
-};
 const USE_CASE_ORDER = ["family", "work", "weekend", "city", "long_distance"];
 const INTENT_ORDER = [
   "luxury",
@@ -128,827 +28,555 @@ const INTENT_ORDER = [
   "value",
   "balanced",
 ];
-const DISPLAY_COMPARISON_POOL_SIZE = 15;
 
-// -----------------------------------------------------------------------------
-// Profile inference (use case + ownership intent)
-// -----------------------------------------------------------------------------
-const pickTopCategory = (scores, orderedKeys, fallback) => {
-  const hasPositiveScore = orderedKeys.some((key) => (scores[key] || 0) > 0);
-  if (!hasPositiveScore) return fallback;
-  return orderedKeys.reduce((bestKey, key) => {
-    if (!bestKey) return key;
-    if ((scores[key] || 0) > (scores[bestKey] || 0)) {
-      return key;
-    }
-    return bestKey;
-  }, null);
+// Parses nullable numeric values without throwing on dirty source data.
+const parseNumber = (value) => {
+  const parsedValue = Number.parseFloat(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
 };
-const normalizeCategoryScores = (scores = {}, orderedKeys = [], fallback) => {
-  const normalizedEntries = orderedKeys.map((key) => [
-    key,
-    Math.max(0, scores[key] || 0),
-  ]);
-  const total = normalizedEntries.reduce((sum, [, value]) => sum + value, 0);
-  if (!total) {
-    return fallback ? { [fallback]: 1 } : {};
-  }
+
+// Normalizes text before matching engines, transmissions, and body styles.
+const normalizeText = (value = "") =>
+  `${value}`.trim().toLowerCase().replace(/\s+/g, " ");
+
+// Adds one score object into another without assuming every key already exists.
+const addScores = (target, source = {}) => {
+  Object.entries(source).forEach(([key, value]) => {
+    target[key] = (target[key] || 0) + value;
+  });
+  return target;
+};
+
+// Keeps the final weight object bounded to a clean 0..1 total.
+const normalizeWeights = (weights = {}) => {
+  const positiveEntries = Object.entries(weights).filter(
+    ([, value]) => Number.isFinite(value) && value > 0,
+  );
+  const totalWeight = positiveEntries.reduce(
+    (runningTotal, [, value]) => runningTotal + value,
+    0,
+  );
+
+  if (!totalWeight) return {};
+
   return Object.fromEntries(
-    normalizedEntries
-      .map(([key, value]) => [key, value / total])
-      .filter(([, value]) => value > 0),
+    positiveEntries.map(([key, value]) => [
+      key,
+      Number((value / totalWeight).toFixed(4)),
+    ]),
   );
 };
+
+// Picks the strongest category while keeping tie-breaks deterministic.
+const pickTopKey = (scores = {}, orderedKeys = [], fallback) =>
+  orderedKeys.reduce((bestKey, currentKey) => {
+    if ((scores[currentKey] || 0) > (scores[bestKey] || 0)) return currentKey;
+    return bestKey;
+  }, fallback);
+
+// Produces both raw category scores and a normalized blend view for debugging.
+const buildCategoryResult = (scores = {}, orderedKeys = [], fallback) => {
+  const chosenKey = pickTopKey(scores, orderedKeys, fallback);
+  const totalScore = orderedKeys.reduce(
+    (runningTotal, key) => runningTotal + Math.max(0, scores[key] || 0),
+    0,
+  );
+
+  const normalizedScores = Object.fromEntries(
+    orderedKeys.map((key) => [
+      key,
+      totalScore ? Number(((scores[key] || 0) / totalScore).toFixed(4)) : 0,
+    ]),
+  );
+
+  return {
+    key: chosenKey,
+    scores,
+    normalizedScores,
+  };
+};
+
+// Applies one questionnaire rule set to a score bucket.
+const scoreRuleGroups = (rules = {}, answers = {}) => {
+  const scores = {};
+
+  Object.entries(rules).forEach(([questionKey, optionRules]) => {
+    toSelections(answers[questionKey]).forEach((selection) => {
+      addScores(scores, optionRules[selection] || {});
+    });
+  });
+
+  return scores;
+};
+
+// Infers the user's practical use case from driving-style answers.
+const determineUseCase = (answers = {}) => {
+  const scores = scoreRuleGroups(USE_CASE_RULES, answers);
+  const result = buildCategoryResult(scores, USE_CASE_ORDER, DEFAULT_USE_CASE);
+
+  return {
+    useCase: result.key,
+    useCaseScores: result.scores,
+    useCaseBlend: result.normalizedScores,
+  };
+};
+
+// Infers the user's ownership intent from preference-style answers.
+const determineIntent = (answers = {}) => {
+  const scores = scoreRuleGroups(INTENT_RULES, answers);
+  const result = buildCategoryResult(scores, INTENT_ORDER, DEFAULT_INTENT);
+
+  return {
+    intent: result.key,
+    intentScores: result.scores,
+  };
+};
+
+// Maps the use-case/intent pair into the label shown in the UI.
+const getProfileLabel = (useCase, intent) =>
+  PROFILE_LABELS[useCase]?.[intent] ||
+  `${useCase.replace(/_/g, " ")} / ${intent.replace(/_/g, " ")}`;
+
+// Scales one weight profile so two use cases can share the same base mix.
 const scaleWeights = (weights = {}, factor = 1) =>
   Object.fromEntries(
     Object.entries(weights).map(([key, value]) => [key, value * factor]),
   );
-const blendWeightProfiles = (
-  profileBlend = {},
-  weightProfiles = {},
-  fallback,
-) => {
-  const blendedWeights = {};
-  let hasProfile = false;
-  Object.entries(profileBlend).forEach(([profileKey, profileWeight]) => {
-    if (!Number.isFinite(profileWeight) || profileWeight <= 0) return;
-    const profileWeights = weightProfiles[profileKey];
-    if (!profileWeights) return;
-    hasProfile = true;
-    Object.entries(profileWeights).forEach(([metricKey, metricWeight]) => {
-      blendedWeights[metricKey] =
-        (blendedWeights[metricKey] || 0) + metricWeight * profileWeight;
-    });
-  });
-  return hasProfile ? blendedWeights : { ...(weightProfiles[fallback] || {}) };
-};
-const getBudgetIntentScores = (budgetAnswer) => {
-  if (typeof budgetAnswer === "number" && Number.isFinite(budgetAnswer)) {
-    if (budgetAnswer >= OPEN_ENDED_BUDGET_VALUE) return {};
-    if (budgetAnswer <= 15000) return { value: 1 };
-    if (budgetAnswer >= 80000) return { luxury: 1 };
-    if (budgetAnswer >= 40000) return { comfort: 1 };
-    return { balanced: 1 };
-  }
-  if (typeof budgetAnswer === "string") {
-    if (budgetAnswer === "q2_under_5k" || budgetAnswer === "q2_5k_10k") {
-      return { value: 1 };
-    }
-    if (budgetAnswer === "q2_20k_plus") return { comfort: 1 };
-    if (budgetAnswer === "q2_10k_20k") return { balanced: 1 };
-  }
-  return {};
-};
-const determineUseCase = (answers = {}) => {
-  const scores = {};
-  ["drive_style", "usage_pattern", "passengers_space"].forEach(
-    (questionKey) => {
-      addScores(
-        scores,
-        getAveragedRuleScores(USE_CASE_RULES[questionKey], answers[questionKey]),
-      );
-    },
+
+// Returns the dominant and runner-up use cases in priority-safe order.
+const getRankedUseCases = (useCaseScores = {}) =>
+  USE_CASE_ORDER.map((key, priority) => ({
+    key,
+    priority,
+    score: Math.max(0, useCaseScores[key] || 0),
+  })).sort(
+    (left, right) => right.score - left.score || left.priority - right.priority,
   );
-  const useCase = pickTopCategory(scores, USE_CASE_ORDER, "long_distance");
-  const useCaseBlend = normalizeCategoryScores(
-    scores,
-    USE_CASE_ORDER,
-    "long_distance",
-  );
-  return { useCase, useCaseScores: scores, useCaseBlend };
-};
-const determineIntent = (answers = {}) => {
-  const scores = {};
-  ["priority", "ownership_intent"].forEach((questionKey) => {
-    addScores(
-      scores,
-      getAveragedRuleScores(INTENT_RULES[questionKey], answers[questionKey]),
-    );
-  });
-  addScores(scores, getBudgetIntentScores(answers.budget_range));
-  const intent = pickTopCategory(scores, INTENT_ORDER, "balanced");
-  return { intent, intentScores: scores };
-};
-const getProfileLabel = (useCase, intent) => {
-  const specificLabel = PROFILE_LABELS[useCase]?.[intent];
-  if (specificLabel) return specificLabel;
-  return `${useCase.replace(/_/g, " ")} / ${intent}`;
-};
-const getBaseWeightsForUseCase = (useCase) => ({
-  ...(USE_CASE_BASE_WEIGHTS[useCase] || USE_CASE_BASE_WEIGHTS.long_distance),
-});
-const getBaseWeightsForUseCaseBlend = (useCaseBlend = {}) =>
-  scaleWeights(
-    blendWeightProfiles(useCaseBlend, USE_CASE_BASE_WEIGHTS, "long_distance"),
-    BASE_USE_CASE_STRENGTH,
-  );
-const applyWeightModifiers = (baseWeights, answers = {}) => {
-  const weights = { ...baseWeights };
-  QUESTION_WEIGHT_GROUPS.forEach(({ answerKey, options, factor = 1 }) => {
-    addScores(
-      weights,
-      scaleWeights(getAveragedRuleScores(options, answers[answerKey]), factor),
-    );
-  });
-  CONDITIONAL_WEIGHT_RULES.forEach(({ matches, weights: extraWeights }) => {
-    if (matches(answers)) addScores(weights, extraWeights);
-  });
+
+// Builds the base weight profile from the dominant use case and, when close enough,
+// blends in a capped share of the runner-up use case.
+const getBaseWeightsForUseCase = (useCase, useCaseScores = {}) => {
+  const primaryWeights =
+    USE_CASE_BASE_WEIGHTS[useCase] || USE_CASE_BASE_WEIGHTS[DEFAULT_USE_CASE];
+  const [primaryUseCase, secondaryUseCase] = getRankedUseCases(useCaseScores);
 
   if (
-    Array.isArray(answers.preferred_brands) &&
-    answers.preferred_brands.filter(Boolean).length
+    !primaryUseCase?.score ||
+    primaryUseCase.key !== useCase ||
+    !secondaryUseCase?.score
   ) {
-    weights.brandFit = (weights.brandFit || 0) + PREFERRED_BRAND_WEIGHT;
+    return {
+      baseWeights: { ...primaryWeights },
+      useCaseWeightBlend: { [useCase]: 1 },
+    };
   }
+
+  const secondaryRatio = secondaryUseCase.score / primaryUseCase.score;
+
+  if (secondaryRatio < USE_CASE_BLEND_RUNNER_UP_RATIO) {
+    return {
+      baseWeights: { ...primaryWeights },
+      useCaseWeightBlend: { [useCase]: 1 },
+    };
+  }
+
+  const secondaryShare = Math.min(
+    secondaryUseCase.score / (primaryUseCase.score + secondaryUseCase.score),
+    USE_CASE_BLEND_MAX_SECONDARY_SHARE,
+  );
+  const primaryShare = 1 - secondaryShare;
+  const secondaryWeights = USE_CASE_BASE_WEIGHTS[secondaryUseCase.key] || {};
+  const baseWeights = normalizeWeights(
+    addScores(
+      scaleWeights(primaryWeights, primaryShare),
+      scaleWeights(secondaryWeights, secondaryShare),
+    ),
+  );
+
+  return {
+    baseWeights,
+    useCaseWeightBlend: {
+      [primaryUseCase.key]: Number(primaryShare.toFixed(4)),
+      [secondaryUseCase.key]: Number(secondaryShare.toFixed(4)),
+    },
+  };
+};
+
+// Applies intent and smaller questionnaire nudges onto the base weights.
+const applyWeightModifiers = (baseWeights = {}, answers = {}, intent) => {
+  const weights = { ...baseWeights };
+
+  addScores(weights, INTENT_WEIGHT_MODIFIERS[intent] || {});
+
+  Object.entries(QUESTION_WEIGHT_MODIFIERS).forEach(
+    ([questionKey, optionModifiers]) => {
+      if (questionKey === "preferred_brands") {
+        if (toSelections(answers.preferred_brands).length) {
+          addScores(weights, optionModifiers.__selected__ || {});
+        }
+        return;
+      }
+
+      toSelections(answers[questionKey]).forEach((selection) => {
+        addScores(weights, optionModifiers[selection] || {});
+      });
+    },
+  );
 
   return normalizeWeights(weights);
 };
-const getBudgetCriteria = (budgetAnswer) => {
-  if (typeof budgetAnswer === "number" && Number.isFinite(budgetAnswer)) {
-    if (budgetAnswer >= OPEN_ENDED_BUDGET_VALUE) return {};
-    return { maxPrice: Math.round(budgetAnswer) };
+
+// Merges one hard-filter fragment into the final SQL + JS criteria object.
+const mergeHardFilterFragment = (target, fragment = {}) => {
+  if (fragment.dbFilters) {
+    Object.assign(target.dbFilters, fragment.dbFilters);
   }
-  if (typeof budgetAnswer === "string") {
-    const legacyRule = HARD_FILTERS.budget_range?.[budgetAnswer];
-    if (!legacyRule) return {};
+
+  if (!fragment.criteria) return target;
+
+  Object.entries(fragment.criteria).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      target.criteria[key] = [
+        ...new Set([...(target.criteria[key] || []), ...value]),
+      ];
+      return;
+    }
+
+    target.criteria[key] = value;
+  });
+
+  return target;
+};
+
+// Translates questionnaire answers into the small set of hard constraints we enforce.
+const translateAnswersToHardFilters = (answers = {}) =>
+  Object.entries(HARD_FILTERS).reduce(
+    (result, [questionKey, translator]) =>
+      mergeHardFilterFragment(
+        result,
+        translator(answers[questionKey], answers),
+      ),
+    { dbFilters: {}, criteria: {} },
+  );
+
+// Derives a normalized fuel type from the raw specs payload.
+const getFuelType = (car = {}) => {
+  if (car?.is_ev === true) return "electric";
+
+  const engineDescription = normalizeText(
+    car?.standard_engine ?? car?.engine_type ?? car?.fuel_type,
+  );
+
+  if (!engineDescription) return null;
+  if (
+    engineDescription.includes("plug in hybrid") ||
+    engineDescription.includes("plug-in hybrid") ||
+    engineDescription.includes("phev") ||
+    engineDescription.includes("hybrid") ||
+    engineDescription.includes("mhev") ||
+    engineDescription.includes("hev") ||
+    engineDescription.includes("e-power") ||
+    engineDescription.includes("e power")
+  ) {
+    return "hybrid";
+  }
+  if (engineDescription.includes("diesel")) return "diesel";
+  if (
+    engineDescription.includes("petrol") ||
+    engineDescription.includes("gasoline")
+  ) {
+    return "petrol";
+  }
+  return "petrol";
+};
+
+// Derives a normalized transmission type from the raw specs payload.
+const getTransmissionType = (car = {}) => {
+  const transmission = normalizeText(car?.transmission);
+
+  if (!transmission) return null;
+  if (
+    transmission.includes("auto") ||
+    transmission.includes("automatic") ||
+    transmission.includes("dct") ||
+    transmission.includes("cvt") ||
+    transmission.includes("pdk") ||
+    transmission.includes("geartronic") ||
+    transmission.includes("tiptronic")
+  ) {
+    return "automatic";
+  }
+  if (transmission.includes("manual")) return "manual";
+  return null;
+};
+
+// Applies the explicit budget ceiling if one was selected.
+const matchesBudget = (car, criteria = {}) => {
+  if (criteria.maxPrice === undefined) return true;
+  const price = parseNumber(car?.price);
+  return price !== null && price <= criteria.maxPrice;
+};
+
+// Applies the explicit fuel preference when the user selected one.
+const matchesFuel = (car, criteria = {}) => {
+  if (!criteria.fuel) return true;
+  return getFuelType(car) === criteria.fuel;
+};
+
+// Applies the explicit transmission preference when the user selected one.
+const matchesTransmission = (car, criteria = {}) => {
+  if (!criteria.transmission) return true;
+  return getTransmissionType(car) === criteria.transmission;
+};
+
+// Checks whether a car belongs to one of the preferred body-style families.
+const matchesPreferredBodyStyle = (car, criteria = {}) => {
+  if (!criteria.bodyStyleTerms?.length) return true;
+  const bodyStyle = normalizeText(car?.body_style);
+  return criteria.bodyStyleTerms.some((term) => bodyStyle.includes(term));
+};
+
+// Runs every explicit hard filter against one car row.
+const passesHardFilters = (car, criteria = {}) =>
+  matchesBudget(car, criteria) &&
+  matchesFuel(car, criteria) &&
+  matchesTransmission(car, criteria);
+
+// Narrows the shortlist by preferred body style, but falls back cleanly when the
+// catalogue simply has no cars in that shape.
+const getPreferredBodyStyleMatches = (cars = [], criteria = {}) => {
+  if (!criteria.bodyStyleTerms?.length) return cars;
+  return cars.filter((car) => matchesPreferredBodyStyle(car, criteria));
+};
+
+// Builds the filter-debug breakdown returned by the endpoint's debug mode.
+const getHardFilterBreakdown = (cars = [], criteria = {}) => {
+  const checks = [
+    {
+      key: "budget",
+      active: criteria.maxPrice !== undefined,
+      passes: (car) => matchesBudget(car, criteria),
+      label: "Budget",
+    },
+    {
+      key: "fuel",
+      active: Boolean(criteria.fuel),
+      passes: (car) => matchesFuel(car, criteria),
+      label: "Fuel type",
+    },
+    {
+      key: "transmission",
+      active: Boolean(criteria.transmission),
+      passes: (car) => matchesTransmission(car, criteria),
+      label: "Transmission",
+    },
+    {
+      key: "bodyStyle",
+      active:
+        Array.isArray(criteria.bodyStyleTerms) &&
+        criteria.bodyStyleTerms.length > 0,
+      passes: (car) => matchesPreferredBodyStyle(car, criteria),
+      label: "Body style",
+    },
+  ].filter((check) => check.active);
+
+  let remainingCars = [...cars];
+
+  return checks.map((check) => {
+    remainingCars = remainingCars.filter((car) => check.passes(car));
     return {
-      ...(legacyRule.minPrice !== undefined
-        ? { minPrice: legacyRule.minPrice }
-        : {}),
-      ...(legacyRule.maxPrice !== undefined
-        ? { maxPrice: legacyRule.maxPrice }
-        : {}),
+      key: check.key,
+      label: check.label,
+      remainingCount: remainingCars.length,
+    };
+  });
+};
+
+// Drops hard filters that the current shortlist cannot support because the
+// source data is effectively absent.
+const adjustUnsupportedCriteria = (cars = [], criteria = {}) => {
+  const nextCriteria = { ...criteria };
+  const criteriaAdjustments = [];
+
+  if (criteria.transmission) {
+    const recognizedCount = cars.filter((car) =>
+      Boolean(getTransmissionType(car)),
+    ).length;
+    const coverage = cars.length ? recognizedCount / cars.length : 0;
+
+    if (coverage < 0.1) {
+      delete nextCriteria.transmission;
+      criteriaAdjustments.push({
+        key: "transmission",
+        reason:
+          "Transmission preference was not enforced because this shortlist has almost no transmission data.",
+      });
+    }
+  }
+
+  return {
+    criteria: nextCriteria,
+    criteriaAdjustments,
+  };
+};
+
+// Relaxes one over-strict fuel preference when it eliminates the entire shortlist.
+const relaxEmptyFuelFilter = (cars = [], criteria = {}) => {
+  if (!criteria.fuel || criteria.fuel === "electric") {
+    return {
+      criteria,
+      criteriaAdjustments: [],
+      filteredCars: cars.filter((car) => passesHardFilters(car, criteria)),
     };
   }
-  return {};
-};
-const hasBudgetCap = (criteria = {}) => criteria.maxPrice !== undefined;
-const isLuxuryBrand = (brandName) => {
-  const normalizedBrand = normalizeLookupText(brandName);
-  return LUXURY_BRAND_TERMS.some(
-    (brand) =>
-      normalizedBrand === brand ||
-      normalizedBrand.startsWith(`${brand} `) ||
-      normalizedBrand.includes(` ${brand}`),
-  );
-};
-const bodyStyleMatchesAny = (bodyStyle, terms = []) => {
-  const normalizedBodyStyle = normalizeLookupText(bodyStyle);
-  return terms.some((term) => normalizedBodyStyle.includes(term));
-};
-const filterByPreferredBodyStyle = (cars, answers = {}) => {
-  const rules = getAnswerSelections(answers.passengers_space)
-    .map((answerKey) => BODY_STYLE_POOL_RULES[answerKey])
-    .filter(Boolean);
-  if (!rules.length) return cars;
 
-  const primaryTerms = [...new Set(rules.flatMap((rule) => rule.primaryTerms || []))];
-  const secondaryTerms = [
-    ...new Set(rules.flatMap((rule) => rule.secondaryTerms || [])),
-  ];
+  const filteredCars = cars.filter((car) => passesHardFilters(car, criteria));
+  if (filteredCars.length) {
+    return { criteria, criteriaAdjustments: [], filteredCars };
+  }
 
-  const primaryMatches = cars.filter((car) =>
-    bodyStyleMatchesAny(car.body_style, primaryTerms),
-  );
-  if (primaryMatches.length) return primaryMatches;
-  if (secondaryTerms.length) {
-    const secondaryMatches = cars.filter((car) =>
-      bodyStyleMatchesAny(car.body_style, secondaryTerms),
-    );
-    if (secondaryMatches.length) return secondaryMatches;
-  }
-  return cars;
+  const relaxedCriteria = { ...criteria };
+  delete relaxedCriteria.fuel;
+
+  return {
+    criteria: relaxedCriteria,
+    criteriaAdjustments: [
+      {
+        key: "fuel",
+        reason:
+          "Fuel preference was not enforced because it removed the entire shortlist.",
+      },
+    ],
+    filteredCars: cars.filter((car) => passesHardFilters(car, relaxedCriteria)),
+  };
 };
-const filterRecommendationPool = (cars, answers = {}, criteria = {}) => {
-  const bodyStyleFilteredCars = filterByPreferredBodyStyle(cars, answers);
-  if (answers.ownership_intent !== "q9_luxury") return bodyStyleFilteredCars;
-  if (hasBudgetCap(criteria)) {
-    return bodyStyleFilteredCars;
-  }
-  const luxuryBrandCars = bodyStyleFilteredCars.filter((car) =>
-    isLuxuryBrand(car.brand_name),
-  );
-  if (luxuryBrandCars.length) return luxuryBrandCars;
-  if (!hasBudgetCap(criteria)) {
-    return bodyStyleFilteredCars.filter((car) => {
-      const price = getKnownPrice(car);
-      return price !== null && price >= HIGH_END_PRICE_THRESHOLD;
-    });
-  }
-  return [];
-};
-const getPreferredBrandKeys = (answers = {}) =>
-  Array.isArray(answers.preferred_brands)
-    ? answers.preferred_brands
-        .map((brand) => normalizeLookupText(brand))
-        .filter(Boolean)
-    : [];
-const isPreferredBrandCar = (car, preferredBrandKeys = []) =>
-  preferredBrandKeys.includes(normalizeLookupText(car?.brand_name));
-const isRecommendationMatch = (car) => {
-  const matchScore = parseNumber(car?.matchScore ?? car?.score);
-  return (
-    matchScore !== null && matchScore >= MINIMUM_RECOMMENDATION_MATCH_SCORE
-  );
-};
+
+// Enforces the 50% threshold used by the result screen.
 const filterRecommendationsByMatchScore = (cars = []) =>
-  cars.filter(isRecommendationMatch);
-const promotePreferredBrandLead = (rankedCars = [], answers = {}) => {
-  if (rankedCars.length < 2) return rankedCars;
+  cars.filter(
+    (car) =>
+      Number.isFinite(car?.matchScore) &&
+      car.matchScore >= MINIMUM_RECOMMENDATION_MATCH_SCORE,
+  );
 
-  const preferredBrandKeys = getPreferredBrandKeys(answers);
-  if (!preferredBrandKeys.length) return rankedCars;
+// Lets a preferred-brand car take the lead when it is already close enough in fit.
+const promotePreferredBrandLead = (rankedCars = [], answers = {}) => {
+  const preferredBrands = toSelections(answers.preferred_brands).map(
+    normalizeBrandKey,
+  );
+  if (rankedCars.length < 2 || !preferredBrands.length) return rankedCars;
 
   const leadCar = rankedCars[0];
-  if (isPreferredBrandCar(leadCar, preferredBrandKeys)) {
-    return rankedCars;
-  }
-
-  const preferredBrandCandidate = rankedCars.find((car) =>
-    isPreferredBrandCar(car, preferredBrandKeys),
+  const leadIsPreferred = preferredBrands.includes(
+    normalizeBrandKey(leadCar?.brand_name),
   );
+  if (leadIsPreferred) return rankedCars;
 
-  if (!preferredBrandCandidate) {
-    return rankedCars;
-  }
-
-  const leadMatchScore = parseNumber(leadCar?.matchScore ?? leadCar?.score);
-  const preferredBrandMatchScore = parseNumber(
-    preferredBrandCandidate?.matchScore ?? preferredBrandCandidate?.score,
+  const preferredBrandCar = rankedCars.find((car) =>
+    preferredBrands.includes(normalizeBrandKey(car?.brand_name)),
   );
+  if (!preferredBrandCar) return rankedCars;
 
+  const leadScore = parseNumber(leadCar?.matchScore);
+  const preferredScore = parseNumber(preferredBrandCar?.matchScore);
   if (
-    leadMatchScore === null ||
-    preferredBrandMatchScore === null ||
-    leadMatchScore - preferredBrandMatchScore >
-      PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP
+    leadScore === null ||
+    preferredScore === null ||
+    leadScore - preferredScore > PREFERRED_BRAND_PROMOTION_MAX_MATCH_GAP
   ) {
     return rankedCars;
   }
 
   return [
-    preferredBrandCandidate,
-    ...rankedCars.filter((car) => car !== preferredBrandCandidate),
+    preferredBrandCar,
+    ...rankedCars.filter((car) => car !== preferredBrandCar),
   ];
 };
-const translateAnswersToHardFilters = (answers = {}) => {
-  const dbFilters = {};
-  const criteria = {};
-  Object.assign(criteria, getBudgetCriteria(answers.budget_range));
-  Object.entries(HARD_FILTERS).forEach(([questionKey, options]) => {
-    if (questionKey === "budget_range") return;
-    const rule = options[answers[questionKey]];
-    if (!rule) return;
-    if (rule.db) {
-      Object.assign(dbFilters, rule.db);
-    }
-    if (rule.minPrice !== undefined) criteria.minPrice = rule.minPrice;
-    if (rule.maxPrice !== undefined) criteria.maxPrice = rule.maxPrice;
-    if (rule.fuel) criteria.fuel = rule.fuel;
-    if (rule.transmission) criteria.transmission = rule.transmission;
-    if (rule.minSeats !== undefined) criteria.minSeats = rule.minSeats;
-    if (rule.allowUnknownSeats) criteria.allowUnknownSeats = true;
-    if (rule.minBootSpace !== undefined)
-      criteria.minBootSpace = rule.minBootSpace;
-  });
-  return { dbFilters, criteria };
-};
-// -----------------------------------------------------------------------------
-// Source-data normalization helpers (fuel/transmission/metrics)
-// -----------------------------------------------------------------------------
-const getFuelType = (car) => {
-  const fuelText = buildCarLookupText(car, [
-    "fuel_type",
-    "standard_engine",
-    "engine_type",
-    "type",
-    "car_name",
-  ]);
-  const batteryCapacity = parseNumber(car.battery_capacity);
-  if (
-    car.is_ev ||
-    textIncludesAny(fuelText, ["electric", "battery electric", "bev"]) ||
-    fuelText.includes(" ev ")
-  ) {
-    return "electric";
-  }
-  if (
-    textIncludesAny(fuelText, [
-      "hybrid",
-      "plug in hybrid",
-      "plug-in hybrid",
-      "self charging",
-      "phev",
-      "mhev",
-      "hev",
-      "e power",
-      "e-power",
-    ]) ||
-    (batteryCapacity !== null && batteryCapacity > 0 && !car.is_ev)
-  ) {
-    return "hybrid";
-  }
-  if (
-    textIncludesAny(fuelText, [
-      "diesel",
-      "tdi",
-      "dci",
-      "hdi",
-      "cdi",
-      "crdi",
-      "multijet",
-      "bluehdi",
-      "ecoblue",
-      "duratorq",
-      "jtd",
-    ])
-  ) {
-    return "diesel";
-  }
-  if (
-    textIncludesAny(fuelText, [
-      "petrol",
-      "gasoline",
-      "tsi",
-      "tfsi",
-      "ecoboost",
-      "gdi",
-      "t gdi",
-      "tgdi",
-      "mpi",
-      "skyactiv g",
-    ])
-  ) {
-    return "petrol";
-  }
-  // The source data often omits the explicit word "petrol" for normal
-  // combustion engines, especially sports cars. If it clearly has an engine
-  // description and is not EV / hybrid / diesel, treat it as petrol.
-  if (fuelText) {
-    return "petrol";
-  }
-  return "";
-};
-const getTransmissionType = (car) => {
-  if (car.is_ev) return "automatic";
-  const transmission = buildCarLookupText(car, [
-    "transmission",
-    "standard_engine",
-    "car_name",
-  ]);
-  if (
-    textIncludesAny(transmission, [
-      "automatic",
-      "shiftable automatic",
-      "auto",
-      "cvt",
-      "e cvt",
-      "ecvt",
-      "continuously variable",
-      "dual clutch",
-      "dual-clutch",
-      "dct",
-      "dsg",
-      "single speed",
-      "single-speed",
-      "tiptronic",
-      "geartronic",
-      "powershift",
-      "torque converter",
-    ])
-  ) {
-    return "automatic";
-  }
-  if (transmission.includes("manual")) return "manual";
-  return "";
-};
-const getMetricValue = (car, key) => {
-  switch (key) {
-    case "price":
-      return getKnownPrice(car);
-    case "horsepower":
-      return getPositiveNumber(car.horsepower);
-    case "powerToWeight": {
-      const horsepower = getPositiveNumber(car.horsepower);
-      const curbWeight = getPositiveNumber(car.curb_weight);
-      if (horsepower === null || curbWeight === null || curbWeight <= 0) {
-        return null;
-      }
-      return horsepower / curbWeight;
-    }
-    case "acceleration":
-      return getPositiveNumber(car.zero_to_sixty_mph);
-    case "economy":
-      return parseNumber(car.combined_mpg ?? car.epa_combined);
-    case "range":
-      return parseNumber(car.ev_range ?? car.estimated_electric_range);
-    case "reliability":
-      return parseNumber(car.reliability);
-    case "serviceCost":
-      return parseNumber(car.service_cost);
-    case "insurance":
-      return parseNumber(car.insurance_estimate);
-    case "seating":
-      return getPositiveNumber(car.max_seating_capacity ?? car.seat_count);
-    case "bootSpace":
-      return getPositiveNumber(car.boot_space_liters ?? car.cargo_capacity);
-    case "comfort":
-      return parseNumber(car.model_year);
-    case "curbWeight":
-      return getPositiveNumber(car.curb_weight);
-    default:
-      return null;
-  }
-};
-const matchesBudget = (car, criteria) => {
-  const price = getKnownPrice(car);
-  if (
-    criteria.minPrice !== undefined &&
-    (price === null || price < criteria.minPrice)
-  ) {
-    return false;
-  }
-  if (
-    criteria.maxPrice !== undefined &&
-    (price === null || price > criteria.maxPrice)
-  ) {
-    return false;
-  }
-  return true;
-};
-const matchesTransmission = (car, criteria) => {
-  if (!criteria.transmission) return true;
-  return getTransmissionType(car) === criteria.transmission;
-};
-const matchesFuel = (car, criteria) => {
-  if (!criteria.fuel) return true;
-  return getFuelType(car) === criteria.fuel;
-};
-const matchesSeats = (car, criteria) => {
-  const seats = getMetricValue(car, "seating");
-  if (
-    criteria.minSeats !== undefined &&
-    seats !== null &&
-    seats < criteria.minSeats
-  ) {
-    return false;
-  }
-  if (
-    criteria.minSeats !== undefined &&
-    seats === null &&
-    !criteria.allowUnknownSeats
-  ) {
-    return false;
-  }
-  return true;
-};
-const matchesBootSpace = (car, criteria) => {
-  const bootSpace = getMetricValue(car, "bootSpace");
-  if (
-    criteria.minBootSpace !== undefined &&
-    (bootSpace === null || bootSpace < criteria.minBootSpace)
-  ) {
-    return false;
-  }
-  return true;
-};
-const passesHardFilters = (car, criteria) =>
-  matchesBudget(car, criteria) &&
-  matchesTransmission(car, criteria) &&
-  matchesFuel(car, criteria) &&
-  matchesSeats(car, criteria) &&
-  matchesBootSpace(car, criteria);
-const getHardFilterBreakdown = (cars = [], criteria = {}) => {
-  const steps = [];
-  if (criteria.minPrice !== undefined || criteria.maxPrice !== undefined) {
-    steps.push({
-      filter: "budget",
-      value: {
-        ...(criteria.minPrice !== undefined
-          ? { minPrice: criteria.minPrice }
-          : {}),
-        ...(criteria.maxPrice !== undefined
-          ? { maxPrice: criteria.maxPrice }
-          : {}),
-      },
-      matches: (car) => matchesBudget(car, criteria),
-    });
-  }
-  if (criteria.transmission) {
-    steps.push({
-      filter: "transmission",
-      value: criteria.transmission,
-      matches: (car) => matchesTransmission(car, criteria),
-    });
-  }
-  if (criteria.fuel) {
-    steps.push({
-      filter: "fuel",
-      value: criteria.fuel,
-      matches: (car) => matchesFuel(car, criteria),
-    });
-  }
-  if (criteria.minSeats !== undefined) {
-    steps.push({
-      filter: "seats",
-      value: {
-        minSeats: criteria.minSeats,
-        allowUnknownSeats: Boolean(criteria.allowUnknownSeats),
-      },
-      matches: (car) => matchesSeats(car, criteria),
-    });
-  }
-  if (criteria.minBootSpace !== undefined) {
-    steps.push({
-      filter: "boot_space",
-      value: { minBootSpace: criteria.minBootSpace },
-      matches: (car) => matchesBootSpace(car, criteria),
-    });
-  }
-  let remainingCars = [...cars];
-  return steps.map((step) => {
-    const before = remainingCars.length;
-    remainingCars = remainingCars.filter(step.matches);
-    return {
-      filter: step.filter,
-      value: step.value,
-      before,
-      after: remainingCars.length,
-    };
-  });
-};
-const getRecognizedTransmissionCoverage = (cars = []) => {
-  if (!cars.length) return 1;
-  const recognizedCount = cars.filter((car) =>
-    Boolean(getTransmissionType(car)),
-  ).length;
-  return recognizedCount / cars.length;
-};
-const adjustUnsupportedCriteria = (cars = [], criteria = {}) => {
-  const adjustedCriteria = { ...criteria };
-  const criteriaAdjustments = [];
-  if (criteria.transmission) {
-    const transmissionCoverage = getRecognizedTransmissionCoverage(cars);
-    if (transmissionCoverage < MIN_TRANSMISSION_COVERAGE) {
-      delete adjustedCriteria.transmission;
-      criteriaAdjustments.push({
-        filter: "transmission",
-        requested: criteria.transmission,
-        coverage: Number(transmissionCoverage.toFixed(3)),
-        reason: "Source transmission data is missing for most cars.",
-      });
-    }
-  }
-  return { adjustedCriteria, criteriaAdjustments };
-};
 
-const getCriteriaAdjustmentNote = (criteriaAdjustments = []) =>
-  criteriaAdjustments.length
-    ? criteriaAdjustments
-        .map((adjustment) => {
-          if (adjustment.filter === "transmission") {
-            return "Transmission preference was not enforced because the source data does not include transmission values for most cars.";
-          }
-          return null;
-        })
-        .filter(Boolean)
-        .join(" ")
-    : null;
-
-const buildRankedRecommendations = ({
-  candidateCars,
-  weights,
-  matchScoreNormalizer,
-  useCase,
-  intent,
-  profileLabel,
-  answers,
-  criteria,
-  includeReasons,
-  buildScoredCars,
-}) => {
-  const initiallyRankedCars = buildScoredCars(
-    candidateCars,
-    weights,
-    matchScoreNormalizer,
-    useCase,
-    intent,
-    profileLabel,
-    answers,
-    criteria,
-    includeReasons,
-    candidateCars,
-  ).sort((a, b) => b.score - a.score);
-  const promotedInitiallyRankedCars = promotePreferredBrandLead(
-    initiallyRankedCars,
-    answers,
-  );
-
-  if (promotedInitiallyRankedCars.length <= DISPLAY_COMPARISON_POOL_SIZE) {
-    return promotedInitiallyRankedCars;
-  }
-
-  const comparisonCars = promotedInitiallyRankedCars.slice(
-    0,
-    DISPLAY_COMPARISON_POOL_SIZE,
-  );
-
-  return promotePreferredBrandLead(
-    buildScoredCars(
-    candidateCars,
-    weights,
-    matchScoreNormalizer,
-    useCase,
-    intent,
-    profileLabel,
-    answers,
-    criteria,
-    includeReasons,
-    comparisonCars,
-  ).sort((a, b) => b.score - a.score),
-    answers,
-  );
-};
-
-const buildBudgetFallbackResult = ({
-  recommendations,
-  hardFilteredCarsCount,
-  cars,
-  criteria,
-  answers,
-  weights,
-  matchScoreNormalizer,
-  useCase,
-  intent,
-  profileLabel,
-  limit,
-  includeReasons,
-  helpers,
-}) => {
-  const {
-    passesHardFilters,
-    filterRecommendationPool,
-    sortCarsByBudgetGap,
-    buildRankedRecommendations,
-    formatCurrency,
-  } = helpers;
-
-  if (
-    recommendations.length ||
-    hardFilteredCarsCount > 0 ||
-    criteria.maxPrice === undefined
-  ) {
-    return {
-      recommendations,
-      budgetFallbackApplied: false,
-      recommendationNote: null,
-    };
-  }
-
-  const relaxedCriteria = { ...criteria };
-  delete relaxedCriteria.maxPrice;
-
-  const relaxedHardFilteredCars = cars.filter((car) =>
-    passesHardFilters(car, relaxedCriteria),
-  );
-  const relaxedMatches = filterRecommendationPool(
-    relaxedHardFilteredCars,
-    answers,
-    relaxedCriteria,
-  );
-
-  if (!relaxedMatches.length) {
-    return {
-      recommendations,
-      budgetFallbackApplied: false,
-      recommendationNote: null,
-    };
-  }
-
-  return {
-    recommendations: filterRecommendationsByMatchScore(
-      sortCarsByBudgetGap(
-        buildRankedRecommendations({
-          candidateCars: relaxedMatches,
-          weights,
-          matchScoreNormalizer,
-          useCase,
-          intent,
-          profileLabel,
-          answers,
-          criteria: relaxedCriteria,
-          includeReasons,
-          buildScoredCars: helpers.buildScoredCars,
-        }),
-        criteria.maxPrice,
-      ),
-    ).slice(0, limit),
-    budgetFallbackApplied: true,
-    recommendationNote: `No exact matches were found within ${formatCurrency(
-      criteria.maxPrice,
-    )}, so these are the closest options above budget.`,
-  };
-};
-
-// -----------------------------------------------------------------------------
-// Scoring engine is delegated to recommendationScoring.js to keep this file
-// focused on orchestration and filtering.
-// -----------------------------------------------------------------------------
-const { getMatchScoreNormalizer, buildScoredCars, sortCarsByBudgetGap } =
-  createRecommendationScoring({
-    getMetricValue,
-    normalizeText,
-    formatStat,
-    formatCurrency,
-    hasBudgetCap,
-    isLuxuryBrand,
-    getKnownPrice,
-  });
-
-// Main orchestration
-// -----------------------------------------------------------------------------
-const recommendCars = (cars = [], answers = {}, limit = 5, options = {}) => {
-  const includeReasons = options.includeReasons !== false;
+// Runs the full recommendation pipeline over an already-fetched candidate set.
+const recommendCars = (cars = [], answers = {}, limit = 5) => {
   const { useCase, useCaseScores, useCaseBlend } = determineUseCase(answers);
   const { intent, intentScores } = determineIntent(answers);
   const profileLabel = getProfileLabel(useCase, intent);
-  const baseWeights = getBaseWeightsForUseCaseBlend(useCaseBlend);
-  const weights = applyWeightModifiers(baseWeights, answers);
-  const matchScoreNormalizer = getMatchScoreNormalizer(weights);
-  const { dbFilters, criteria: requestedCriteria } =
+  const { baseWeights, useCaseWeightBlend } = getBaseWeightsForUseCase(
+    useCase,
+    useCaseScores,
+  );
+  const weights = applyWeightModifiers(baseWeights, answers, intent);
+  const { criteria: requestedCriteria, dbFilters } =
     translateAnswersToHardFilters(answers);
+  const {
+    criteria: supportedCriteria,
+    criteriaAdjustments: supportAdjustments,
+  } = adjustUnsupportedCriteria(cars, requestedCriteria);
+  const {
+    criteria,
+    criteriaAdjustments: emptyFuelAdjustments,
+    filteredCars: hardFilteredCars,
+  } = relaxEmptyFuelFilter(cars, supportedCriteria);
+  const criteriaAdjustments = [...supportAdjustments, ...emptyFuelAdjustments];
+  const hardFilterBreakdown = getHardFilterBreakdown(cars, criteria);
   const requestedHardFilterBreakdown = getHardFilterBreakdown(
     cars,
     requestedCriteria,
   );
-  const { adjustedCriteria: criteria, criteriaAdjustments } =
-    adjustUnsupportedCriteria(cars, requestedCriteria);
-  const hardFilterBreakdown = getHardFilterBreakdown(cars, criteria);
-  const hardFilteredCars = cars.filter((car) =>
-    passesHardFilters(car, criteria),
-  );
-  const exactMatches = filterRecommendationPool(
+  const preferredBodyStyleMatches = getPreferredBodyStyleMatches(
     hardFilteredCars,
-    answers,
     criteria,
   );
-  let recommendations = buildRankedRecommendations({
-    candidateCars: exactMatches,
+  const exactMatches = preferredBodyStyleMatches.length
+    ? preferredBodyStyleMatches
+    : hardFilteredCars;
+  const scoring = createRecommendationScoring({
+    cars: exactMatches,
+    criteria,
     weights,
-    matchScoreNormalizer,
+  });
+
+  const rankedCars = scoring.buildScoredCars({
+    cars: exactMatches,
     useCase,
     intent,
     profileLabel,
-    answers,
-    criteria,
-    includeReasons,
-    buildScoredCars,
   });
-  recommendations = filterRecommendationsByMatchScore(recommendations).slice(
+
+  const promotedCars = promotePreferredBrandLead(rankedCars, answers);
+  const recommendations = filterRecommendationsByMatchScore(promotedCars).slice(
     0,
     limit,
   );
-  const criteriaAdjustmentNote = getCriteriaAdjustmentNote(criteriaAdjustments);
-  const {
-    recommendations: fallbackRecommendations,
-    budgetFallbackApplied,
-    recommendationNote: budgetFallbackNote,
-  } = buildBudgetFallbackResult({
-    recommendations,
-    hardFilteredCarsCount: hardFilteredCars.length,
-    cars,
-    criteria,
-    answers,
-    weights,
-    matchScoreNormalizer,
-    useCase,
-    intent,
-    profileLabel,
-    limit,
-    includeReasons,
-    helpers: {
-      passesHardFilters,
-      filterRecommendationPool,
-      sortCarsByBudgetGap,
-      buildRankedRecommendations,
-      buildScoredCars,
-      formatCurrency,
-    },
-  });
-  recommendations = filterRecommendationsByMatchScore(fallbackRecommendations);
-  let recommendationNote = budgetFallbackNote;
-  if (criteriaAdjustmentNote) {
-    recommendationNote = recommendationNote
-      ? `${criteriaAdjustmentNote} ${recommendationNote}`
-      : criteriaAdjustmentNote;
+
+  let recommendationNote = "";
+  if (!hardFilteredCars.length) {
+    recommendationNote = "No cars met your explicit hard filters.";
+  } else if (!recommendations.length) {
+    recommendationNote =
+      "Cars passed the filters, but none cleared the 50% match threshold.";
+  } else if (
+    criteria.bodyStyleTerms?.length &&
+    !preferredBodyStyleMatches.length
+  ) {
+    recommendationNote =
+      "No cars matched your preferred body style exactly, so the closest overall fits were shown instead.";
   }
+
+  if (criteriaAdjustments.length) {
+    const adjustmentText = criteriaAdjustments
+      .map((item) => item.reason)
+      .join(" ");
+    recommendationNote = recommendationNote
+      ? `${adjustmentText} ${recommendationNote}`
+      : adjustmentText;
+  }
+
   return {
     dbFilters,
     criteria,
-    requestedCriteria,
+    requestedCriteria: { ...requestedCriteria },
     useCase,
     useCaseScores,
     useCaseBlend,
+    useCaseWeightBlend,
     intent,
     intentScores,
     profileLabel,
@@ -956,21 +584,30 @@ const recommendCars = (cars = [], answers = {}, limit = 5, options = {}) => {
     typeScores: useCaseScores,
     weights,
     recommendations,
-    exactMatchCount: exactMatches.length,
-    exactMatchIds: exactMatches.map((car) => car.car_id).filter(Boolean),
-    budgetFallbackApplied,
+    exactMatchCount: preferredBodyStyleMatches.length || exactMatches.length,
+    exactMatchIds: (preferredBodyStyleMatches.length
+      ? preferredBodyStyleMatches
+      : exactMatches
+    )
+      .map((car) => car.car_id)
+      .filter(Boolean),
+    budgetFallbackApplied: false,
     recommendationNote,
     criteriaAdjustments,
     requestedHardFilterBreakdown,
     hardFilterBreakdown,
   };
 };
+
 module.exports = {
   determineUseCase,
   determineIntent,
+  getProfileLabel,
   getBaseWeightsForUseCase,
-  getBaseWeightsForUseCaseBlend,
   applyWeightModifiers,
   translateAnswersToHardFilters,
+  getFuelType,
+  getTransmissionType,
+  passesHardFilters,
   recommendCars,
 };

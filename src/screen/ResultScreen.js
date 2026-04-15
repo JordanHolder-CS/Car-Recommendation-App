@@ -62,12 +62,19 @@ export const ResultScreen = ({ navigation, route }) => {
         }
 
         const data = await response.json();
+        const profile = data.profile || {};
+        const meta = data.meta || {};
+
         setCars((data.recommendations || []).filter(isRecommendationMatch));
-        setUseCase(data.useCase || "");
-        setIntent(data.intent || "");
-        setProfileLabel(data.profileLabel || "");
-        setBudgetFallbackApplied(Boolean(data.budgetFallbackApplied));
-        setRecommendationNote(data.recommendationNote || "");
+        setUseCase(profile.useCase || data.useCase || "");
+        setIntent(profile.intent || data.intent || "");
+        setProfileLabel(profile.label || data.profileLabel || "");
+        setBudgetFallbackApplied(
+          Boolean(meta.budgetFallbackApplied ?? data.budgetFallbackApplied),
+        );
+        setRecommendationNote(
+          meta.recommendationNote || data.recommendationNote || "",
+        );
       } catch (err) {
         console.error("Error fetching recommendations:", err);
         setError(err.message);
