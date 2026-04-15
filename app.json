@@ -13,21 +13,27 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyBMEkhUs5bd786O1OL_fbo2yF7AgZEkKVE"
+      }
     },
     "android": {
+      "package": "com.anonymous.Car_Recommender",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Car_Recommender"
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBMEkhUs5bd786O1OL_fbo2yF7AgZEkKVE"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "@react-native-community/datetimepicker"
-    ]
+    "plugins": ["@react-native-community/datetimepicker"]
   }
 }
