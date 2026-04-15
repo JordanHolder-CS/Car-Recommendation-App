@@ -1,27 +1,14 @@
 const pool = require("../config/pool");
 
-const BOOKING_TABLE = `"Car Data".booking`;
-
 const INSERT_BOOKING_QUERY = `
-  INSERT INTO ${BOOKING_TABLE} (
-    full_name,
+  INSERT INTO "Car Data".booking_info (
+    name,
     email,
-    phone,
-    selected_date,
-    selected_time,
-    owner_user_id,
-    vehicle_name,
-    dealer_name,
-    dealer_address,
-    dealer_id,
-    car_id,
-    dealerinventory_id,
-    status
+    phone_no,
+    "time",
+    date
   )
-  VALUES (
-    $1, $2, $3, $4, $5, $6, $7,
-    $8, $9, $10, $11, $12, $13
-  )
+  VALUES ($1, $2, $3, $4, $5)
   RETURNING *
 `;
 
@@ -31,16 +18,8 @@ const bookingModel = {
       payload.fullName ?? null,
       payload.email ?? null,
       payload.phone ?? null,
-      payload.selectedDate ?? null,
       payload.selectedTime ?? null,
-      payload.ownerUserId ?? null,
-      payload.vehicleName ?? null,
-      payload.dealerName ?? null,
-      payload.dealerAddress ?? null,
-      payload.dealerId ?? null,
-      payload.carId ?? null,
-      payload.dealerInventoryId ?? null,
-      "pending",
+      payload.selectedDate ?? null,
     ];
 
     const result = await pool.query(INSERT_BOOKING_QUERY, values);
