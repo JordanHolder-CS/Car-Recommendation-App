@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View, Image, Text } from "react-native";
 import { Button } from "react-native-paper";
+import Map from "../Maps/MapView";
 
 const DEFAULT_DEALER_IMAGE =
   "https://www.palmcoastford.com/static/dealer-16495/Used_car_dealer_33_banner.jpg";
@@ -14,7 +15,12 @@ const getInventoryLabel = (inventoryCount) =>
     ? "1 vehicle in dealer inventory"
     : `${inventoryCount} vehicles in dealer inventory`;
 
-export const ExpandedDealer = ({ dealer = {}, children, onOpenMap = null }) => {
+export const ExpandedDealer = ({
+  dealer = {},
+  children,
+  onOpenMap = null,
+  mapRegion = null,
+}) => {
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
@@ -57,7 +63,14 @@ export const ExpandedDealer = ({ dealer = {}, children, onOpenMap = null }) => {
 
         {onOpenMap ? (
           <Pressable style={styles.MapCard} onPress={onOpenMap}>
-            <Text style={styles.MapCardText}>Map view</Text>
+            <Map
+              initialRegion={mapRegion || undefined}
+              interactive={false}
+              containerStyle={styles.MapPreview}
+            />
+            <View style={styles.MapCardLabelWrap}>
+              <Text style={styles.MapCardText}>Map view</Text>
+            </View>
           </Pressable>
         ) : null}
 
@@ -129,9 +142,19 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 12,
     backgroundColor: "#FFFFFF",
-    paddingVertical: 18,
+    overflow: "hidden",
+  },
+  MapPreview: {
+    height: 140,
+  },
+  MapCardLabelWrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: "center",
-    justifyContent: "center",
+    paddingVertical: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.88)",
   },
   MapCardText: {
     fontSize: 13,
