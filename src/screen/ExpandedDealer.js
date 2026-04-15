@@ -11,6 +11,7 @@ import Screen from "../ui/Layout/screen";
 import BackButton from "../ui/Navigation/BackButton";
 import ExpandedDealer from "../ui/DealerCard/expandedDealer";
 import DealerInventList from "../Lists/DealerInventList";
+import { DEFAULT_MAP_REGION } from "../ui/Maps/MapView";
 
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
@@ -87,7 +88,12 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
           <ScrollView contentInsetAdjustmentBehavior="automatic">
             <ExpandedDealer
               dealer={selectedDealer}
-              onOpenMap={() => navigation.push("MapScreen")}
+              mapRegion={DEFAULT_MAP_REGION}
+              onOpenMap={() =>
+                navigation.push("MapScreen", {
+                  initialRegion: DEFAULT_MAP_REGION,
+                })
+              }
             >
               <View style={styles.Section}>
                 <Text style={styles.SectionTitle}>Current listings</Text>
