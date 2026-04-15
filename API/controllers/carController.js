@@ -55,7 +55,19 @@ const getRecommendedCars = async (req, res) => {
       req.method === "GET" ? req.query?.debug : req.body?.debug,
     );
     const { dbFilters } = translateAnswersToHardFilters(answers);
-    const cars = await carModel.findFiltered(dbFilters);
+    let cars = await carModel.findFiltered(dbFilters);
+    const hasDbBodyStyleTerms =
+      Array.isArray(dbFilters.body_style_terms) &&
+      dbFilters.body_style_terms.length > 0;
+    let dbBodyStyleFallbackApplied = false;
+
+    if (!cars.length && hasDbBodyStyleTerms) {
+      const relaxedDbFilters = { ...dbFilters };
+      delete relaxedDbFilters.body_style_terms;
+      cars = await carModel.findFiltered(relaxedDbFilters);
+      dbBodyStyleFallbackApplied = true;
+    }
+
     const recommendationResult = recommendCars(cars, answers, limit);
 
     const responseBody = {
@@ -80,6 +92,8 @@ const getRecommendedCars = async (req, res) => {
         useCaseScores: recommendationResult.useCaseScores,
         useCaseWeightBlend: recommendationResult.useCaseWeightBlend,
         intentScores: recommendationResult.intentScores,
+        dbFilters,
+        dbBodyStyleFallbackApplied,
         totalCandidates: cars.length,
         exactMatchCount: recommendationResult.exactMatchCount,
         requestedCriteria: recommendationResult.requestedCriteria,

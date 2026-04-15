@@ -149,7 +149,9 @@ const getRankedUseCases = (useCaseScores = {}) =>
     key,
     priority,
     score: Math.max(0, useCaseScores[key] || 0),
-  })).sort((left, right) => right.score - left.score || left.priority - right.priority);
+  })).sort(
+    (left, right) => right.score - left.score || left.priority - right.priority,
+  );
 
 // Builds the base weight profile from the dominant use case and, when close enough,
 // blends in a capped share of the runner-up use case.
