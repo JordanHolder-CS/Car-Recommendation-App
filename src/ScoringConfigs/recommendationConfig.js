@@ -305,6 +305,9 @@ const HARD_FILTERS = {
     );
     if (!bodyStyleTerms.length) return {};
     return {
+      dbFilters: {
+        body_style_terms: [...new Set(bodyStyleTerms)],
+      },
       criteria: {
         bodyStyleKeys: selections,
         bodyStyleTerms: [...new Set(bodyStyleTerms)],

@@ -23,6 +23,17 @@ const parseBoolean = (value) => {
   return undefined;
 };
 
+// Normalizes either an array or a comma-separated string into clean terms.
+const toStringList = (value) =>
+  (Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(",")
+      : []
+  )
+    .map((item) => `${item ?? ""}`.trim())
+    .filter(Boolean);
+
 const carModel = {
   // Returns the lightweight car catalogue without joining the full specs row.
   findAll: async () => {
@@ -57,8 +68,10 @@ const carModel = {
       typeof filters.body_style === "string" && filters.body_style.trim()
         ? filters.body_style.trim()
         : "";
+    const bodyStyleTerms = toStringList(filters.body_style_terms);
     const standardEngine =
-      typeof filters.standard_engine === "string" && filters.standard_engine.trim()
+      typeof filters.standard_engine === "string" &&
+      filters.standard_engine.trim()
         ? filters.standard_engine.trim()
         : "";
     const fuelType =
@@ -81,19 +94,29 @@ const carModel = {
       conditions.push(`specs.is_ev = $${values.length}`);
     }
 
-    if (bodyStyle) {
+    if (bodyStyleTerms.length) {
+      const bodyStyleConditions = bodyStyleTerms.map((term) => {
+        values.push(`%${term}%`);
+        return `LOWER(COALESCE(specs.body_style, '')) LIKE LOWER($${values.length})`;
+      });
+      conditions.push(`(${bodyStyleConditions.join(" OR ")})`);
+    } else if (bodyStyle) {
       values.push(bodyStyle);
       conditions.push(`LOWER(specs.body_style) = LOWER($${values.length})`);
     }
 
     if (standardEngine) {
       values.push(`%${standardEngine}%`);
-      conditions.push(`LOWER(COALESCE(specs.standard_engine, '')) LIKE LOWER($${values.length})`);
+      conditions.push(
+        `LOWER(COALESCE(specs.standard_engine, '')) LIKE LOWER($${values.length})`,
+      );
     }
 
     if (fuelType) {
       values.push(`%${fuelType}%`);
-      conditions.push(`LOWER(COALESCE(specs.standard_engine, '')) LIKE LOWER($${values.length})`);
+      conditions.push(
+        `LOWER(COALESCE(specs.standard_engine, '')) LIKE LOWER($${values.length})`,
+      );
     }
 
     const whereClause = conditions.length
@@ -117,7 +140,6 @@ const carModel = {
     const result = await pool.query(query, values);
     return result.rows;
   },
-
 };
 
 module.exports = carModel;
