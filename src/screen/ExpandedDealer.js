@@ -85,7 +85,10 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
       <View style={styles.SafeArea}>
         {selectedDealer ? (
           <ScrollView contentInsetAdjustmentBehavior="automatic">
-            <ExpandedDealer dealer={selectedDealer}>
+            <ExpandedDealer
+              dealer={selectedDealer}
+              onOpenMap={() => navigation.push("MapScreen")}
+            >
               <View style={styles.Section}>
                 <Text style={styles.SectionTitle}>Current listings</Text>
                 {loading ? (

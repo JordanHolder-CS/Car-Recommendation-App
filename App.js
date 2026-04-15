@@ -6,6 +6,7 @@ import CompareScreen from "./src/screen/CompareScreen";
 import QuestionScreen from "./src/screen/questionnaire";
 import BookingScreen from "./src/screen/BookingScreen.js";
 import DealerScreen from "./src/screen/DealerScreen.js";
+import { MapScreen } from "./src/screen/MapScreen.js";
 import ExpandedDealerScreen from "./src/screen/ExpandedDealer.js";
 const Stack = createNativeStackNavigator();
 
@@ -13,7 +14,7 @@ export const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Questionnaire"
+        initialRouteName="MapScreen"
         // screenOptions={{
         //   headerStyle: { backgroundColor: "black" },
         //   headerTintColor: "white",
@@ -79,6 +80,16 @@ export const App = () => {
           component={BookingScreen}
           options={{
             title: "Book a test drive",
+            headerShown: false,
+            presentation: "card",
+            contentStyle: { backgroundColor: "#ffffff" },
+          }}
+        />
+        <Stack.Screen
+          name="MapScreen"
+          component={MapScreen}
+          options={{
+            title: "Map",
             headerShown: false,
             presentation: "card",
             contentStyle: { backgroundColor: "#ffffff" },

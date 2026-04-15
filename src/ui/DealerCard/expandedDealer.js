@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image, Text } from "react-native";
+import { Pressable, StyleSheet, View, Image, Text } from "react-native";
 import { Button } from "react-native-paper";
 
 const DEFAULT_DEALER_IMAGE =
@@ -14,7 +14,7 @@ const getInventoryLabel = (inventoryCount) =>
     ? "1 vehicle in dealer inventory"
     : `${inventoryCount} vehicles in dealer inventory`;
 
-export const ExpandedDealer = ({ dealer = {}, children }) => {
+export const ExpandedDealer = ({ dealer = {}, children, onOpenMap = null }) => {
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
@@ -54,6 +54,12 @@ export const ExpandedDealer = ({ dealer = {}, children }) => {
           <Text style={styles.SectionTitle}>Inventory overview</Text>
           <Text style={styles.MetaText}>{inventoryLabel}</Text>
         </View>
+
+        {onOpenMap ? (
+          <Pressable style={styles.MapCard} onPress={onOpenMap}>
+            <Text style={styles.MapCardText}>Map view</Text>
+          </Pressable>
+        ) : null}
 
         {children}
         <Button>View dealer inventory</Button>
@@ -116,6 +122,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#4B5563",
     lineHeight: 20,
+  },
+  MapCard: {
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  MapCardText: {
+    fontSize: 13,
+    color: "#6B7280",
   },
 });
 
