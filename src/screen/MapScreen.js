@@ -4,10 +4,14 @@ import Button, { ButtonTray } from "../ui/Navigation/ContinueButton";
 
 export const MapScreen = ({ navigation, route }) => {
   const initialRegion = route?.params?.initialRegion || DEFAULT_MAP_REGION;
+  const markerCoordinate = route?.params?.markerCoordinate || null;
 
   return (
     <View style={styles.Container}>
-      <Map initialRegion={initialRegion} />
+      <Map
+        initialRegion={initialRegion}
+        markerCoordinate={markerCoordinate}
+      />
       <View style={styles.ButtonWrap}>
         <ButtonTray>
           <Button label="Back To Dealer" onPress={() => navigation.goBack()} />

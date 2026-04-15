@@ -20,6 +20,7 @@ export const ExpandedDealer = ({
   children,
   onOpenMap = null,
   mapRegion = null,
+  markerCoordinate = null,
 }) => {
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
@@ -67,6 +68,7 @@ export const ExpandedDealer = ({
               initialRegion={mapRegion || undefined}
               interactive={false}
               containerStyle={styles.MapPreview}
+              markerCoordinate={markerCoordinate}
             />
             <View style={styles.MapCardLabelWrap}>
               <Text style={styles.MapCardText}>Map view</Text>

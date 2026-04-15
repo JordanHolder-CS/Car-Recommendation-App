@@ -1,4 +1,4 @@
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { View, StyleSheet } from "react-native";
 
 export const DEFAULT_MAP_REGION = {
@@ -12,6 +12,7 @@ const Map = ({
   initialRegion = DEFAULT_MAP_REGION,
   interactive = true,
   containerStyle = null,
+  markerCoordinate = null,
 }) => {
   return (
     <View style={[styles.container, containerStyle]}>
@@ -24,7 +25,9 @@ const Map = ({
         rotateEnabled={interactive}
         pitchEnabled={interactive}
         toolbarEnabled={interactive}
-      />
+      >
+        {markerCoordinate ? <Marker coordinate={markerCoordinate} /> : null}
+      </MapView>
     </View>
   );
 };

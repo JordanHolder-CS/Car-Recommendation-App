@@ -16,12 +16,40 @@ import { DEFAULT_MAP_REGION } from "../ui/Maps/MapView";
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
 
+const getDealerMapRegion = (dealer) => {
+  const latitude = Number.parseFloat(dealer?.latitude);
+  const longitude = Number.parseFloat(dealer?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return DEFAULT_MAP_REGION;
+  }
+
+  return {
+    ...DEFAULT_MAP_REGION,
+    latitude,
+    longitude,
+  };
+};
+
+const getDealerMarkerCoordinate = (dealer) => {
+  const latitude = Number.parseFloat(dealer?.latitude);
+  const longitude = Number.parseFloat(dealer?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return { latitude, longitude };
+};
+
 const ExpandedDealerScreen = ({ navigation, route }) => {
   const selectedDealer =
     route?.params?.selectedDealer || route?.params?.dealer || null;
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const mapRegion = getDealerMapRegion(selectedDealer);
+  const markerCoordinate = getDealerMarkerCoordinate(selectedDealer);
 
   useEffect(() => {
     const dealerId = selectedDealer?.dealer_id;
@@ -88,10 +116,12 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
           <ScrollView contentInsetAdjustmentBehavior="automatic">
             <ExpandedDealer
               dealer={selectedDealer}
-              mapRegion={DEFAULT_MAP_REGION}
+              mapRegion={mapRegion}
+              markerCoordinate={markerCoordinate}
               onOpenMap={() =>
                 navigation.push("MapScreen", {
-                  initialRegion: DEFAULT_MAP_REGION,
+                  initialRegion: mapRegion,
+                  markerCoordinate,
                 })
               }
             >

@@ -5,6 +5,8 @@ const DEALER_SUMMARY_SELECT = `
     dealership.dealer_id,
     dealership.dealer_name,
     dealership.location,
+    dealership.latitude,
+    dealership.longitude,
     dealership.is_franchised,
     COUNT(DISTINCT dealerinventory.dealerinventory_id)::int AS inventory_count,
     COALESCE(
@@ -28,6 +30,8 @@ const DEALER_SUMMARY_GROUP_BY = `
     dealership.dealer_id,
     dealership.dealer_name,
     dealership.location,
+    dealership.latitude,
+    dealership.longitude,
     dealership.is_franchised
 `;
 
@@ -38,6 +42,8 @@ const DEALER_LISTINGS_QUERY = `
     dealerinventory.car_id,
     dealership.dealer_name,
     dealership.location,
+    dealership.latitude,
+    dealership.longitude,
     dealership.is_franchised,
     brands.name AS brand_name,
     car.name AS car_name,
