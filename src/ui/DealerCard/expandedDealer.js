@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View, Image, Text } from "react-native";
+import { useRef } from "react";
 import { Button } from "react-native-paper";
 import Map from "../Maps/MapView";
 
@@ -22,11 +23,25 @@ export const ExpandedDealer = ({
   mapRegion = null,
   markerCoordinate = null,
 }) => {
+  const mapCardRef = useRef(null);
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
   const inventoryCount = getInventoryCount(dealer.inventory_count);
   const inventoryLabel = getInventoryLabel(inventoryCount);
+
+  const handleOpenMap = () => {
+    if (!onOpenMap) return;
+
+    mapCardRef.current?.measureInWindow?.((x, y, width, height) => {
+      onOpenMap({
+        x,
+        y,
+        width,
+        height,
+      });
+    });
+  };
 
   return (
     <View style={styles.Container}>
@@ -63,7 +78,7 @@ export const ExpandedDealer = ({
         </View>
 
         {onOpenMap ? (
-          <Pressable style={styles.MapCard} onPress={onOpenMap}>
+          <Pressable ref={mapCardRef} style={styles.MapCard} onPress={handleOpenMap}>
             <Map
               initialRegion={mapRegion || undefined}
               interactive={false}
