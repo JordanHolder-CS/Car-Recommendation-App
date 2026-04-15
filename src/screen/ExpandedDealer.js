@@ -109,9 +109,20 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
   }, [selectedDealer?.dealer_id]);
 
   const handleSelectListing = (listing) => {
+    const bookingContext = {
+      vehicleName: [listing?.year, listing?.brand_name, listing?.car_name]
+        .filter(Boolean)
+        .join(" "),
+      image_url: listing?.image_url ?? listing?.image ?? null,
+      dealerName: selectedDealer?.dealer_name ?? listing?.dealer_name ?? null,
+      dealerAddress: selectedDealer?.location ?? listing?.location ?? null,
+      dealerId: selectedDealer?.dealer_id ?? listing?.dealer_id ?? null,
+      dealerInventoryId: listing?.dealerinventory_id ?? null,
+      carId: listing?.car_id ?? null,
+    };
+
     navigation.push("BookingScreen", {
-      bookingContext: listing,
-      selectedDealer,
+      bookingContext,
     });
   };
 

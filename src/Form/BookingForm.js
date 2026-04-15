@@ -3,7 +3,6 @@ import { ImageBackground, StyleSheet, Text, View } from "react-native";
 import {
   CalendarDays,
   ChevronRight,
-  CircleAlert,
   Clock3,
   Mail,
   Phone,
@@ -58,28 +57,30 @@ const splitVehicleHeading = (vehicleName) => {
   };
 };
 
-const buildInitialForm = (originalEvent, ownerUserId) => ({
-  selectedDate: originalEvent?.selectedDate ?? getTodayDateId(),
-  selectedTime: originalEvent?.selectedTime ?? DEFAULT_TIME_VALUE,
-  fullName: originalEvent?.fullName ?? "",
-  email: originalEvent?.email ?? "",
-  phone: originalEvent?.phone ?? "",
+const buildInitialForm = (bookingContext, ownerUserId) => ({
+  selectedDate: bookingContext?.selectedDate ?? getTodayDateId(),
+  selectedTime: bookingContext?.selectedTime ?? DEFAULT_TIME_VALUE,
+  fullName: bookingContext?.fullName ?? "",
+  email: bookingContext?.email ?? "",
+  phone: bookingContext?.phone ?? "",
 });
 
 const BookingForm = ({
   onSubmit = () => {},
   ownerUserId = null,
-  originalEvent = null,
+  bookingContext = null,
+  submitDisabled = false,
+  submitLabel = "Send booking request",
 }) => {
   const [form, setForm] = useState(() =>
-    buildInitialForm(originalEvent, ownerUserId),
+    buildInitialForm(bookingContext, ownerUserId),
   );
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
 
   useEffect(() => {
-    setForm(buildInitialForm(originalEvent, ownerUserId));
-  }, [originalEvent, ownerUserId]);
+    setForm(buildInitialForm(bookingContext, ownerUserId));
+  }, [bookingContext, ownerUserId]);
 
   const handleChange = (field, value) => {
     setForm((currentForm) => ({
@@ -89,10 +90,10 @@ const BookingForm = ({
   };
 
   const handleSubmit = () => {
-    const vehicleName = buildVehicleName(originalEvent);
-    const dealerName = originalEvent?.dealerName ?? "City Motors Manchester";
+    const vehicleName = buildVehicleName(bookingContext);
+    const dealerName = bookingContext?.dealerName ?? "City Motors Manchester";
     const dealerAddress =
-      originalEvent?.dealerAddress ?? "Manchester City Centre";
+      bookingContext?.dealerAddress ?? "Manchester City Centre";
 
     onSubmit({
       ...form,
@@ -106,20 +107,23 @@ const BookingForm = ({
     });
   };
 
-  const vehicleName = buildVehicleName(originalEvent);
-  const dealerName = originalEvent?.dealerName ?? "City Motors Manchester";
+  const vehicleName = buildVehicleName(bookingContext);
+  const dealerName = bookingContext?.dealerName ?? "City Motors Manchester";
   const dealerAddress =
-    originalEvent?.dealerAddress ?? "Manchester City Centre";
-  const vehicleImage = getVehicleImage(originalEvent);
+    bookingContext?.dealerAddress ?? "Manchester City Centre";
+  const vehicleImage = getVehicleImage(bookingContext);
   const vehicleHeading = splitVehicleHeading(vehicleName);
   const isSubmitDisabled =
-    !form.fullName.trim() || !form.email.trim() || !form.phone.trim();
+    submitDisabled ||
+    !form.fullName.trim() ||
+    !form.email.trim() ||
+    !form.phone.trim();
 
   return (
     <View style={styles.container}>
       <Form
         onSubmit={handleSubmit}
-        submitLabel="Send booking request"
+        submitLabel={submitLabel}
         submitDisabled={isSubmitDisabled}
       >
         <View style={styles.header}>

@@ -1,66 +1,63 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BookingForm from "../Form/BookingForm";
 import BackButton from "../ui/Navigation/BackButton";
 
-const BookingScreen = ({ navigation, route }) => {
-  const bookingContext = route?.params?.bookingContext ?? null;
-  const selectedCar =
-    route?.params?.selectedCar ?? bookingContext?.selectedCar ?? null;
-  const selectedDealer =
-    route?.params?.selectedDealer ??
-    route?.params?.dealer ??
-    bookingContext?.selectedDealer ??
-    null;
-  const originalEvent =
-    bookingContext || selectedCar || selectedDealer
-      ? {
-          ...bookingContext,
-          vehicleName:
-            bookingContext?.vehicleName ??
-            [
-              bookingContext?.year ??
-                bookingContext?.model_year ??
-                selectedCar?.year ??
-                selectedCar?.model_year,
-              bookingContext?.brand_name ??
-                bookingContext?.brand ??
-                selectedCar?.brand_name,
-              bookingContext?.car_name ??
-                bookingContext?.model ??
-                selectedCar?.car_name,
-            ]
-              .filter(Boolean)
-              .join(" "),
-          image_url:
-            bookingContext?.image_url ??
-            bookingContext?.image ??
-            selectedCar?.image_url ??
-            selectedCar?.image,
-          dealerName:
-            bookingContext?.dealerName ??
-            bookingContext?.dealer_name ??
-            selectedDealer?.dealer_name ??
-            selectedDealer?.name,
-          dealerAddress:
-            bookingContext?.dealerAddress ??
-            bookingContext?.location ??
-            selectedDealer?.location ??
-            selectedDealer?.address,
-          selectedCar,
-          selectedDealer,
-        }
-      : null;
+const API_BASE_URL =
+  process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
 
-  const handleSubmit = (payload) => {
-    console.log("Booking request preview:", payload);
+const BookingScreen = ({ navigation, route }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const bookingContext = route?.params?.bookingContext ?? null;
+
+  const handleSubmit = async (payload) => {
+    try {
+      setIsSubmitting(true);
+
+      const requestPayload = {
+        ...payload,
+        dealerId: bookingContext?.dealerId ?? null,
+        dealerInventoryId: bookingContext?.dealerInventoryId ?? null,
+        carId: bookingContext?.carId ?? null,
+      };
+
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestPayload),
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          responseData?.error ||
+            responseData?.message ||
+            `HTTP error! status: ${response.status}`,
+        );
+      }
+
+      Alert.alert(
+        "Booking saved",
+        "Your test drive request has been submitted.",
+        [{ text: "OK", onPress: () => navigation.goBack() }],
+      );
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      Alert.alert("Booking failed", error.message || "Unable to save booking.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const pageTitle = "Book Test Drive";
   const pageSubtitle =
-    originalEvent?.dealerName && originalEvent?.vehicleName
-      ? `${originalEvent.dealerName} for ${originalEvent.vehicleName}`
-      : originalEvent?.dealerName ?? originalEvent?.vehicleName ?? null;
+    bookingContext?.dealerName && bookingContext?.vehicleName
+      ? `${bookingContext.dealerName} for ${bookingContext.vehicleName}`
+      : bookingContext?.dealerName ?? bookingContext?.vehicleName ?? null;
 
   return (
     <View style={styles.screen}>
@@ -81,7 +78,14 @@ const BookingScreen = ({ navigation, route }) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-            <BookingForm onSubmit={handleSubmit} originalEvent={originalEvent} />
+            <BookingForm
+              onSubmit={handleSubmit}
+              bookingContext={bookingContext}
+              submitDisabled={isSubmitting}
+              submitLabel={
+                isSubmitting ? "Sending booking request..." : "Send booking request"
+              }
+            />
           </View>
         </ScrollView>
       </SafeAreaView>
