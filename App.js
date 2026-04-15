@@ -14,7 +14,7 @@ export const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Questionnaire"
+        initialRouteName="DealerScreen"
         // screenOptions={{
         //   headerStyle: { backgroundColor: "black" },
         //   headerTintColor: "white",
@@ -91,8 +91,9 @@ export const App = () => {
           options={{
             title: "Map",
             headerShown: false,
-            presentation: "card",
-            contentStyle: { backgroundColor: "#ffffff" },
+            animation: "none",
+            presentation: "transparentModal",
+            contentStyle: { backgroundColor: "transparent" },
           }}
         />
       </Stack.Navigator>
