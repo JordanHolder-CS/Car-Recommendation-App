@@ -158,7 +158,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F4F4F4",
+    shadowColor: "#000000",
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
     overflow: "hidden",
   },
   MapPreview: {

@@ -2,7 +2,7 @@ import { StyleSheet, View } from "react-native";
 import { ChevronLeft } from "lucide-react-native";
 import Selector from "./Selector";
 
-const BackButton = ({ onBack }) => {
+const BackButton = ({ onBack, iconColor = "black", size = 25 }) => {
   return (
     <Selector
       onPress={onBack}
@@ -10,7 +10,7 @@ const BackButton = ({ onBack }) => {
       pressedStyle={styles.pressedButton}
     >
       <View style={styles.ButtonStyle}>
-        <ChevronLeft size={25} color="black" />
+        <ChevronLeft size={size} color={iconColor} />
       </View>
     </Selector>
   );

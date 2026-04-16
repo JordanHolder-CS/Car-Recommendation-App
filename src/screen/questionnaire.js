@@ -66,11 +66,13 @@ export const QuestionScreen = ({ navigation }) => {
         <Text style={styles.HeaderTitle}>Questionnaire</Text>
         <View style={{ width: 44 }} />
       </SafeAreaView>
-      <ProgressBar
-        progress={stepIndex / steps.length}
-        color="#3B82F6"
-        style={styles.ProgressBar}
-      />
+      <View style={styles.ProgressShell}>
+        <ProgressBar
+          progress={(stepIndex + 1) / steps.length}
+          color="#3B82F6"
+          style={styles.ProgressBar}
+        />
+      </View>
       <View style={styles.SafeArea}>
         <ScrollView
           style={styles.ContentScroll}
@@ -113,16 +115,32 @@ const styles = StyleSheet.create({
   BottomTray: {
     paddingBottom: 30,
   },
+  ProgressShell: {
+    marginHorizontal: 20,
+    marginBottom: 14,
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    shadowColor: "#000000",
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
   ProgressBar: {
-    height: 6,
-    marginBottom: 10,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "#E5E7EB",
+    overflow: "hidden",
   },
   Header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 8,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 14,
     backgroundColor: "white",
   },
   HeaderTitle: {

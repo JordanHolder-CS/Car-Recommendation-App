@@ -33,7 +33,6 @@ export const ResultScreen = ({ navigation, route }) => {
   const [intent, setIntent] = useState("");
   const [profileLabel, setProfileLabel] = useState("");
   const [budgetFallbackApplied, setBudgetFallbackApplied] = useState(false);
-  const [recommendationNote, setRecommendationNote] = useState("");
   const answers = route?.params?.answers || {};
   const requestKey = route?.params?.requestKey || "";
   const serializedAnswers = JSON.stringify(answers);
@@ -71,9 +70,6 @@ export const ResultScreen = ({ navigation, route }) => {
         setProfileLabel(profile.label || data.profileLabel || "");
         setBudgetFallbackApplied(
           Boolean(meta.budgetFallbackApplied ?? data.budgetFallbackApplied),
-        );
-        setRecommendationNote(
-          meta.recommendationNote || data.recommendationNote || "",
         );
       } catch (err) {
         console.error("Error fetching recommendations:", err);
@@ -134,9 +130,6 @@ export const ResultScreen = ({ navigation, route }) => {
           </Text>
           {profileLabel ? (
             <Text style={styles.HeaderProfile}>{profileLabel}</Text>
-          ) : null}
-          {recommendationNote ? (
-            <Text style={styles.HeaderNotice}>{recommendationNote}</Text>
           ) : null}
           {cars.length && (useCase || intent) ? (
             <Text style={styles.HeaderSubtitle}>
@@ -226,13 +219,6 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textTransform: "capitalize",
   },
-  HeaderNotice: {
-    marginTop: 4,
-    maxWidth: 260,
-    fontSize: 11,
-    color: "#92400E",
-    textAlign: "center",
-  },
   HeaderSpacer: {
     width: 44,
   },
@@ -276,6 +262,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 14,
     backgroundColor: "#1F1F1F",
+    shadowColor: "#000000",
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
     paddingHorizontal: 14,
     paddingVertical: 14,
     alignItems: "center",

@@ -34,6 +34,34 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["@react-native-community/datetimepicker"]
+    "plugins": [
+      "@react-native-community/datetimepicker",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./src/ui/Fonts/PP_Mori_v2.6/otf/PPMori-Regular.otf",
+            "./src/ui/Fonts/PP_Mori_v2.6/otf/PPMori-Black.otf"
+          ],
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "PP Mori",
+                "fontDefinitions": [
+                  {
+                    "path": "./src/ui/Fonts/PP_Mori_v2.6/otf/PPMori-Regular.otf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./src/ui/Fonts/PP_Mori_v2.6/otf/PPMori-Black.otf",
+                    "weight": 800
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    ]
   }
 }

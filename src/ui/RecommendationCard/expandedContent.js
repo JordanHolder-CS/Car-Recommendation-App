@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import RecommendationContent from "./collapsedContent";
 
@@ -8,24 +9,30 @@ const buildRecommendationBreakdown = (selectedCar) =>
     ? selectedCar.recommendationBreakdown
         .slice(0, MAX_BREAKDOWN_ITEMS)
         .map((metric) => ({
-          label: metric.priority ? `${metric.label} (priority)` : metric.label,
+          label: metric.label,
           score: `${Math.max(0, Math.min(100, Math.round(metric.fitScore || 0)))}/100`,
           note: metric.note,
         }))
     : [];
 
-const ExpandedContent = ({ selectedCar, detailsAnimatedStyle }) => {
+const ExpandedContent = ({
+  selectedCar,
+  detailsAnimatedStyle,
+  recommendationStyleOverrides = {},
+  breakdownStyleOverrides = {},
+}) => {
   if (!selectedCar) {
     return null;
   }
 
   const recommendationBreakdown = buildRecommendationBreakdown(selectedCar);
-  const recommendationStyleOverrides = {
+  const defaultRecommendationStyleOverrides = {
     container: styles.RecommendationContainer,
     heroWrap: styles.RecommendationHeroWrap,
     heroCard: styles.RecommendationHeroCard,
     heroImage: styles.RecommendationHeroImage,
     heroOverlay: styles.RecommendationHeroOverlay,
+    heroMatchText: styles.RecommendationHeroMatchText,
     textWrapper: styles.RecommendationTextWrapper,
     matchText: styles.RecommendationMatchText,
     profileText: styles.RecommendationProfileText,
@@ -33,6 +40,10 @@ const ExpandedContent = ({ selectedCar, detailsAnimatedStyle }) => {
     priceText: styles.RecommendationPriceText,
     coolStatsContainer: styles.RecommendationStatsWrap,
     coolStatsText: styles.RecommendationStatChip,
+  };
+  const mergedRecommendationStyleOverrides = {
+    ...defaultRecommendationStyleOverrides,
+    ...recommendationStyleOverrides,
   };
 
   return (
@@ -54,9 +65,6 @@ const ExpandedContent = ({ selectedCar, detailsAnimatedStyle }) => {
         bodyStyle={selectedCar.body_style}
         isEV={selectedCar.is_ev}
         evRange={selectedCar.ev_range || selectedCar.estimated_electric_range}
-        reliability={selectedCar.reliability}
-        serviceCost={selectedCar.service_cost}
-        insuranceEstimate={selectedCar.insurance_estimate}
         score={selectedCar.score}
         matchScore={selectedCar.matchScore}
         useCase={selectedCar.useCase}
@@ -66,26 +74,68 @@ const ExpandedContent = ({ selectedCar, detailsAnimatedStyle }) => {
         topReasons={selectedCar.topReasons}
         fullScreen
         variant="expandedResult"
-        styleOverrides={recommendationStyleOverrides}
+        styleOverrides={mergedRecommendationStyleOverrides}
         detailsAnimatedStyle={detailsAnimatedStyle}
       >
         {recommendationBreakdown.length ? (
-          <View style={styles.Section}>
-            <Text style={styles.SectionTitle}>Recommendation breakdown</Text>
-            {recommendationBreakdown.map((metric) => (
-              <View
-                style={styles.MetricRow}
-                key={`${selectedCar.car_id}-${metric.label}`}
-              >
-                <View style={styles.MetricTextWrap}>
-                  <Text style={styles.MetricLabel}>{metric.label}</Text>
-                  {metric.note ? (
-                    <Text style={styles.MetricNote}>{metric.note}</Text>
-                  ) : null}
-                </View>
-                <Text style={styles.MetricScore}>{metric.score}</Text>
-              </View>
-            ))}
+          <View style={[styles.Section, breakdownStyleOverrides.section]}>
+            <Text
+              style={[
+                styles.SectionTitle,
+                breakdownStyleOverrides.sectionTitle,
+              ]}
+            >
+              Recommendation breakdown
+            </Text>
+            {recommendationBreakdown.map((metric, index) => {
+              const isLast = index === recommendationBreakdown.length - 1;
+
+              return (
+                <Fragment key={`${selectedCar.car_id}-${metric.label}`}>
+                  <View
+                    style={[
+                      styles.MetricRow,
+                      breakdownStyleOverrides.metricRow,
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.MetricTextWrap,
+                        breakdownStyleOverrides.metricTextWrap,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.MetricLabel,
+                          breakdownStyleOverrides.metricLabel,
+                        ]}
+                      >
+                        {metric.label}
+                      </Text>
+                      {metric.note ? (
+                        <Text
+                          style={[
+                            styles.MetricNote,
+                            breakdownStyleOverrides.metricNote,
+                          ]}
+                        >
+                          {metric.note}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Text
+                      style={[
+                        styles.MetricScore,
+                        breakdownStyleOverrides.metricScore,
+                      ]}
+                    >
+                      {metric.score}
+                    </Text>
+                  </View>
+                  {!isLast ? <View style={styles.MetricDivider} /> : null}
+                </Fragment>
+              );
+            })}
           </View>
         ) : null}
       </RecommendationContent>
@@ -95,23 +145,36 @@ const ExpandedContent = ({ selectedCar, detailsAnimatedStyle }) => {
 
 const styles = StyleSheet.create({
   ExpandedContent: {
-    padding: 12,
+    padding: 0,
   },
   RecommendationContainer: {
-    borderRadius: 20,
+    borderRadius: 0,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
   },
   RecommendationHeroWrap: {},
   RecommendationHeroCard: {
     minHeight: 236,
-    borderRadius: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   RecommendationHeroImage: {
     opacity: 0.96,
-    borderRadius: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   RecommendationTextWrapper: {
     paddingTop: 18,
     paddingBottom: 20,
+  },
+  RecommendationHeroMatchText: {
+    fontSize: 20,
+    lineHeight: 22,
+    color: "#FFFFFF",
   },
   RecommendationMatchText: {
     color: "#0F766E",
@@ -143,33 +206,36 @@ const styles = StyleSheet.create({
   SectionTitle: {
     fontWeight: "600",
     color: "#111827",
-    fontSize: 14,
+    fontSize: 17,
   },
   MetricRow: {
-    marginTop: 8,
+    marginTop: 2,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 8,
-    backgroundColor: "#F9FAFB",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 14,
+  },
+  MetricDivider: {
+    height: 1,
+    marginLeft: 4,
+    marginRight: 10,
+    backgroundColor: "#E5E7EB",
+    opacity: 0.9,
   },
   MetricTextWrap: {
     flex: 1,
     paddingRight: 12,
   },
   MetricLabel: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#111827",
     fontWeight: "500",
   },
   MetricNote: {
-    marginTop: 3,
-    fontSize: 11,
-    lineHeight: 16,
+    marginTop: 4,
+    fontSize: 12,
+    lineHeight: 17,
     color: "#6B7280",
   },
   MetricScore: {
@@ -177,6 +243,7 @@ const styles = StyleSheet.create({
     color: "#0F766E",
     fontWeight: "700",
     paddingTop: 1,
+    paddingLeft: 12,
   },
 });
 

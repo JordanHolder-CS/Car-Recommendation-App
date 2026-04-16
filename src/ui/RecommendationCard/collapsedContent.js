@@ -19,9 +19,6 @@ export const RecommendationContent = ({
   bodyStyle,
   isEV,
   evRange,
-  reliability,
-  serviceCost,
-  insuranceEstimate,
   score,
   matchScore,
   useCase,
@@ -44,26 +41,11 @@ export const RecommendationContent = ({
       ? `\u00A3${Number(value).toLocaleString("en-GB")}`
       : "Price unavailable";
 
-  const formatCost = (value) =>
-    value ? `\u00A3${Number(value).toLocaleString("en-GB")}` : "N/A";
-
   const matchPercent =
     typeof matchScore === "number"
       ? `${Math.round(matchScore * 100)}% match`
       : typeof score === "number"
         ? `${Math.round(score * 100)}% match`
-        : null;
-
-  const profileMeta =
-    useCase || intent
-      ? [
-          useCase ? `Use case: ${useCase.replace(/_/g, " ")}` : null,
-          intent ? `Intent: ${intent.replace(/_/g, " ")}` : null,
-        ]
-          .filter(Boolean)
-          .join(" | ")
-      : primaryDriverType
-        ? primaryDriverType.replace(/_/g, " ")
         : null;
 
   const vehicleBrand = brand || "";
@@ -101,9 +83,31 @@ export const RecommendationContent = ({
           <View style={[styles.HeroOverlay, styleOverrides.heroOverlay]}>
             <View style={styles.HeroBottom}>
               {vehicleBrand ? (
-                <Text style={styles.HeroBrandText}>{vehicleBrand}</Text>
+                <Text
+                  style={[styles.HeroBrandText, styleOverrides.heroBrandText]}
+                >
+                  {vehicleBrand}
+                </Text>
               ) : null}
-              <Text style={styles.HeroNameText}>{vehicleName}</Text>
+              <View style={styles.HeroTitleRow}>
+                <Text
+                  style={[styles.HeroNameText, styleOverrides.heroNameText]}
+                >
+                  {vehicleName}
+                </Text>
+                {matchPercent ? (
+                    <Text
+                      style={[
+                        styles.HeroMatchText,
+                        isExpandedResultVariant &&
+                          styles.ExpandedResultHeroMatchText,
+                        styleOverrides.heroMatchText,
+                      ]}
+                    >
+                    {matchPercent}
+                  </Text>
+                ) : null}
+              </View>
             </View>
           </View>
         </ImageBackground>
@@ -117,39 +121,6 @@ export const RecommendationContent = ({
           detailsAnimatedStyle,
         ]}
       >
-        {matchPercent ? (
-          <Text
-            style={[
-              styles.MatchText,
-              isExpandedResultVariant && styles.ExpandedResultMatchText,
-              styleOverrides.matchText,
-            ]}
-          >
-            {matchPercent}
-          </Text>
-        ) : null}
-        {profileLabel ? (
-          <Text
-            style={[
-              styles.ProfileText,
-              isExpandedResultVariant && styles.ExpandedResultProfileText,
-              styleOverrides.profileText,
-            ]}
-          >
-            {profileLabel}
-          </Text>
-        ) : null}
-        {profileMeta ? (
-          <Text
-            style={[
-              styles.TypeText,
-              isExpandedResultVariant && styles.ExpandedResultTypeText,
-              styleOverrides.typeText,
-            ]}
-          >
-            {profileMeta}
-          </Text>
-        ) : null}
         <Text
           style={[
             styles.PriceText,
@@ -253,27 +224,34 @@ export const RecommendationContent = ({
           ) : null}
         </View>
 
-        <View style={styles.Section}>
-          <Text style={styles.ProTitle}>
+        <View style={[styles.Section, styleOverrides.section]}>
+          <Text style={[styles.ProTitle, styleOverrides.proTitle]}>
             <Icons icon="thumb-up" size="10" style="Pro" /> Why it matches
           </Text>
           {topReasons.length ? (
             topReasons.map((reason) => (
-              <View style={styles.Item} key={`${name}-${reason}`}>
-                <Text style={styles.Bullet}>-</Text>
-                <Text style={styles.ItemText}>{reason}</Text>
+              <View
+                style={[styles.Item, styleOverrides.item]}
+                key={`${name}-${reason}`}
+              >
+                <Text style={[styles.Bullet, styleOverrides.bullet]}>-</Text>
+                <Text style={[styles.ItemText, styleOverrides.itemText]}>
+                  {reason}
+                </Text>
               </View>
             ))
           ) : (
-            <Text style={styles.MetaText}>
+            <Text style={[styles.MetaText, styleOverrides.metaText]}>
               Balanced fit across your selected priorities.
             </Text>
           )}
         </View>
 
-        <View style={styles.Section}>
-          <Text style={styles.SectionTitle}>Key details</Text>
-          <Text style={styles.MetaText}>
+        <View style={[styles.Section, styleOverrides.section]}>
+          <Text style={[styles.SectionTitle, styleOverrides.sectionTitle]}>
+            Key details
+          </Text>
+          <Text style={[styles.MetaText, styleOverrides.metaText]}>
             Engine: {engine || "N/A"}
             {"\n"}
             Drivetrain: {drivetrain || "N/A"}
@@ -283,21 +261,10 @@ export const RecommendationContent = ({
             Top speed: {topSpeed || "N/A"}
             {"\n"}
             Torque: {torque || "N/A"}
-            {"\n"}
-            Reliability: {reliability || "N/A"}
           </Text>
         </View>
 
         {children}
-
-        <View style={styles.Section}>
-          <Text style={styles.SectionTitle}>Running costs</Text>
-          <Text style={styles.MetaText}>
-            Service: {formatCost(serviceCost)}
-            {"\n"}
-            Insurance: {formatCost(insuranceEstimate)}
-          </Text>
-        </View>
 
         {/* <ButtonTray
           trayStyle={[styles.BottomTray, fullScreen && styles.FullScreenBottomTray]}
@@ -335,6 +302,15 @@ const styles = StyleSheet.create({
   },
   HeroBottom: {
     alignItems: "flex-start",
+    width: "100%",
+  },
+  HeroTitleRow: {
+    marginTop: 2,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
   },
   HeroBrandText: {
     maxWidth: "88%",
@@ -344,30 +320,20 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   HeroNameText: {
-    marginTop: 2,
-    maxWidth: "88%",
-    fontSize: 23,
-    lineHeight: 27,
+    flex: 1,
+    fontSize: 27,
+    lineHeight: 31,
     color: "#ffffff",
     fontWeight: "300",
   },
-  MatchText: {
-    marginTop: 2,
+  HeroMatchText: {
+    marginTop: 7,
     fontWeight: "700",
-    fontSize: 13,
-    color: "#0F766E",
-  },
-  ProfileText: {
-    marginTop: 3,
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#111827",
-  },
-  TypeText: {
-    marginTop: 2,
-    fontSize: 11,
-    color: "#6B7280",
-    textTransform: "capitalize",
+    fontSize: 20,
+    lineHeight: 22,
+    color: "#FFFFFF",
+    textAlign: "right",
+    flexShrink: 0,
   },
   PriceText: {
     paddingTop: 4,
@@ -378,12 +344,12 @@ const styles = StyleSheet.create({
   SectionTitle: {
     fontWeight: "600",
     color: "#111827",
-    fontSize: 14,
+    fontSize: 17,
   },
   ProTitle: {
     fontWeight: "600",
     color: "#25CB00",
-    fontSize: 14,
+    fontSize: 17,
   },
   Bullet: {
     color: "#25CB00",
@@ -412,7 +378,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "white",
     borderRadius: 16,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F4F4F4",
+    shadowColor: "#000000",
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
     padding: 5,
     marginVertical: 7,
     flexDirection: "column",
@@ -423,10 +394,15 @@ const styles = StyleSheet.create({
     marginVertical: 0,
     borderWidth: 0,
     borderRadius: 0,
+    backgroundColor: "transparent",
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
     padding: 0,
   },
   ExpandedResultContainer: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#F4F4F4",
   },
   CoolStatsContainer: {
     flexDirection: "row",
@@ -469,16 +445,9 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 20,
   },
-  ExpandedResultMatchText: {
-    color: "#0F766E",
-    fontSize: 14,
-  },
-  ExpandedResultProfileText: {
-    fontSize: 14,
-  },
-  ExpandedResultTypeText: {
-    fontSize: 12,
-    lineHeight: 18,
+  ExpandedResultHeroMatchText: {
+    fontSize: 20,
+    lineHeight: 22,
   },
   ExpandedResultPriceText: {
     paddingTop: 6,

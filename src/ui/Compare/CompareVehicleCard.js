@@ -87,6 +87,11 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 18,
     backgroundColor: "#FFFFFF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
     overflow: "hidden",
   },
   VehicleHero: {

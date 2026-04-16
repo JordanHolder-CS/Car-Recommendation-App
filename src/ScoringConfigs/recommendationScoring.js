@@ -11,6 +11,13 @@ const parseNumber = (value) => {
   return Number.isFinite(parsedValue) ? parsedValue : null;
 };
 
+// Treats zero / negative placeholders as missing for scored vehicle specs.
+const parseComparableValue = (value) => {
+  const parsedValue = parseNumber(value);
+  if (parsedValue === null || parsedValue <= 0) return null;
+  return parsedValue;
+};
+
 // Normalizes raw strings before matching body styles, engines, or brands.
 const normalizeText = (value = "") =>
   `${value}`.trim().toLowerCase().replace(/\s+/g, " ");
@@ -27,19 +34,42 @@ const averageScores = (scores = [], fallback = 0.5) => {
   return validScores.reduce((total, score) => total + score, 0) / validScores.length;
 };
 
+// Reads one normalized numeric metric from a car row for shortlist comparisons.
+const getComparableMetricValue = (metricKey, car = {}) => {
+  switch (metricKey) {
+    case "price":
+      return parseComparableValue(car?.price);
+    case "efficiency":
+      return parseComparableValue(
+        car?.is_ev
+          ? car?.ev_range ?? car?.estimated_electric_range
+          : car?.combined_mpg ?? car?.epa_combined,
+      );
+    case "horsepower":
+      return parseComparableValue(car?.horsepower);
+    case "acceleration":
+      return parseComparableValue(car?.zero_to_sixty_mph);
+    case "seating":
+      return parseComparableValue(car?.max_seating_capacity ?? car?.seat_count);
+    case "bootSpace":
+      return parseComparableValue(car?.boot_space_liters ?? car?.cargo_capacity);
+    case "curbWeight":
+      return parseComparableValue(car?.curb_weight);
+    default:
+      return null;
+  }
+};
+
 // Builds min/max ranges once for the active shortlist so each fit score is relative.
 const buildRanges = (cars = []) => {
   const metricGetters = {
-    price: (car) => parseNumber(car?.price),
-    efficiency: (car) =>
-      parseNumber(
-        car?.is_ev ? car?.ev_range ?? car?.estimated_electric_range : car?.combined_mpg ?? car?.epa_combined,
-      ),
-    horsepower: (car) => parseNumber(car?.horsepower),
-    acceleration: (car) => parseNumber(car?.zero_to_sixty_mph),
-    seating: (car) => parseNumber(car?.max_seating_capacity ?? car?.seat_count),
-    bootSpace: (car) => parseNumber(car?.boot_space_liters ?? car?.cargo_capacity),
-    curbWeight: (car) => parseNumber(car?.curb_weight),
+    price: (car) => getComparableMetricValue("price", car),
+    efficiency: (car) => getComparableMetricValue("efficiency", car),
+    horsepower: (car) => getComparableMetricValue("horsepower", car),
+    acceleration: (car) => getComparableMetricValue("acceleration", car),
+    seating: (car) => getComparableMetricValue("seating", car),
+    bootSpace: (car) => getComparableMetricValue("bootSpace", car),
+    curbWeight: (car) => getComparableMetricValue("curbWeight", car),
   };
 
   return Object.fromEntries(
@@ -63,21 +93,24 @@ const buildRanges = (cars = []) => {
 
 // Scores higher numeric values as better relative to the active shortlist.
 const normalizeHigher = (value, range) => {
-  if (value === null || !range) return null;
+  if (!range) return null;
+  if (value === null) return 0;
   if (range.max === range.min) return 1;
   return clamp((value - range.min) / (range.max - range.min));
 };
 
 // Scores lower numeric values as better relative to the active shortlist.
 const normalizeLower = (value, range) => {
-  if (value === null || !range) return null;
+  if (!range) return null;
+  if (value === null) return 0;
   if (range.max === range.min) return 1;
   return clamp(1 - (value - range.min) / (range.max - range.min));
 };
 
 // Scores values that sit closest to the middle of a range.
 const normalizeMiddle = (value, range) => {
-  if (value === null || !range) return null;
+  if (!range) return null;
+  if (value === null) return 0;
   if (range.max === range.min) return 1;
   const midpoint = (range.max + range.min) / 2;
   const halfSpan = (range.max - range.min) / 2 || 1;
@@ -133,13 +166,12 @@ const METRIC_BUILDERS = {
     getScore: (car, context) =>
       averageScores(
         [
-          normalizeLower(parseNumber(car?.price), context.ranges.price),
+          normalizeLower(
+            getComparableMetricValue("price", car),
+            context.ranges.price,
+          ),
           normalizeHigher(
-            parseNumber(
-              car?.is_ev
-                ? car?.ev_range ?? car?.estimated_electric_range
-                : car?.combined_mpg ?? car?.epa_combined,
-            ),
+            getComparableMetricValue("efficiency", car),
             context.ranges.efficiency,
           ),
         ],
@@ -156,10 +188,7 @@ const METRIC_BUILDERS = {
       averageScores(
         [
           getBodyStyleScore("cityFit", car),
-          normalizeLower(
-            parseNumber(car?.curb_weight),
-            context.ranges.curbWeight,
-          ),
+          normalizeLower(getComparableMetricValue("curbWeight", car), context.ranges.curbWeight),
         ],
         0.5,
       ),
@@ -174,7 +203,10 @@ const METRIC_BUILDERS = {
       averageScores(
         [
           getBodyStyleScore("comfortFit", car),
-          normalizeHigher(parseNumber(car?.price), context.ranges.price),
+          normalizeHigher(
+            getComparableMetricValue("price", car),
+            context.ranges.price,
+          ),
         ],
         0.5,
       ),
@@ -189,12 +221,9 @@ const METRIC_BUILDERS = {
       averageScores(
         [
           getBodyStyleScore("performanceFit", car),
-          normalizeHigher(
-            parseNumber(car?.horsepower),
-            context.ranges.horsepower,
-          ),
+          normalizeHigher(getComparableMetricValue("horsepower", car), context.ranges.horsepower),
           normalizeLower(
-            parseNumber(car?.zero_to_sixty_mph),
+            getComparableMetricValue("acceleration", car),
             context.ranges.acceleration,
           ),
         ],
@@ -211,14 +240,8 @@ const METRIC_BUILDERS = {
       averageScores(
         [
           getBodyStyleScore("practicalFit", car),
-          normalizeHigher(
-            parseNumber(car?.boot_space_liters ?? car?.cargo_capacity),
-            context.ranges.bootSpace,
-          ),
-          normalizeHigher(
-            parseNumber(car?.max_seating_capacity ?? car?.seat_count),
-            context.ranges.seating,
-          ),
+          normalizeHigher(getComparableMetricValue("bootSpace", car), context.ranges.bootSpace),
+          normalizeHigher(getComparableMetricValue("seating", car), context.ranges.seating),
         ],
         0.5,
       ),
@@ -234,17 +257,10 @@ const METRIC_BUILDERS = {
         [
           getBodyStyleScore("roadTripFit", car),
           normalizeHigher(
-            parseNumber(
-              car?.is_ev
-                ? car?.ev_range ?? car?.estimated_electric_range
-                : car?.combined_mpg ?? car?.epa_combined,
-            ),
+            getComparableMetricValue("efficiency", car),
             context.ranges.efficiency,
           ),
-          normalizeHigher(
-            parseNumber(car?.boot_space_liters ?? car?.cargo_capacity),
-            context.ranges.bootSpace,
-          ),
+          normalizeHigher(getComparableMetricValue("bootSpace", car), context.ranges.bootSpace),
         ],
         0.5,
       ),
@@ -266,14 +282,8 @@ const METRIC_BUILDERS = {
       return averageScores(
         [
           styleMatch,
-          normalizeHigher(
-            parseNumber(car?.max_seating_capacity ?? car?.seat_count),
-            context.ranges.seating,
-          ),
-          normalizeHigher(
-            parseNumber(car?.boot_space_liters ?? car?.cargo_capacity),
-            context.ranges.bootSpace,
-          ),
+          normalizeHigher(getComparableMetricValue("seating", car), context.ranges.seating),
+          normalizeHigher(getComparableMetricValue("bootSpace", car), context.ranges.bootSpace),
         ],
         0.5,
       );
@@ -286,9 +296,9 @@ const METRIC_BUILDERS = {
   sizeFit: {
     label: "Size fit",
     getScore: (car, context) => {
-      const weight = parseNumber(car?.curb_weight);
-      const bootSpace = parseNumber(car?.boot_space_liters ?? car?.cargo_capacity);
-      const seating = parseNumber(car?.max_seating_capacity ?? car?.seat_count);
+      const weight = getComparableMetricValue("curbWeight", car);
+      const bootSpace = getComparableMetricValue("bootSpace", car);
+      const seating = getComparableMetricValue("seating", car);
 
       switch (context.criteria.vehicleSize) {
         case "q_size_small":
@@ -453,7 +463,10 @@ const createRecommendationScoring = ({
       )
       .sort((left, right) => {
         if (right.score !== left.score) return right.score - left.score;
-        return (parseNumber(left?.price) ?? Infinity) - (parseNumber(right?.price) ?? Infinity);
+        return (
+          (getComparableMetricValue("price", left) ?? Infinity) -
+          (getComparableMetricValue("price", right) ?? Infinity)
+        );
       });
 
   return { buildScoredCars };

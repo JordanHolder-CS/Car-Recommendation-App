@@ -27,7 +27,7 @@ const buildVehicleName = (car) =>
   ([
     car?.year ?? car?.model_year,
     car?.brand_name ?? car?.brand,
-    car?.car_name ?? car?.model ?? car?.Name,
+    car?.car_name ?? car?.name ?? car?.Name,
   ]
     .filter(Boolean)
     .join(" ") ||
