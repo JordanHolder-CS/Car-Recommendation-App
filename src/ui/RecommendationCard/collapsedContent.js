@@ -34,7 +34,11 @@ export const RecommendationContent = ({
   actionLabel = "View Details",
   fullScreen = false,
   detailsAnimatedStyle,
+  variant = "default",
+  styleOverrides = {},
 }) => {
+  const isExpandedResultVariant = variant === "expandedResult";
+
   const formatPrice = (value) =>
     value
       ? `\u00A3${Number(value).toLocaleString("en-GB")}`
@@ -66,18 +70,35 @@ export const RecommendationContent = ({
   const vehicleName = name || "Vehicle unavailable";
 
   return (
-    <View style={[styles.Container, fullScreen && styles.FullScreenContainer]}>
-      <View style={styles.HeroWrap}>
+    <View
+      style={[
+        styles.Container,
+        fullScreen && styles.FullScreenContainer,
+        isExpandedResultVariant && styles.ExpandedResultContainer,
+        styleOverrides.container,
+      ]}
+    >
+      <View style={[styles.HeroWrap, styleOverrides.heroWrap]}>
         <ImageBackground
-          style={[styles.HeroCard, fullScreen && styles.FullScreenHeroCard]}
-          imageStyle={[styles.HeroImage, fullScreen && styles.FullScreenHeroImage]}
+          style={[
+            styles.HeroCard,
+            fullScreen && styles.FullScreenHeroCard,
+            isExpandedResultVariant && styles.ExpandedResultHeroCard,
+            styleOverrides.heroCard,
+          ]}
+          imageStyle={[
+            styles.HeroImage,
+            fullScreen && styles.FullScreenHeroImage,
+            isExpandedResultVariant && styles.ExpandedResultHeroImage,
+            styleOverrides.heroImage,
+          ]}
           source={{
             uri:
               image ||
               "https://hips.hearstapps.com/hmg-prod/images/2024-mercedes-amg-gt63-643-66b52543c907c.jpg?crop=0.683xw:0.511xh;0.0976xw,0.409xh&resize=1200:*",
           }}
         >
-          <View style={styles.HeroOverlay}>
+          <View style={[styles.HeroOverlay, styleOverrides.heroOverlay]}>
             <View style={styles.HeroBottom}>
               {vehicleBrand ? (
                 <Text style={styles.HeroBrandText}>{vehicleBrand}</Text>
@@ -91,58 +112,142 @@ export const RecommendationContent = ({
         style={[
           styles.TextWrapper,
           fullScreen && styles.FullScreenTextWrapper,
+          isExpandedResultVariant && styles.ExpandedResultTextWrapper,
+          styleOverrides.textWrapper,
           detailsAnimatedStyle,
         ]}
       >
         {matchPercent ? (
-          <Text style={styles.MatchText}>{matchPercent}</Text>
+          <Text
+            style={[
+              styles.MatchText,
+              isExpandedResultVariant && styles.ExpandedResultMatchText,
+              styleOverrides.matchText,
+            ]}
+          >
+            {matchPercent}
+          </Text>
         ) : null}
         {profileLabel ? (
-          <Text style={styles.ProfileText}>{profileLabel}</Text>
+          <Text
+            style={[
+              styles.ProfileText,
+              isExpandedResultVariant && styles.ExpandedResultProfileText,
+              styleOverrides.profileText,
+            ]}
+          >
+            {profileLabel}
+          </Text>
         ) : null}
         {profileMeta ? (
-          <Text style={styles.TypeText}>{profileMeta}</Text>
+          <Text
+            style={[
+              styles.TypeText,
+              isExpandedResultVariant && styles.ExpandedResultTypeText,
+              styleOverrides.typeText,
+            ]}
+          >
+            {profileMeta}
+          </Text>
         ) : null}
-        <Text style={styles.PriceText}>{formatPrice(price)}</Text>
+        <Text
+          style={[
+            styles.PriceText,
+            isExpandedResultVariant && styles.ExpandedResultPriceText,
+            styleOverrides.priceText,
+          ]}
+        >
+          {formatPrice(price)}
+        </Text>
 
-        <View style={styles.CoolStatsContainer}>
+        <View
+          style={[styles.CoolStatsContainer, styleOverrides.coolStatsContainer]}
+        >
           {horsepower ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="speed" size="12" /> {horsepower} hp
             </Text>
           ) : null}
           {isEV && evRange ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="battery-charging-full" size="12" /> {evRange} mi
             </Text>
           ) : mpg ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="local-gas-station" size="12" /> {mpg} MPG
             </Text>
           ) : null}
           {transmission ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="tune" size="12" /> {transmission}
             </Text>
           ) : null}
           {seats ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="airline-seat-recline-extra" size="12" /> {seats}{" "}
               seats
             </Text>
           ) : null}
           {zeroToSixty ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="timer" size="12" /> 0-60 {zeroToSixty}s
             </Text>
           ) : null}
           {topSpeed ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="rocket-launch" size="12" /> {topSpeed} mph
             </Text>
           ) : null}
           {torque ? (
-            <Text style={styles.CoolStatsText}>
+            <Text
+              style={[
+                styles.CoolStatsText,
+                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
+                styleOverrides.coolStatsText,
+              ]}
+            >
               <Icons icon="build" size="12" /> {torque} Nm
             </Text>
           ) : null}
@@ -210,6 +315,7 @@ const styles = StyleSheet.create({
   },
   HeroWrap: {
     alignItems: "center",
+    overflow: "hidden",
   },
   HeroCard: {
     minHeight: 180,
@@ -319,6 +425,9 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     padding: 0,
   },
+  ExpandedResultContainer: {
+    backgroundColor: "#F8FAFC",
+  },
   CoolStatsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -344,11 +453,42 @@ const styles = StyleSheet.create({
   FullScreenHeroImage: {
     borderRadius: 0,
   },
+  ExpandedResultHeroCard: {
+    minHeight: 236,
+  },
+  ExpandedResultHeroImage: {
+    opacity: 0.96,
+  },
   FullScreenTextWrapper: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 16,
+  },
+  ExpandedResultTextWrapper: {
+    paddingTop: 18,
+    paddingBottom: 20,
+  },
+  ExpandedResultMatchText: {
+    color: "#0F766E",
+    fontSize: 14,
+  },
+  ExpandedResultProfileText: {
+    fontSize: 14,
+  },
+  ExpandedResultTypeText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  ExpandedResultPriceText: {
+    paddingTop: 6,
+    fontSize: 20,
+    color: "#0057D9",
+  },
+  ExpandedResultCoolStatsText: {
+    backgroundColor: "#E8EEF6",
+    color: "#334155",
+    borderRadius: 999,
   },
   BottomTray: {
     marginTop: 8,
