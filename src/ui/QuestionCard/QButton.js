@@ -1,5 +1,6 @@
 import { StyleSheet, View, Text } from "react-native";
 import Selector from "../Navigation/Selector";
+import { ORANGE } from "../Layout/colors";
 
 export const QButton = ({ id, Title, Description, selectedId, onPress }) => {
   const selectedValues = Array.isArray(selectedId)
@@ -46,9 +47,9 @@ const styles = StyleSheet.create({
     minHeight: 74,
   },
   buttonSelected: {
-    backgroundColor: "#3B82F6",
-    borderColor: "#3B82F6",
-    shadowColor: "#2563EB",
+    backgroundColor: ORANGE.main,
+    borderColor: ORANGE.main,
+    shadowColor: ORANGE.dark,
     shadowOpacity: 0.18,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },

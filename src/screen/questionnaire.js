@@ -8,6 +8,7 @@ import { ButtonTray } from "../ui/Navigation/ContinueButton.js";
 import { QPages } from "../Data (Temp)/QuestionPages.js";
 import { ProgressBar } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ORANGE } from "../ui/Layout/colors.js";
 
 export const QuestionScreen = ({ navigation }) => {
   const steps = QPages;
@@ -69,7 +70,7 @@ export const QuestionScreen = ({ navigation }) => {
       <View style={styles.ProgressShell}>
         <ProgressBar
           progress={(stepIndex + 1) / steps.length}
-          color="#3B82F6"
+          color={ORANGE.main}
           style={styles.ProgressBar}
         />
       </View>
@@ -144,7 +145,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   HeaderTitle: {
-    fontSize: 17,
+    fontSize: 21,
     fontWeight: "600",
   },
 });

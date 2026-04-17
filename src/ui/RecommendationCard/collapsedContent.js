@@ -96,14 +96,14 @@ export const RecommendationContent = ({
                   {vehicleName}
                 </Text>
                 {matchPercent ? (
-                    <Text
-                      style={[
-                        styles.HeroMatchText,
-                        isExpandedResultVariant &&
-                          styles.ExpandedResultHeroMatchText,
-                        styleOverrides.heroMatchText,
-                      ]}
-                    >
+                  <Text
+                    style={[
+                      styles.HeroMatchText,
+                      isExpandedResultVariant &&
+                        styles.ExpandedResultHeroMatchText,
+                      styleOverrides.heroMatchText,
+                    ]}
+                  >
                     {matchPercent}
                   </Text>
                 ) : null}
@@ -331,15 +331,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 20,
     lineHeight: 22,
-    color: "#FFFFFF",
+    color: "#2dda6c",
     textAlign: "right",
     flexShrink: 0,
   },
   PriceText: {
-    paddingTop: 4,
     fontWeight: "500",
-    fontSize: 18,
-    color: "#007BFF",
+    fontSize: 20,
+    color: "#111827",
   },
   SectionTitle: {
     fontWeight: "600",
@@ -348,11 +347,11 @@ const styles = StyleSheet.create({
   },
   ProTitle: {
     fontWeight: "600",
-    color: "#25CB00",
+    color: "#111827",
     fontSize: 17,
   },
   Bullet: {
-    color: "#25CB00",
+    color: "#16A34A",
     fontSize: 20,
     lineHeight: 20,
     marginRight: 6,
@@ -448,11 +447,12 @@ const styles = StyleSheet.create({
   ExpandedResultHeroMatchText: {
     fontSize: 20,
     lineHeight: 22,
+    color: "#16A34A",
   },
   ExpandedResultPriceText: {
     paddingTop: 6,
-    fontSize: 20,
-    color: "#0057D9",
+    fontSize: 22,
+    color: "#111827",
   },
   ExpandedResultCoolStatsText: {
     backgroundColor: "#E8EEF6",

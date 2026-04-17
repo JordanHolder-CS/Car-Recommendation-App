@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import Selector from "../Navigation/Selector";
+import { ORANGE } from "../Layout/colors";
 
 const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -291,12 +292,12 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
   },
   dayButtonToday: {
-    borderColor: "#bfd4ff",
-    backgroundColor: "#f5f8ff",
+    borderColor: ORANGE.tintBorder,
+    backgroundColor: ORANGE.tint,
   },
   dayButtonSelected: {
-    backgroundColor: "#2563eb",
-    borderColor: "#2563eb",
+    backgroundColor: ORANGE.main,
+    borderColor: ORANGE.main,
   },
   dayButtonPressed: {
     opacity: 0.85,
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
     color: "#344054",
   },
   dayLabelToday: {
-    color: "#1d4ed8",
+    color: ORANGE.dark,
   },
   dayLabelSelected: {
     color: "#ffffff",

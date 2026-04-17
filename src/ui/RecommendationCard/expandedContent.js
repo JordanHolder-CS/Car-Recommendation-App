@@ -168,16 +168,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
   },
   RecommendationTextWrapper: {
-    paddingTop: 18,
     paddingBottom: 20,
   },
   RecommendationHeroMatchText: {
     fontSize: 20,
     lineHeight: 22,
-    color: "#FFFFFF",
+    color: "#2dda6c",
   },
   RecommendationMatchText: {
-    color: "#0F766E",
+    color: "#111827",
     fontSize: 14,
   },
   RecommendationProfileText: {
@@ -188,9 +187,8 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   RecommendationPriceText: {
-    paddingTop: 6,
-    fontSize: 20,
-    color: "#0057D9",
+    fontSize: 22,
+    color: "#111827",
   },
   RecommendationStatsWrap: {
     paddingTop: 12,
@@ -240,7 +238,7 @@ const styles = StyleSheet.create({
   },
   MetricScore: {
     fontSize: 13,
-    color: "#0F766E",
+    color: "#111827",
     fontWeight: "700",
     paddingTop: 1,
     paddingLeft: 12,

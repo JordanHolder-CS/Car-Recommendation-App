@@ -1,6 +1,7 @@
 import { ImageBackground, StyleSheet, Text, View } from "react-native";
 import { ChevronDown } from "lucide-react-native";
 import Selector from "../Navigation/Selector";
+import { ORANGE } from "../Layout/colors";
 import {
   formatCompareCurrency,
   getVehicleBrand,
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 15,
     fontWeight: "600",
-    color: "#2563EB",
+    color: ORANGE.main,
   },
   VehicleMetaHint: {
     marginTop: 8,

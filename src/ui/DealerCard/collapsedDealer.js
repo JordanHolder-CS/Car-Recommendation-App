@@ -1,5 +1,6 @@
 import { StyleSheet, View, Image, Text } from "react-native";
 import BrandLogo from "../BrandLogo/BrandLogo";
+import { ORANGE } from "../Layout/colors";
 
 const DEFAULT_DEALER_IMAGE =
   "https://www.palmcoastford.com/static/dealer-16495/Used_car_dealer_33_banner.jpg";
@@ -72,9 +73,6 @@ export const DealerContent = ({ dealer = {} }) => {
           ) : null}
           <Text style={styles.TypeText}>{brandLabel}</Text>
         </View>
-        <Text style={styles.PriceText}>
-          Dealer ID: {dealer.dealer_id ?? "N/A"}
-        </Text>
       </View>
     </View>
   );
@@ -100,7 +98,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: "700",
     fontSize: 13,
-    color: "#0F766E",
+    color: ORANGE.dark,
   },
   ProfileText: {
     marginTop: 3,
@@ -146,24 +144,18 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#4B5563",
   },
-  PriceText: {
-    paddingTop: 4,
-    fontWeight: "500",
-    fontSize: 18,
-    color: "#007BFF",
-  },
   SectionTitle: {
     fontWeight: "600",
-    color: "#111827",
+    color: ORANGE.dark,
     fontSize: 14,
   },
   ProTitle: {
     fontWeight: "600",
-    color: "#25CB00",
+    color: ORANGE.dark,
     fontSize: 14,
   },
   Bullet: {
-    color: "#25CB00",
+    color: ORANGE.main,
     fontSize: 20,
     lineHeight: 20,
     marginRight: 6,

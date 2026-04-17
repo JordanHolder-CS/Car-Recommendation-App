@@ -1,5 +1,6 @@
 import { Text, StyleSheet, View } from "react-native";
 import Selector from "../Navigation/Selector";
+import { ORANGE } from "../Layout/colors";
 
 const Button = ({ label, onPress = () => {}, textStyle }) => {
   return (
@@ -28,8 +29,8 @@ const styles = StyleSheet.create({
     minHeight: 50,
     borderWidth: 1,
     borderRadius: 7,
-    borderColor: "#e4e4e4",
-    backgroundColor: "#e4e4e4",
+    borderColor: ORANGE.main,
+    backgroundColor: ORANGE.main,
     alignItems: "center",
     justifyContent: "center",
     padding: 8,
@@ -51,17 +52,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
   deleteLabel: {
     color: "white",
     fontWeight: "600",
   },
   pressedButton: {
-    backgroundColor: "azure",
-    shadowColor: "black",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: ORANGE.press,
+    shadowColor: ORANGE.dark,
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
 });
 

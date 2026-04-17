@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import Selector from "../Navigation/Selector";
 import BrandLogo from "../BrandLogo/BrandLogo";
+import { ORANGE } from "../Layout/colors";
 
 const QBrandButton = ({ id, Title, selectedValues, onPress }) => {
   const selectedBrandIds = Array.isArray(selectedValues) ? selectedValues : [];
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
   },
   SelectedButton: {
     borderWidth: 2,
-    borderColor: "#25CB00",
+    borderColor: ORANGE.main,
   },
   PressedButton: {
     opacity: 0.92,
