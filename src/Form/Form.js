@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import Selector from "../ui/Navigation/Selector";
+import { ORANGE } from "../ui/Layout/colors";
 
 const Form = ({
   children,
@@ -37,7 +38,7 @@ const Form = ({
 const SectionTitle = ({ icon: Icon, children }) => {
   return (
     <View style={styles.sectionTitleRow}>
-      {Icon ? <Icon color="#667085" size={14} strokeWidth={2.1} /> : null}
+      {Icon ? <Icon color={ORANGE.dark} size={14} strokeWidth={2.1} /> : null}
       <Text style={styles.sectionTitleText}>{children}</Text>
     </View>
   );
@@ -50,7 +51,7 @@ const Card = ({ children, style }) => {
 const InfoBanner = ({ icon: Icon, children }) => {
   return (
     <View style={styles.infoBanner}>
-      {Icon ? <Icon color="#3b82f6" size={15} strokeWidth={2.1} /> : null}
+      {Icon ? <Icon color={ORANGE.main} size={15} strokeWidth={2.1} /> : null}
       <Text style={styles.infoBannerText}>{children}</Text>
     </View>
   );
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    color: "#475467",
+    color: ORANGE.dark,
   },
   card: {
     backgroundColor: "#ffffff",
@@ -199,9 +200,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     alignItems: "flex-start",
-    backgroundColor: "#eef4ff",
+    backgroundColor: ORANGE.tint,
     borderWidth: 1,
-    borderColor: "#d6e4ff",
+    borderColor: ORANGE.tintBorder,
     borderRadius: 12,
     padding: 12,
   },
@@ -257,13 +258,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   radioOuterSelected: {
-    borderColor: "#2f6fed",
+    borderColor: ORANGE.main,
   },
   radioInner: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#2f6fed",
+    backgroundColor: ORANGE.main,
   },
   choiceTextGroup: {
     flex: 1,
@@ -289,8 +290,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   choiceChipSelected: {
-    backgroundColor: "#edf4ff",
-    borderColor: "#9ec5ff",
+    backgroundColor: ORANGE.tint,
+    borderColor: ORANGE.tintBorder,
   },
   choiceChipPressed: {
     opacity: 0.85,
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     color: "#344054",
   },
   choiceChipLabelSelected: {
-    color: "#174ea6",
+    color: ORANGE.dark,
   },
   inputShell: {
     gap: 8,
@@ -334,11 +335,11 @@ const styles = StyleSheet.create({
   submitButton: {
     minHeight: 52,
     borderRadius: 14,
-    backgroundColor: "#1f2937",
+    backgroundColor: ORANGE.main,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
-    shadowColor: "#101828",
+    shadowColor: ORANGE.dark,
     shadowOpacity: 0.12,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },

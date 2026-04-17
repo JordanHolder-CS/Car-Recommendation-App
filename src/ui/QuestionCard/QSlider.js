@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Slider from "@react-native-community/slider";
+import { ORANGE } from "../Layout/colors";
 
 const clampValue = (value, min, max) => {
   if (typeof value !== "number" || Number.isNaN(value)) return min;
@@ -50,9 +51,9 @@ const QSlider = ({
         maximumValue={max}
         step={step}
         onValueChange={(nextValue) => onChange?.(nextValue, id)}
-        minimumTrackTintColor="#3B82F6"
+        minimumTrackTintColor={ORANGE.main}
         maximumTrackTintColor="#D1D5DB"
-        thumbTintColor="#2563EB"
+        thumbTintColor={ORANGE.dark}
       />
 
       <View style={styles.labelRow}>
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 22,
     fontWeight: "700",
-    color: "#2563EB",
+    color: ORANGE.main,
   },
   labelRow: {
     flexDirection: "row",

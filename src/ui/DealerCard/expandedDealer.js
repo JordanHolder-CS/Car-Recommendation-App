@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View, Image, Text } from "react-native";
 import { useRef } from "react";
-import { Button } from "react-native-paper";
 import Map from "../Maps/MapView";
+import { ORANGE } from "../Layout/colors";
 
 const DEFAULT_DEALER_IMAGE =
   "https://www.palmcoastford.com/static/dealer-16495/Used_car_dealer_33_banner.jpg";
@@ -64,21 +64,18 @@ export const ExpandedDealer = ({
         <View style={styles.Section}>
           <Text style={styles.SectionTitle}>Dealer details</Text>
           <Text style={styles.MetaText}>
-            Dealer ID: {dealer.dealer_id ?? "N/A"}
-            {"\n"}
             Location: {dealer.location || "Location unavailable"}
             {"\n"}
             Type: {dealerType}
           </Text>
         </View>
 
-        <View style={styles.Section}>
-          <Text style={styles.SectionTitle}>Inventory overview</Text>
-          <Text style={styles.MetaText}>{inventoryLabel}</Text>
-        </View>
-
         {onOpenMap ? (
-          <Pressable ref={mapCardRef} style={styles.MapCard} onPress={handleOpenMap}>
+          <Pressable
+            ref={mapCardRef}
+            style={styles.MapCard}
+            onPress={handleOpenMap}
+          >
             <Map
               initialRegion={mapRegion || undefined}
               interactive={false}
@@ -92,7 +89,6 @@ export const ExpandedDealer = ({
         ) : null}
 
         {children}
-        <Button>View dealer inventory</Button>
       </View>
     </View>
   );
@@ -115,7 +111,8 @@ const styles = StyleSheet.create({
   ImageHeader: {
     height: 220,
     width: "100%",
-    // borderRadius: 12,
+    borderTopRightRadius: 12,
+    borderTopLeftRadius: 12,
   },
   TextWrapper: {
     paddingHorizontal: 12,
@@ -131,7 +128,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontWeight: "700",
     fontSize: 14,
-    color: "#0F766E",
+    color: ORANGE.dark,
   },
   SubtitleText: {
     marginTop: 4,
@@ -144,7 +141,7 @@ const styles = StyleSheet.create({
   },
   SectionTitle: {
     fontWeight: "600",
-    color: "#111827",
+    color: ORANGE.dark,
     fontSize: 14,
   },
   MetaText: {
@@ -158,7 +155,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F4F4F4",
+    shadowColor: "#000000",
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
     overflow: "hidden",
   },
   MapPreview: {

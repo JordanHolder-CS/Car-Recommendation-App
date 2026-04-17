@@ -6,12 +6,15 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Screen from "../ui/Layout/screen.js";
 import Button from "../ui/Navigation/ContinueButton.js";
 import BackButton from "../ui/Navigation/BackButton.js";
 import Selector from "../ui/Navigation/Selector.js";
 import RecommendationList from "../Lists/RecommendationList.js";
+import { ORANGE } from "../ui/Layout/colors.js";
+import useRetakeButtonReveal from "../ui/Animation/useRetakeButtonReveal.js";
 
 const BATCH_SIZE = 5;
 const RESULT_LIMIT = 10;
@@ -33,10 +36,15 @@ export const ResultScreen = ({ navigation, route }) => {
   const [intent, setIntent] = useState("");
   const [profileLabel, setProfileLabel] = useState("");
   const [budgetFallbackApplied, setBudgetFallbackApplied] = useState(false);
-  const [recommendationNote, setRecommendationNote] = useState("");
   const answers = route?.params?.answers || {};
   const requestKey = route?.params?.requestKey || "";
   const serializedAnswers = JSON.stringify(answers);
+  const {
+    showRetakeButton,
+    resetRetakeButton,
+    handleResultsScroll,
+    retakeButtonEntering,
+  } = useRetakeButtonReveal();
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -45,6 +53,7 @@ export const ResultScreen = ({ navigation, route }) => {
         setError(null);
         setCars([]);
         setVisibleCount(BATCH_SIZE);
+        resetRetakeButton();
 
         const response = await fetch(`${CAR_API_URL}/recommend`, {
           method: "POST",
@@ -72,9 +81,6 @@ export const ResultScreen = ({ navigation, route }) => {
         setBudgetFallbackApplied(
           Boolean(meta.budgetFallbackApplied ?? data.budgetFallbackApplied),
         );
-        setRecommendationNote(
-          meta.recommendationNote || data.recommendationNote || "",
-        );
       } catch (err) {
         console.error("Error fetching recommendations:", err);
         setError(err.message);
@@ -98,6 +104,10 @@ export const ResultScreen = ({ navigation, route }) => {
       selectedCar: car,
       recommendedCars: cars,
     });
+  };
+
+  const onRetakeQuestionnaire = () => {
+    navigation.navigate("Questionnaire");
   };
 
   if (loading) {
@@ -135,9 +145,6 @@ export const ResultScreen = ({ navigation, route }) => {
           {profileLabel ? (
             <Text style={styles.HeaderProfile}>{profileLabel}</Text>
           ) : null}
-          {recommendationNote ? (
-            <Text style={styles.HeaderNotice}>{recommendationNote}</Text>
-          ) : null}
           {cars.length && (useCase || intent) ? (
             <Text style={styles.HeaderSubtitle}>
               {useCase ? `Use case: ${useCase.replace(/_/g, " ")}` : ""}
@@ -150,7 +157,11 @@ export const ResultScreen = ({ navigation, route }) => {
       </SafeAreaView>
       <View style={styles.SafeArea}>
         {cars.length ? (
-          <ScrollView>
+          <ScrollView
+            onScroll={handleResultsScroll}
+            scrollEventThrottle={16}
+            contentContainerStyle={styles.ResultsScrollContent}
+          >
             <RecommendationList
               cars={visibleCars}
               onSelect={onSelectRecommendation}
@@ -192,6 +203,18 @@ export const ResultScreen = ({ navigation, route }) => {
             </View>
           </View>
         )}
+
+        {showRetakeButton ? (
+          <Animated.View
+            entering={retakeButtonEntering}
+            style={styles.RetakeButtonWrap}
+          >
+            <Button
+              label="Retake Questionnaire"
+              onPress={onRetakeQuestionnaire}
+            />
+          </Animated.View>
+        ) : null}
       </View>
     </Screen>
   );
@@ -199,6 +222,9 @@ export const ResultScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   SafeArea: { marginHorizontal: 15, flex: 1 },
+  ResultsScrollContent: {
+    paddingBottom: 96,
+  },
   Header: {
     flexDirection: "row",
     alignItems: "center",
@@ -211,27 +237,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   HeaderTitle: {
-    fontSize: 17,
+    fontSize: 21,
     fontWeight: "600",
   },
   HeaderProfile: {
     marginTop: 3,
     fontSize: 13,
     fontWeight: "600",
-    color: "#111827",
+    color: ORANGE.dark,
   },
   HeaderSubtitle: {
     marginTop: 2,
     fontSize: 11,
-    color: "#6B7280",
+    color: ORANGE.deep,
     textTransform: "capitalize",
-  },
-  HeaderNotice: {
-    marginTop: 4,
-    maxWidth: 260,
-    fontSize: 11,
-    color: "#92400E",
-    textAlign: "center",
   },
   HeaderSpacer: {
     width: 44,
@@ -267,6 +286,13 @@ const styles = StyleSheet.create({
   EmptyButtonWrap: {
     width: 220,
   },
+  RetakeButtonWrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 18,
+    paddingHorizontal: 18,
+  },
   MoreButtonWrap: {
     marginTop: 4,
     marginBottom: 24,
@@ -276,6 +302,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 14,
     backgroundColor: "#1F1F1F",
+    shadowColor: "#000000",
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
     paddingHorizontal: 14,
     paddingVertical: 14,
     alignItems: "center",

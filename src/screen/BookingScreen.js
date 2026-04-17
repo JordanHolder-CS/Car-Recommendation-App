@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BookingForm from "../Form/BookingForm";
 import BackButton from "../ui/Navigation/BackButton";
+import { ORANGE } from "../ui/Layout/colors";
 
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
@@ -120,14 +121,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: 21,
     fontWeight: "700",
     color: "#111827",
   },
   headerSubtitle: {
     marginTop: 2,
     fontSize: 11,
-    color: "#6b7280",
+    color: ORANGE.deep,
     textAlign: "center",
   },
   headerSpacer: {

@@ -1,0 +1,360 @@
+{
+  "profile": {
+    "useCase": "city",
+    "intent": "value",
+    "label": "Efficient City Car"
+  },
+  "meta": {
+    "returnedCount": 4,
+    "budgetFallbackApplied": false
+  },
+  "recommendations": [
+    {
+      "car_name": "Prius",
+      "brand_name": "Toyota",
+      "name": "Prius",
+      "seat_count": 5,
+      "body_style": "hatchback",
+      "price": 9275,
+      "max_seating_capacity": 5,
+      "standard_engine": "4-Cyl, Hybrid, 1.8 Liter",
+      "score": 0.7043,
+      "matchScore": 0.7043,
+      "recommendationBreakdown": [
+        {
+          "key": "cityFit",
+          "label": "City fit",
+          "fitScore": 72,
+          "impactPercent": 22,
+          "note": "More compact and town-friendly for urban driving.",
+          "priority": true
+        },
+        {
+          "key": "roadTripFit",
+          "label": "Road-trip fit",
+          "fitScore": 63,
+          "impactPercent": 4,
+          "note": "Less convincing for longer trips than the best tourer-style matches.",
+          "priority": false
+        }
+      ],
+      "topReasons": [
+        "Looks strong on price and day-to-day running cost.",
+        "More compact and town-friendly for urban driving.",
+        "Less aligned with your preferred mid-size / balanced feel."
+      ],
+      "useCase": "city",
+      "intent": "value",
+      "profileLabel": "Efficient City Car",
+      "primaryDriverType": "city"
+    },
+    {
+      "car_name": "Prius Plug-in Hybrid",
+      "brand_name": "Toyota",
+      "car_id": 743,
+      "name": "Prius Plug-in Hybrid",
+      "brand_id": 1,
+      "zero_to_sixty_mph": 10,
+      "horsepower": null,
+      "seat_count": 5,
+      "boot_space_liters": null,
+      "body_style": "hatchback",
+      "service_cost": null,
+      "insurance_estimate": null,
+      "reliability": null,
+      "price": 9275,
+      "curb_weight": 3072,
+      "top_speed": 112,
+      "torque": 105,
+      "combined_mpg": null,
+      "ev_range": null,
+      "epa_city": 51,
+      "epa_mpg_hwy": 48,
+      "epa_combined": 50,
+      "estimated_electric_range": 0,
+      "charge_time": 0,
+      "drivetrain": "FWD",
+      "max_seating_capacity": 5,
+      "is_ev": false,
+      "battery_capacity": 0,
+      "towing_capacity": 0,
+      "cargo_capacity": 22,
+      "model_year": 2015,
+      "standard_engine": "4-Cyl, Hybrid, 1.8 Liter",
+      "score": 0.7043,
+      "matchScore": 0.7043,
+      "recommendationBreakdown": [
+        {
+          "key": "runningCostFit",
+          "label": "Running-cost fit",
+          "fitScore": 73,
+          "impactPercent": 36,
+          "note": "Looks strong on price and day-to-day running cost.",
+          "priority": true
+        },
+        {
+          "key": "cityFit",
+          "label": "City fit",
+          "fitScore": 72,
+          "impactPercent": 22,
+          "note": "More compact and town-friendly for urban driving.",
+          "priority": true
+        },
+        {
+          "key": "sizeFit",
+          "label": "Size fit",
+          "fitScore": 69,
+          "impactPercent": 15,
+          "note": "Less aligned with your preferred mid-size / balanced feel.",
+          "priority": true
+        },
+        {
+          "key": "brandFit",
+          "label": "Brand fit",
+          "fitScore": 100,
+          "impactPercent": 12,
+          "note": "Matches your preferred brand choice: Toyota.",
+          "priority": false
+        },
+        {
+          "key": "comfortFit",
+          "label": "Comfort fit",
+          "fitScore": 56,
+          "impactPercent": 7,
+          "note": "Less comfort-led than the strongest shortlist options.",
+          "priority": false
+        },
+        {
+          "key": "spaceFit",
+          "label": "Passenger / space fit",
+          "fitScore": 42,
+          "impactPercent": 4,
+          "note": "Less aligned with your hatchback / compact or SUV / crossover preference.",
+          "priority": false
+        },
+        {
+          "key": "roadTripFit",
+          "label": "Road-trip fit",
+          "fitScore": 63,
+          "impactPercent": 4,
+          "note": "Less convincing for longer trips than the best tourer-style matches.",
+          "priority": false
+        }
+      ],
+      "topReasons": [
+        "Looks strong on price and day-to-day running cost.",
+        "More compact and town-friendly for urban driving.",
+        "Less aligned with your preferred mid-size / balanced feel."
+      ],
+      "useCase": "city",
+      "intent": "value",
+      "profileLabel": "Efficient City Car",
+      "primaryDriverType": "city"
+    },
+    {
+      "car_name": "Prius c",
+      "brand_name": "Toyota",
+      "car_id": 708,
+      "name": "Prius c",
+      "brand_id": 1,
+      "zero_to_sixty_mph": 12,
+      "horsepower": null,
+      "seat_count": 5,
+      "boot_space_liters": null,
+      "body_style": "hatchback",
+      "service_cost": null,
+      "insurance_estimate": null,
+      "reliability": null,
+      "price": 12100,
+      "curb_weight": 2530,
+      "top_speed": 105,
+      "torque": 82,
+      "combined_mpg": null,
+      "ev_range": null,
+      "epa_city": 48,
+      "epa_mpg_hwy": 43,
+      "epa_combined": 46,
+      "estimated_electric_range": 0,
+      "charge_time": 0,
+      "drivetrain": "FWD",
+      "max_seating_capacity": 5,
+      "is_ev": false,
+      "battery_capacity": 0,
+      "towing_capacity": 0,
+      "cargo_capacity": 17,
+      "model_year": 2018,
+      "standard_engine": "4-Cyl, Hybrid, 1.5 Liter",
+      "score": 0.6595,
+      "matchScore": 0.6595,
+      "recommendationBreakdown": [
+        {
+          "key": "runningCostFit",
+          "label": "Running-cost fit",
+          "fitScore": 57,
+          "impactPercent": 30,
+          "note": "Weaker on price or efficiency than the stronger shortlist options.",
+          "priority": true
+        },
+        {
+          "key": "cityFit",
+          "label": "City fit",
+          "fitScore": 77,
+          "impactPercent": 25,
+          "note": "More compact and town-friendly for urban driving.",
+          "priority": true
+        },
+        {
+          "key": "sizeFit",
+          "label": "Size fit",
+          "fitScore": 66,
+          "impactPercent": 15,
+          "note": "Less aligned with your preferred mid-size / balanced feel.",
+          "priority": true
+        },
+        {
+          "key": "brandFit",
+          "label": "Brand fit",
+          "fitScore": 100,
+          "impactPercent": 13,
+          "note": "Matches your preferred brand choice: Toyota.",
+          "priority": false
+        },
+        {
+          "key": "comfortFit",
+          "label": "Comfort fit",
+          "fitScore": 65,
+          "impactPercent": 9,
+          "note": "Less comfort-led than the strongest shortlist options.",
+          "priority": false
+        },
+        {
+          "key": "spaceFit",
+          "label": "Passenger / space fit",
+          "fitScore": 40,
+          "impactPercent": 4,
+          "note": "Less aligned with your hatchback / compact or SUV / crossover preference.",
+          "priority": false
+        },
+        {
+          "key": "roadTripFit",
+          "label": "Road-trip fit",
+          "fitScore": 56,
+          "impactPercent": 4,
+          "note": "Less convincing for longer trips than the best tourer-style matches.",
+          "priority": false
+        }
+      ],
+      "topReasons": [
+        "More compact and town-friendly for urban driving.",
+        "Less aligned with your preferred mid-size / balanced feel.",
+        "Matches your preferred brand choice: Toyota."
+      ],
+      "useCase": "city",
+      "intent": "value",
+      "profileLabel": "Efficient City Car",
+      "primaryDriverType": "city"
+    },
+    {
+      "car_name": "Escape",
+      "brand_name": "FORD",
+      "car_id": 136,
+      "name": "Escape",
+      "brand_id": 13,
+      "zero_to_sixty_mph": 0,
+      "horsepower": "210 @ 6250 RPM",
+      "seat_count": 5,
+      "boot_space_liters": null,
+      "body_style": "suv",
+      "service_cost": null,
+      "insurance_estimate": null,
+      "reliability": null,
+      "price": 0,
+      "curb_weight": 3903,
+      "top_speed": 0,
+      "torque": 155,
+      "combined_mpg": null,
+      "ev_range": null,
+      "epa_city": 0,
+      "epa_mpg_hwy": 0,
+      "epa_combined": 40,
+      "estimated_electric_range": 37,
+      "charge_time": 3,
+      "drivetrain": "FWD",
+      "max_seating_capacity": 5,
+      "is_ev": false,
+      "battery_capacity": 0,
+      "towing_capacity": 1500,
+      "cargo_capacity": 61,
+      "model_year": 2025,
+      "standard_engine": "4-Cyl, Hybrid, 2.5 Liter",
+      "score": 0.5873,
+      "matchScore": 0.5873,
+      "recommendationBreakdown": [
+        {
+          "key": "runningCostFit",
+          "label": "Running-cost fit",
+          "fitScore": 81,
+          "impactPercent": 48,
+          "note": "Looks strong on price and day-to-day running cost.",
+          "priority": true
+        },
+        {
+          "key": "cityFit",
+          "label": "City fit",
+          "fitScore": 42,
+          "impactPercent": 16,
+          "note": "Bulkier or less city-focused than the best urban matches.",
+          "priority": true
+        },
+        {
+          "key": "sizeFit",
+          "label": "Size fit",
+          "fitScore": 57,
+          "impactPercent": 15,
+          "note": "Less aligned with your preferred mid-size / balanced feel.",
+          "priority": true
+        },
+        {
+          "key": "comfortFit",
+          "label": "Comfort fit",
+          "fitScore": 45,
+          "impactPercent": 7,
+          "note": "Less comfort-led than the strongest shortlist options.",
+          "priority": false
+        },
+        {
+          "key": "spaceFit",
+          "label": "Passenger / space fit",
+          "fitScore": 57,
+          "impactPercent": 6,
+          "note": "Less aligned with your hatchback / compact or SUV / crossover preference.",
+          "priority": false
+        },
+        {
+          "key": "roadTripFit",
+          "label": "Road-trip fit",
+          "fitScore": 75,
+          "impactPercent": 6,
+          "note": "Better suited to longer trips with stronger range and luggage ability.",
+          "priority": false
+        },
+        {
+          "key": "brandFit",
+          "label": "Brand fit",
+          "fitScore": 20,
+          "impactPercent": 3,
+          "note": "Does not match one of your preferred brands.",
+          "priority": false
+        }
+      ],
+      "topReasons": [
+        "Looks strong on price and day-to-day running cost.",
+        "Better suited to longer trips with stronger range and luggage ability."
+      ],
+      "useCase": "city",
+      "intent": "value",
+      "profileLabel": "Efficient City Car",
+      "primaryDriverType": "city"
+    }
+  ]
+}

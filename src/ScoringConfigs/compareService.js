@@ -20,8 +20,13 @@ const parseNumber = (value) => {
   return null;
 };
 
-const formatMetricText = (value, suffix = "") => {
+const parseComparableNumber = (value) => {
   const parsedValue = parseNumber(value);
+  return parsedValue !== null && parsedValue > 0 ? parsedValue : null;
+};
+
+const formatMetricText = (value, suffix = "") => {
+  const parsedValue = parseComparableNumber(value);
   if (parsedValue === null) return "N/A";
   return `${Number(parsedValue).toLocaleString("en-GB", {
     minimumFractionDigits: 0,
@@ -52,7 +57,7 @@ const formatTitleCase = (value) => {
 };
 
 export const formatCompareCurrency = (value) => {
-  const parsedValue = parseNumber(value);
+  const parsedValue = parseComparableNumber(value);
   return parsedValue !== null
     ? Number(parsedValue).toLocaleString("en-GB", {
         style: "currency",
@@ -68,7 +73,6 @@ export const getCarCompareKey = (car = {}) => {
   return [
     car?.brand_name ?? car?.brand ?? "",
     car?.car_name ?? car?.name ?? "",
-    car?.model ?? "",
     car?.price ?? "",
   ]
     .join("|")
@@ -78,7 +82,7 @@ export const getCarCompareKey = (car = {}) => {
 export const getVehicleBrand = (car = {}) => car?.brand_name ?? car?.brand ?? "";
 
 export const getVehicleName = (car = {}) =>
-  car?.car_name ?? car?.name ?? car?.model ?? "Vehicle unavailable";
+  car?.car_name ?? car?.name ?? "Vehicle unavailable";
 
 export const getVehicleImage = (car = {}) =>
   car?.image_url ?? car?.image ?? DEFAULT_COMPARE_IMAGE;
@@ -282,6 +286,10 @@ const buildStandardFactualRow = (rowKey, leftCar, rightCar) => {
   const rightValue = getValue(rightCar);
 
   if (config.kind === "currency") {
+    const leftScore = parseComparableNumber(leftValue);
+    const rightScore = parseComparableNumber(rightValue);
+    if (leftScore === null && rightScore === null) return null;
+
     return {
       key: rowKey,
       label: config.label,
@@ -290,13 +298,13 @@ const buildStandardFactualRow = (rowKey, leftCar, rightCar) => {
       rightText: formatCompareCurrency(rightValue),
       leftDetail: null,
       rightDetail: null,
-      winner: getWinner(parseNumber(leftValue), parseNumber(rightValue), config.direction),
+      winner: getWinner(leftScore, rightScore, config.direction),
     };
   }
 
   if (config.kind === "numeric") {
-    const leftScore = parseNumber(leftValue);
-    const rightScore = parseNumber(rightValue);
+    const leftScore = parseComparableNumber(leftValue);
+    const rightScore = parseComparableNumber(rightValue);
     if (leftScore === null && rightScore === null) return null;
     return {
       key: rowKey,
@@ -373,8 +381,8 @@ const buildEfficiencyRow = (leftCar, rightCar) => {
   const rowMeta = getEfficiencyRowMeta(leftMetric, rightMetric);
 
   if (
-    parseNumber(leftMetric.value) === null &&
-    parseNumber(rightMetric.value) === null
+    parseComparableNumber(leftMetric.value) === null &&
+    parseComparableNumber(rightMetric.value) === null
   ) {
     return null;
   }
@@ -389,8 +397,8 @@ const buildEfficiencyRow = (leftCar, rightCar) => {
     rightDetail: null,
     winner: rowMeta.compareDirection
       ? getWinner(
-          parseNumber(leftMetric.value),
-          parseNumber(rightMetric.value),
+          parseComparableNumber(leftMetric.value),
+          parseComparableNumber(rightMetric.value),
           rowMeta.compareDirection,
         )
       : null,

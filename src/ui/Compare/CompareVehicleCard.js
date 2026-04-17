@@ -1,6 +1,7 @@
 import { ImageBackground, StyleSheet, Text, View } from "react-native";
 import { ChevronDown } from "lucide-react-native";
 import Selector from "../Navigation/Selector";
+import { ORANGE } from "../Layout/colors";
 import {
   formatCompareCurrency,
   getVehicleBrand,
@@ -87,6 +88,11 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 18,
     backgroundColor: "#FFFFFF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
     overflow: "hidden",
   },
   VehicleHero: {
@@ -138,7 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 15,
     fontWeight: "600",
-    color: "#2563EB",
+    color: ORANGE.main,
   },
   VehicleMetaHint: {
     marginTop: 8,

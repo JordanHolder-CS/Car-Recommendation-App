@@ -10,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Screen from "../ui/Layout/screen.js";
 import BackButton from "../ui/Navigation/BackButton.js";
 import DealerList from "../Lists/DealerList.js";
+import { ORANGE } from "../ui/Layout/colors.js";
 
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   HeaderTitle: {
-    fontSize: 17,
+    fontSize: 21,
     fontWeight: "600",
   },
   HeaderProfile: {
@@ -163,14 +164,14 @@ const styles = StyleSheet.create({
   HeaderSubtitle: {
     marginTop: 2,
     fontSize: 11,
-    color: "#6B7280",
+    color: ORANGE.deep,
     textTransform: "capitalize",
   },
   HeaderNotice: {
     marginTop: 4,
     maxWidth: 260,
     fontSize: 11,
-    color: "#92400E",
+    color: ORANGE.deeper,
     textAlign: "center",
   },
   HeaderSpacer: {

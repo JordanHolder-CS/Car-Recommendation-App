@@ -47,7 +47,6 @@ const DEALER_LISTINGS_QUERY = `
     dealership.is_franchised,
     brands.name AS brand_name,
     car.name AS car_name,
-    car.model,
     dealerlisting.price,
     dealerlisting.milage,
     dealerlisting.year,

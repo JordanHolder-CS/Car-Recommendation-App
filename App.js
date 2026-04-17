@@ -52,7 +52,7 @@ export const App = () => {
             title: "Compare cars",
             headerShown: false,
             presentation: "card",
-            contentStyle: { backgroundColor: "#ffffff" },
+            contentStyle: { backgroundColor: "#000000" },
           }}
         />
         <Stack.Screen
@@ -62,7 +62,7 @@ export const App = () => {
             title: "Dealership",
             headerShown: false,
             presentation: "card",
-            contentStyle: { backgroundColor: "#ffffff" },
+            contentStyle: { backgroundColor: "#000000" },
           }}
         />
         <Stack.Screen
@@ -72,7 +72,7 @@ export const App = () => {
             title: "Dealer",
             headerShown: false,
             presentation: "card",
-            contentStyle: { backgroundColor: "#ffffff" },
+            contentStyle: { backgroundColor: "#000000" },
           }}
         />
         <Stack.Screen
@@ -82,7 +82,7 @@ export const App = () => {
             title: "Book a test drive",
             headerShown: false,
             presentation: "card",
-            contentStyle: { backgroundColor: "#ffffff" },
+            contentStyle: { backgroundColor: "#000000" },
           }}
         />
         <Stack.Screen

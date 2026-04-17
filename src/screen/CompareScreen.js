@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "../ui/Navigation/BackButton";
+import Button from "../ui/Navigation/ContinueButton";
 import CompareVehicleCard from "../ui/Compare/CompareVehicleCard";
 import ComparisonRowsCard from "../ui/Compare/ComparisonRowsCard";
 import SelectionSheet from "../ui/SelectionSheet/SelectionSheet";
+import useRetakeButtonReveal from "../ui/Animation/useRetakeButtonReveal";
 import {
   buildComparisonRows,
   buildRationaleMessage,
@@ -29,6 +32,16 @@ const CompareScreen = ({ navigation, route }) => {
   const [leftCar, setLeftCar] = useState(null);
   const [rightCar, setRightCar] = useState(selectedCar ?? null);
   const [activePickerSide, setActivePickerSide] = useState(null);
+  const {
+    showRetakeButton,
+    resetRetakeButton,
+    handleResultsScroll,
+    retakeButtonEntering,
+  } = useRetakeButtonReveal();
+
+  useEffect(() => {
+    resetRetakeButton();
+  }, [resetRetakeButton, selectedCar]);
 
   useEffect(() => {
     setRightCar((currentValue) => {
@@ -70,6 +83,9 @@ const CompareScreen = ({ navigation, route }) => {
     () => buildComparisonRows(leftCar, focusCar),
     [leftCar, focusCar],
   );
+  const onBackToRecommendations = () => {
+    navigation.goBack();
+  };
 
   if (!selectedCar) {
     return (
@@ -103,6 +119,8 @@ const CompareScreen = ({ navigation, route }) => {
 
       <ScrollView
         style={styles.ScrollView}
+        onScroll={handleResultsScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.ScrollContent}
       >
         <View style={styles.BannerCard}>
@@ -141,6 +159,18 @@ const CompareScreen = ({ navigation, route }) => {
 
         <ComparisonRowsCard rows={comparisonRows} />
       </ScrollView>
+
+      {showRetakeButton ? (
+        <Animated.View
+          entering={retakeButtonEntering}
+          style={styles.BackToRecommendationsWrap}
+        >
+          <Button
+            label="Back to Recommendations"
+            onPress={onBackToRecommendations}
+          />
+        </Animated.View>
+      ) : null}
 
       <SelectionSheet
         visible={Boolean(activePickerSide)}
@@ -189,7 +219,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   HeaderTitle: {
-    fontSize: 17,
+    fontSize: 21,
     fontWeight: "600",
     color: "#111827",
   },
@@ -201,13 +231,25 @@ const styles = StyleSheet.create({
   },
   ScrollContent: {
     paddingHorizontal: 14,
-    paddingBottom: 28,
+    paddingBottom: 96,
+  },
+  BackToRecommendationsWrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 18,
+    paddingHorizontal: 18,
   },
   BannerCard: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 14,
     backgroundColor: "#FFFFFF",
+    shadowColor: "#000000",
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 5,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },

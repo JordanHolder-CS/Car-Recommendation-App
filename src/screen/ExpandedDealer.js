@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   HeaderTitle: {
-    fontSize: 17,
+    fontSize: 21,
     fontWeight: "600",
   },
   HeaderSpacer: {

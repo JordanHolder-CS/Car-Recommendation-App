@@ -12,6 +12,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { Clock3 } from "lucide-react-native";
 import Selector from "../Navigation/Selector";
+import { ORANGE } from "../Layout/colors";
 
 export const DEFAULT_TIME_VALUE = "09:00";
 
@@ -335,8 +336,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   optionButtonSelected: {
-    backgroundColor: "#edf4ff",
-    borderColor: "#9ec5ff",
+    backgroundColor: ORANGE.tint,
+    borderColor: ORANGE.tintBorder,
   },
   optionButtonPressed: {
     opacity: 0.85,
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
     color: "#344054",
   },
   optionLabelSelected: {
-    color: "#174ea6",
+    color: ORANGE.dark,
   },
 });
 

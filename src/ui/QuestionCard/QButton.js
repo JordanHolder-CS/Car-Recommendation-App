@@ -1,6 +1,6 @@
 import { StyleSheet, View, Text } from "react-native";
-import { Pressable } from "react-native";
-import RadioButton from "./RadioButton";
+import Selector from "../Navigation/Selector";
+import { ORANGE } from "../Layout/colors";
 
 export const QButton = ({ id, Title, Description, selectedId, onPress }) => {
   const selectedValues = Array.isArray(selectedId)
@@ -15,61 +15,75 @@ export const QButton = ({ id, Title, Description, selectedId, onPress }) => {
   };
 
   return (
-    <Pressable onPress={handlePress}>
-      <View style={[styles.button]}>
-        <RadioButton
-          selectedId={isSelected ? "1" : null}
-          options={[{ id: "1", value: "2" }]}
-        />
-        <Text style={styles.title}>
+    <Selector
+      onPress={handlePress}
+      style={[styles.button, isSelected ? styles.buttonSelected : null]}
+      pressedStyle={styles.buttonPressed}
+    >
+      <View style={styles.textWrap}>
+        <Text style={[styles.title, isSelected ? styles.titleSelected : null]}>
           {Title}
-          {"\n"}
-          <Text style={styles.desc}>{Description}</Text>
         </Text>
+        {Description ? (
+          <Text style={[styles.desc, isSelected ? styles.descSelected : null]}>
+            {Description}
+          </Text>
+        ) : null}
       </View>
-    </Pressable>
+    </Selector>
   );
 };
 const styles = StyleSheet.create({
   button: {
-    //borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    paddingRight: 14,
-    marginVertical: 7,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-  },
-
-  radio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "#D1D5DB",
-    backgroundColor: "transparent",
+    borderRadius: 28,
+    backgroundColor: "#F4F4F4",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    marginVertical: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 74,
   },
-
+  buttonSelected: {
+    backgroundColor: ORANGE.main,
+    borderColor: ORANGE.main,
+    shadowColor: ORANGE.dark,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  buttonPressed: {
+    opacity: 0.94,
+    transform: [{ scale: 0.99 }],
+  },
   textWrap: {
-    // flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
     color: "#111827",
-    //flex: 1,
     flexShrink: 1,
+    textAlign: "center",
   },
-
+  titleSelected: {
+    color: "#FFFFFF",
+  },
   desc: {
-    marginTop: 4,
+    marginTop: 5,
     color: "#6B7280",
-    fontSize: 10,
-    flex: 1,
+    fontSize: 12,
+    lineHeight: 16,
     flexShrink: 1,
+    textAlign: "center",
+  },
+  descSelected: {
+    color: "rgba(255,255,255,0.86)",
   },
 });
 
