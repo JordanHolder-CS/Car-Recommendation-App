@@ -5,10 +5,11 @@ const {
   normalizeBrandKey,
 } = require("./recommendationConfig");
 
-// Parses nullable numeric source values into a consistent number-or-null shape.
+// Parses scored spec values into a consistent number-or-null shape.
+// For recommendation scoring, 0 almost always means "missing placeholder data".
 const parseNumber = (value) => {
   const parsedValue = Number.parseFloat(value);
-  return Number.isFinite(parsedValue) ? parsedValue : null;
+  return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : null;
 };
 
 // Treats zero / negative placeholders as missing for scored vehicle specs.
@@ -31,7 +32,36 @@ const averageScores = (scores = [], fallback = 0.5) => {
     (score) => score !== null && Number.isFinite(score),
   );
   if (!validScores.length) return fallback;
-  return validScores.reduce((total, score) => total + score, 0) / validScores.length;
+  return (
+    validScores.reduce((total, score) => total + score, 0) / validScores.length
+  );
+};
+
+// Lets a metric lean harder on the signals that matter most.
+const weightedAverageScores = (entries = [], fallback = 0.5) => {
+  const validEntries = entries.filter(
+    (entry) =>
+      entry?.score !== null &&
+      Number.isFinite(entry?.score) &&
+      Number.isFinite(entry?.weight) &&
+      entry.weight > 0,
+  );
+
+  if (!validEntries.length) return fallback;
+
+  const totalWeight = validEntries.reduce(
+    (runningTotal, entry) => runningTotal + entry.weight,
+    0,
+  );
+
+  if (!totalWeight) return fallback;
+
+  return (
+    validEntries.reduce(
+      (runningTotal, entry) => runningTotal + entry.score * entry.weight,
+      0,
+    ) / totalWeight
+  );
 };
 
 // Reads one normalized numeric metric from a car row for shortlist comparisons.
@@ -42,8 +72,8 @@ const getComparableMetricValue = (metricKey, car = {}) => {
     case "efficiency":
       return parseComparableValue(
         car?.is_ev
-          ? car?.ev_range ?? car?.estimated_electric_range
-          : car?.combined_mpg ?? car?.epa_combined,
+          ? (car?.ev_range ?? car?.estimated_electric_range)
+          : (car?.combined_mpg ?? car?.epa_combined),
       );
     case "horsepower":
       return parseComparableValue(car?.horsepower);
@@ -52,7 +82,9 @@ const getComparableMetricValue = (metricKey, car = {}) => {
     case "seating":
       return parseComparableValue(car?.max_seating_capacity ?? car?.seat_count);
     case "bootSpace":
-      return parseComparableValue(car?.boot_space_liters ?? car?.cargo_capacity);
+      return parseComparableValue(
+        car?.boot_space_liters ?? car?.cargo_capacity,
+      );
     case "curbWeight":
       return parseComparableValue(car?.curb_weight);
     default:
@@ -76,8 +108,7 @@ const buildRanges = (cars = []) => {
     Object.entries(metricGetters).map(([key, getter]) => {
       const values = cars
         .map((car) => getter(car))
-        .filter((value) => value !== null && Number.isFinite(value));
-
+        .filter((value) => value !== null);
       if (!values.length) return [key, null];
 
       return [
@@ -188,7 +219,10 @@ const METRIC_BUILDERS = {
       averageScores(
         [
           getBodyStyleScore("cityFit", car),
-          normalizeLower(getComparableMetricValue("curbWeight", car), context.ranges.curbWeight),
+          normalizeLower(
+            getComparableMetricValue("curbWeight", car),
+            context.ranges.curbWeight,
+          ),
         ],
         0.5,
       ),
@@ -218,14 +252,26 @@ const METRIC_BUILDERS = {
   performanceFit: {
     label: "Performance fit",
     getScore: (car, context) =>
-      averageScores(
+      weightedAverageScores(
         [
-          getBodyStyleScore("performanceFit", car),
-          normalizeHigher(getComparableMetricValue("horsepower", car), context.ranges.horsepower),
-          normalizeLower(
-            getComparableMetricValue("acceleration", car),
-            context.ranges.acceleration,
-          ),
+          {
+            score: normalizeHigher(
+              getComparableMetricValue("horsepower", car),
+              context.ranges.horsepower,
+            ),
+            weight: 0.5,
+          },
+          {
+            score: normalizeLower(
+              getComparableMetricValue("acceleration", car),
+              context.ranges.acceleration,
+            ),
+            weight: 0.35,
+          },
+          {
+            score: getBodyStyleScore("performanceFit", car),
+            weight: 0.15,
+          },
         ],
         0.5,
       ),
@@ -240,8 +286,14 @@ const METRIC_BUILDERS = {
       averageScores(
         [
           getBodyStyleScore("practicalFit", car),
-          normalizeHigher(getComparableMetricValue("bootSpace", car), context.ranges.bootSpace),
-          normalizeHigher(getComparableMetricValue("seating", car), context.ranges.seating),
+          normalizeHigher(
+            getComparableMetricValue("bootSpace", car),
+            context.ranges.bootSpace,
+          ),
+          normalizeHigher(
+            getComparableMetricValue("seating", car),
+            context.ranges.seating,
+          ),
         ],
         0.5,
       ),
@@ -260,7 +312,10 @@ const METRIC_BUILDERS = {
             getComparableMetricValue("efficiency", car),
             context.ranges.efficiency,
           ),
-          normalizeHigher(getComparableMetricValue("bootSpace", car), context.ranges.bootSpace),
+          normalizeHigher(
+            getComparableMetricValue("bootSpace", car),
+            context.ranges.bootSpace,
+          ),
         ],
         0.5,
       ),
@@ -274,7 +329,9 @@ const METRIC_BUILDERS = {
     getScore: (car, context) => {
       const bodyStyle = normalizeText(car?.body_style);
       const styleMatch = context.criteria.bodyStyleTerms?.length
-        ? context.criteria.bodyStyleTerms.some((term) => bodyStyle.includes(term))
+        ? context.criteria.bodyStyleTerms.some((term) =>
+            bodyStyle.includes(term),
+          )
           ? 1
           : 0.2
         : null;
@@ -282,8 +339,14 @@ const METRIC_BUILDERS = {
       return averageScores(
         [
           styleMatch,
-          normalizeHigher(getComparableMetricValue("seating", car), context.ranges.seating),
-          normalizeHigher(getComparableMetricValue("bootSpace", car), context.ranges.bootSpace),
+          normalizeHigher(
+            getComparableMetricValue("seating", car),
+            context.ranges.seating,
+          ),
+          normalizeHigher(
+            getComparableMetricValue("bootSpace", car),
+            context.ranges.bootSpace,
+          ),
         ],
         0.5,
       );
@@ -354,7 +417,11 @@ const getPriorityKeys = (weights = {}) =>
     .map(([key]) => key);
 
 // Turns weighted metric results into the breakdown rows used by the UI and tooling.
-const buildBreakdown = (metricResults = [], totalScore = 0, priorityKeys = []) =>
+const buildBreakdown = (
+  metricResults = [],
+  totalScore = 0,
+  priorityKeys = [],
+) =>
   metricResults
     .filter((result) => result.weight > 0)
     .sort((left, right) => right.contribution - left.contribution)

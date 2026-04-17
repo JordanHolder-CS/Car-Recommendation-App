@@ -596,18 +596,33 @@ const printSensitivityTable = (summaryEntries = []) => {
   const header = [
     "Question".padEnd(20),
     "Cases".padStart(6),
-    "Avail".padStart(8),
-    "Both0".padStart(8),
-    "Top1".padStart(8),
-    "Top5Ov".padStart(8),
-    "Top5Jac".padStart(8),
-    "Exact".padStart(8),
-    "Shift".padStart(8),
-    "Weights".padStart(9),
-    "Delta".padStart(9),
+    "PoolFlip".padStart(8),
+    "BothEmpty".padStart(10),
+    "#1Change".padStart(9),
+    "Top5Keep".padStart(8),
+    "Top5Set".padStart(8),
+    "ExactRank".padStart(9),
+    "AvgShift".padStart(9),
+    "TopWeight".padStart(9),
+    "WeightUp".padStart(9),
   ].join(" ");
 
   console.log("\nSensitivity");
+  console.log(
+    "- PoolFlip: changing this answer caused results to appear/disappear.",
+  );
+  console.log("- BothEmpty: both baseline and changed runs returned no results.");
+  console.log("- #1Change: the top recommendation changed.");
+  console.log("- Top5Keep: how much of the original top 5 stayed in the top 5.");
+  console.log("- Top5Set: overall similarity of the original and changed top 5 sets.");
+  console.log("- ExactRank: same cars stayed in the exact same ranking positions.");
+  console.log("- AvgShift: average ranking movement across the compared shortlist.");
+  console.log(
+    "- TopWeight: top weighted scoring metrics also appeared in the visible breakdown.",
+  );
+  console.log(
+    "- WeightUp: metrics whose weights increased also appeared in the visible breakdown.",
+  );
   console.log(header);
   console.log("-".repeat(header.length));
 
@@ -640,17 +655,21 @@ const printCoverageTable = (coverageEntries = []) => {
   const header = [
     "Question".padEnd(20),
     "Runs".padStart(6),
-    "Cand".padStart(6),
-    "Cand%".padStart(8),
-    "Exact".padStart(6),
-    "Exact%".padStart(8),
+    "Pool".padStart(6),
+    "Pool%".padStart(8),
+    "Matches".padStart(8),
+    "Match%".padStart(8),
     "Top5".padStart(6),
     "Top5%".padStart(8),
-    "Lead".padStart(6),
-    "Lead%".padStart(8),
+    "#1".padStart(6),
+    "#1%".padStart(8),
   ].join(" ");
 
   console.log("\nCoverage");
+  console.log("- Pool: cars that made it through the hard filters at least once.");
+  console.log("- Matches: cars that survived into the scored recommendation pool at least once.");
+  console.log(`- Top5: cars that appeared in the top ${TOP_N} at least once.`);
+  console.log("- #1: cars that appeared as the top recommendation at least once.");
   console.log(header);
   console.log("-".repeat(header.length));
 

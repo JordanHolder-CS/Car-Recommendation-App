@@ -33,14 +33,6 @@ const USE_CASE_RULES = {
     q8_work: { work: 3 },
     q8_family: { family: 3 },
   },
-  passengers_space: {
-    q5_coupe: { weekend: 2.5 },
-    q5_hatchback: { city: 2.5 },
-    q5_sedan: { long_distance: 2 },
-    q5_suv: { family: 2.5 },
-    q5_estate: { family: 2, long_distance: 1.5, work: 1 },
-    q5_pickup: { work: 3 },
-  },
 };
 
 // These rules decide what kind of ownership experience the user wants.
@@ -125,12 +117,38 @@ const QUESTION_WEIGHT_MODIFIERS = {
     q1_mixed: { runningCostFit: 0.04, comfortFit: 0.04, practicalFit: 0.04 },
     q1_weekend: { performanceFit: 0.12, brandFit: 0.04 },
   },
+  priority: {
+    q6_running_costs: { runningCostFit: 0.12, cityFit: 0.03 },
+    q6_comfort: { comfortFit: 0.12, roadTripFit: 0.03 },
+    q6_performance: { performanceFit: 0.14, brandFit: 0.02 },
+    q6_practicality: { practicalFit: 0.12, spaceFit: 0.08 },
+  },
+  passengers_space: {
+    q5_coupe: { performanceFit: 0.08, brandFit: 0.03, comfortFit: 0.02 },
+    q5_hatchback: { cityFit: 0.08, runningCostFit: 0.04, sizeFit: 0.03 },
+    q5_sedan: { comfortFit: 0.07, roadTripFit: 0.05 },
+    q5_suv: { spaceFit: 0.08, practicalFit: 0.06, comfortFit: 0.03 },
+    q5_estate: {
+      roadTripFit: 0.07,
+      practicalFit: 0.05,
+      spaceFit: 0.04,
+      performanceFit: 0.03,
+    },
+    q5_pickup: { practicalFit: 0.1, spaceFit: 0.08 },
+  },
   usage_pattern: {
     q8_commute: { roadTripFit: 0.08, runningCostFit: 0.04 },
     q8_errands: { cityFit: 0.1, sizeFit: 0.04 },
     q8_roadtrips: { roadTripFit: 0.1, comfortFit: 0.04 },
     q8_work: { practicalFit: 0.12, spaceFit: 0.06 },
     q8_family: { spaceFit: 0.1, practicalFit: 0.08 },
+  },
+  ownership_intent: {
+    q9_daily: { runningCostFit: 0.08, practicalFit: 0.04 },
+    q9_balanced: { comfortFit: 0.04, performanceFit: 0.04, practicalFit: 0.04 },
+    q9_fun: { performanceFit: 0.12, brandFit: 0.03 },
+    q9_luxury: { comfortFit: 0.12, brandFit: 0.1, roadTripFit: 0.03 },
+    q9_pure_performance: { performanceFit: 0.2, brandFit: 0.04 },
   },
   vehicle_size: {
     q_size_small: { sizeFit: 0.16, cityFit: 0.04 },
@@ -314,13 +332,10 @@ const HARD_FILTERS = {
       },
     };
   },
-  vehicle_size: (value) =>
-    value ? { criteria: { vehicleSize: value } } : {},
+  vehicle_size: (value) => (value ? { criteria: { vehicleSize: value } } : {}),
   preferred_brands: (value) => {
     const preferredBrands = toSelections(value).map(normalizeBrandKey);
-    return preferredBrands.length
-      ? { criteria: { preferredBrands } }
-      : {};
+    return preferredBrands.length ? { criteria: { preferredBrands } } : {};
   },
 };
 
