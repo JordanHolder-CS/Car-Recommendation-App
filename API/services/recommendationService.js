@@ -21,12 +21,12 @@ const {
 
 const USE_CASE_ORDER = ["family", "work", "weekend", "city", "long_distance"];
 const INTENT_ORDER = [
-  "luxury",
+  "balanced",
   "performance",
+  "luxury",
   "comfort",
   "practicality",
   "value",
-  "balanced",
 ];
 
 // Parses nullable numeric values without throwing on dirty source data.

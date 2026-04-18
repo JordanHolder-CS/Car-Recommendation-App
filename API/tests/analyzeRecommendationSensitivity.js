@@ -13,6 +13,7 @@ const {
 const TOP_N = 5;
 const BREAKDOWN_N = 6;
 const DELTA_KEYS_N = 4;
+const PAIRWISE_ROWS_N = 12;
 
 const QUESTION_OPTIONS = {
   drive_style: [
@@ -175,8 +176,15 @@ const BASE_PROFILES = [
   },
 ];
 
+const CITY_BRANDS = ["Toyota", "Ford", "Volkswagen", "Honda"];
+const FAMILY_BRANDS = ["Toyota", "Ford", "Skoda", "Hyundai"];
+const SPORT_BRANDS = ["BMW", "Audi", "Mazda", "Porsche"];
+const EXECUTIVE_BRANDS = ["Mercedes-Benz", "Audi", "BMW", "Lexus"];
+const UTILITY_BRANDS = ["Ford", "Toyota", "Volkswagen", "Isuzu"];
+
 const createCar = (overrides) => ({
   transmission: "Automatic",
+  standard_engine: "Petrol",
   reliability: 80,
   ...overrides,
 });
@@ -189,12 +197,21 @@ const buildDemoCars = () => {
       createCar({
         car_id: index + 1,
         car_name: `City Hatch ${index + 1}`,
-        brand_name: "Metro",
+        brand_name: CITY_BRANDS[index % CITY_BRANDS.length],
         price: 14000 + index * 900,
         body_style: "hatchback",
         horsepower: 82 + index * 6,
         zero_to_sixty_mph: 12.4 - index * 0.2,
-        combined_mpg: 58 - index * 1.1,
+        combined_mpg: index % 6 === 0 ? null : 58 - index * 1.1,
+        ev_range: index % 6 === 0 ? 210 + index * 5 : null,
+        is_ev: index % 6 === 0,
+        standard_engine:
+          index % 6 === 0
+            ? null
+            : index % 4 === 0
+              ? "Hybrid"
+              : "Petrol",
+        transmission: index % 3 === 0 ? "Manual" : "Automatic",
         service_cost: 240 + index * 18,
         insurance_estimate: 410 + index * 22,
         max_seating_capacity: 5,
@@ -211,12 +228,13 @@ const buildDemoCars = () => {
       createCar({
         car_id: 100 + index + 1,
         car_name: `Family SUV ${index + 1}`,
-        brand_name: "Summit",
+        brand_name: FAMILY_BRANDS[index % FAMILY_BRANDS.length],
         price: 30000 + index * 1200,
         body_style: "suv",
         horsepower: 165 + index * 8,
         zero_to_sixty_mph: 9.1 - index * 0.13,
         combined_mpg: 41 - index * 0.6,
+        standard_engine: index % 3 === 0 ? "Hybrid" : "Diesel",
         service_cost: 420 + index * 20,
         insurance_estimate: 760 + index * 28,
         max_seating_capacity: 5 + (index % 3 === 0 ? 2 : 0),
@@ -233,12 +251,14 @@ const buildDemoCars = () => {
       createCar({
         car_id: 200 + index + 1,
         car_name: `Sport Coupe ${index + 1}`,
-        brand_name: "Apex",
+        brand_name: SPORT_BRANDS[index % SPORT_BRANDS.length],
         price: 39000 + index * 2200,
         body_style: "coupe",
         horsepower: 255 + index * 18,
         zero_to_sixty_mph: 6.2 - index * 0.18,
         combined_mpg: 34 - index * 0.5,
+        standard_engine: "Petrol",
+        transmission: index % 2 === 0 ? "Manual" : "Automatic",
         service_cost: 620 + index * 30,
         insurance_estimate: 1100 + index * 55,
         max_seating_capacity: 4,
@@ -255,12 +275,16 @@ const buildDemoCars = () => {
       createCar({
         car_id: 300 + index + 1,
         car_name: `Executive Sedan ${index + 1}`,
-        brand_name: "Regent",
+        brand_name: EXECUTIVE_BRANDS[index % EXECUTIVE_BRANDS.length],
         price: 33000 + index * 1700,
         body_style: "sedan",
         horsepower: 185 + index * 10,
         zero_to_sixty_mph: 8.0 - index * 0.14,
-        combined_mpg: 47 - index * 0.6,
+        combined_mpg: index % 5 === 0 ? null : 47 - index * 0.6,
+        ev_range: index % 5 === 0 ? 260 + index * 6 : null,
+        is_ev: index % 5 === 0,
+        standard_engine:
+          index % 5 === 0 ? null : index % 2 === 0 ? "Diesel" : "Hybrid",
         service_cost: 460 + index * 22,
         insurance_estimate: 820 + index * 35,
         max_seating_capacity: 5,
@@ -277,12 +301,14 @@ const buildDemoCars = () => {
       createCar({
         car_id: 400 + index + 1,
         car_name: `Work Utility ${index + 1}`,
-        brand_name: "Tasker",
+        brand_name: UTILITY_BRANDS[index % UTILITY_BRANDS.length],
         price: 32000 + index * 1500,
         body_style: index % 2 === 0 ? "pickup" : "estate",
         horsepower: 175 + index * 9,
         zero_to_sixty_mph: 9.8 - index * 0.12,
         combined_mpg: 36 - index * 0.4,
+        standard_engine: index % 3 === 0 ? "Hybrid" : "Diesel",
+        transmission: index % 2 === 0 ? "Manual" : "Automatic",
         service_cost: 500 + index * 22,
         insurance_estimate: 880 + index * 40,
         max_seating_capacity: 5,
@@ -340,6 +366,11 @@ const parseArgs = () => {
         parsed.traceId = parsedCarId;
       }
       index += 1;
+      continue;
+    }
+
+    if (arg === "--pairwise") {
+      parsed.pairwise = true;
     }
   }
 
@@ -373,6 +404,9 @@ const loadCars = async (options = {}) => {
   return { cars: buildDemoCars(), source: "demo-fixture", mode: "array" };
 };
 
+const normalizeText = (value = "") =>
+  String(value).trim().toLowerCase().replace(/\s+/g, " ");
+
 const getComparableValue = (car, key) => {
   if (key === "min_price" || key === "max_price") return car.price;
   return car[key];
@@ -392,6 +426,12 @@ const valuesMatch = (carValue, filterValue) => {
 
 const matchesDbFilters = (car, dbFilters = {}) =>
   Object.entries(dbFilters).every(([key, filterValue]) => {
+    if (key === "body_style_terms") {
+      if (!Array.isArray(filterValue) || !filterValue.length) return true;
+      const bodyStyle = normalizeText(car.body_style);
+      return filterValue.some((term) => bodyStyle.includes(normalizeText(term)));
+    }
+
     const carValue = getComparableValue(car, key);
 
     if (key.startsWith("min_")) {
@@ -407,12 +447,31 @@ const matchesDbFilters = (car, dbFilters = {}) =>
 
 const findCandidateCars = async (catalog, answers = {}) => {
   const { dbFilters } = translateAnswersToHardFilters(answers);
+  const hasDbBodyStyleTerms =
+    Array.isArray(dbFilters.body_style_terms) &&
+    dbFilters.body_style_terms.length > 0;
 
   if (catalog.mode === "database") {
-    return carModel.findFiltered(dbFilters);
+    let cars = await carModel.findFiltered(dbFilters);
+
+    if (!cars.length && hasDbBodyStyleTerms) {
+      const relaxedDbFilters = { ...dbFilters };
+      delete relaxedDbFilters.body_style_terms;
+      cars = await carModel.findFiltered(relaxedDbFilters);
+    }
+
+    return cars;
   }
 
-  return catalog.cars.filter((car) => matchesDbFilters(car, dbFilters));
+  let cars = catalog.cars.filter((car) => matchesDbFilters(car, dbFilters));
+
+  if (!cars.length && hasDbBodyStyleTerms) {
+    const relaxedDbFilters = { ...dbFilters };
+    delete relaxedDbFilters.body_style_terms;
+    cars = catalog.cars.filter((car) => matchesDbFilters(car, relaxedDbFilters));
+  }
+
+  return cars;
 };
 
 const getRecommendationResponse = async (catalog, answers = {}, limit = TOP_N) => {
@@ -466,6 +525,16 @@ const getTopIds = (recommendations = [], limit = TOP_N) =>
 const getPositionMap = (ids = []) =>
   new Map(ids.map((id, index) => [id, index + 1]));
 
+const getScoreMap = (recommendations = [], limit = TOP_N) =>
+  new Map(
+    recommendations
+      .slice(0, limit)
+      .filter(
+        (car) => car?.car_id !== undefined && Number.isFinite(car?.matchScore),
+      )
+      .map((car) => [car.car_id, car.matchScore]),
+  );
+
 const countIntersection = (left = [], right = []) => {
   const rightSet = new Set(right);
   return left.filter((value) => rightSet.has(value)).length;
@@ -496,6 +565,39 @@ const getOrderStats = (baselineIds = [], variantIds = [], limit = TOP_N) => {
       union.length > 0 ? intersectionCount / Math.max(1, union.length) : 1,
     exactPositionPct: exactPositionMatches / Math.max(1, limit),
     meanRankShift,
+  };
+};
+
+const getScoreDeltaStats = (
+  baselineRecommendations = [],
+  variantRecommendations = [],
+  limit = TOP_N,
+) => {
+  const baselineLeadScore = baselineRecommendations[0]?.matchScore;
+  const variantLeadScore = variantRecommendations[0]?.matchScore;
+  const top1ScoreDelta =
+    Number.isFinite(baselineLeadScore) && Number.isFinite(variantLeadScore)
+      ? Math.abs(variantLeadScore - baselineLeadScore)
+      : null;
+
+  const baselineScores = getScoreMap(baselineRecommendations, limit);
+  const variantScores = getScoreMap(variantRecommendations, limit);
+  const overlappingIds = [...baselineScores.keys()].filter((id) =>
+    variantScores.has(id),
+  );
+
+  const overlapScoreDelta = overlappingIds.length
+    ? overlappingIds.reduce(
+        (sum, id) =>
+          sum +
+          Math.abs((variantScores.get(id) || 0) - (baselineScores.get(id) || 0)),
+        0,
+      ) / overlappingIds.length
+    : null;
+
+  return {
+    top1ScoreDelta,
+    overlapScoreDelta,
   };
 };
 
@@ -533,11 +635,18 @@ const createAccumulator = () => ({
   rankComparisons: 0,
   availabilityChanged: 0,
   bothEmpty: 0,
+  candidateCountDelta: 0,
+  exactMatchCountDelta: 0,
+  recommendationCountDelta: 0,
   top1Changed: 0,
   top5OverlapPct: 0,
   top5Jaccard: 0,
   exactPositionPct: 0,
   meanRankShift: 0,
+  top1ScoreDelta: 0,
+  top1ScoreDeltaCount: 0,
+  overlapScoreDelta: 0,
+  overlapScoreDeltaCount: 0,
   weightAlignmentPct: 0,
   weightAlignmentCount: 0,
   deltaAlignmentPct: 0,
@@ -588,9 +697,122 @@ const buildCoverageEntry = (label, bucket, totalCatalogCars) => ({
   leadCoverage: totalCatalogCars > 0 ? bucket.leadIds.size / totalCatalogCars : null,
 });
 
+const buildSummaryEntry = (label, stats) => ({
+  label,
+  comparisons: stats.comparisons,
+  rankComparisons: stats.rankComparisons,
+  availabilityChangedRate:
+    stats.availabilityChanged / Math.max(1, stats.comparisons),
+  bothEmptyRate: stats.bothEmpty / Math.max(1, stats.comparisons),
+  avgCandidateCountDelta:
+    stats.candidateCountDelta / Math.max(1, stats.comparisons),
+  avgExactMatchCountDelta:
+    stats.exactMatchCountDelta / Math.max(1, stats.comparisons),
+  avgRecommendationCountDelta:
+    stats.recommendationCountDelta / Math.max(1, stats.comparisons),
+  top1ChangedRate: stats.top1Changed / Math.max(1, stats.rankComparisons),
+  avgTop5OverlapPct: stats.top5OverlapPct / Math.max(1, stats.rankComparisons),
+  avgTop5Jaccard: stats.top5Jaccard / Math.max(1, stats.rankComparisons),
+  avgExactPositionPct:
+    stats.exactPositionPct / Math.max(1, stats.rankComparisons),
+  avgMeanRankShift: stats.meanRankShift / Math.max(1, stats.rankComparisons),
+  avgTop1ScoreDelta:
+    stats.top1ScoreDeltaCount > 0
+      ? stats.top1ScoreDelta / stats.top1ScoreDeltaCount
+      : null,
+  avgOverlapScoreDelta:
+    stats.overlapScoreDeltaCount > 0
+      ? stats.overlapScoreDelta / stats.overlapScoreDeltaCount
+      : null,
+  avgWeightAlignmentPct:
+    stats.weightAlignmentCount > 0
+      ? stats.weightAlignmentPct / stats.weightAlignmentCount
+      : null,
+  avgDeltaAlignmentPct:
+    stats.deltaAlignmentCount > 0
+      ? stats.deltaAlignmentPct / stats.deltaAlignmentCount
+      : null,
+});
+
+const recordComparisonStats = (
+  accumulator,
+  baselineResult,
+  variantResult,
+  limit = TOP_N,
+) => {
+  const baselineIds = getTopIds(baselineResult.recommendations, limit);
+  const variantIds = getTopIds(variantResult.recommendations, limit);
+  const variantTopRecommendation = variantResult.recommendations[0];
+  const topBreakdownKeys = getTopBreakdownKeys(variantTopRecommendation);
+  const topWeightKeys = getTopWeightKeys(variantResult.weights);
+  const positiveDeltaKeys = getPositiveWeightDeltaKeys(
+    baselineResult.weights,
+    variantResult.weights,
+  );
+  const baselineHasResults = baselineIds.length > 0;
+  const variantHasResults = variantIds.length > 0;
+  const scoreDeltaStats = getScoreDeltaStats(
+    baselineResult.recommendations,
+    variantResult.recommendations,
+    limit,
+  );
+
+  accumulator.comparisons += 1;
+  accumulator.candidateCountDelta += Math.abs(
+    (variantResult.totalCandidates || 0) - (baselineResult.totalCandidates || 0),
+  );
+  accumulator.exactMatchCountDelta += Math.abs(
+    (variantResult.exactMatchCount || 0) - (baselineResult.exactMatchCount || 0),
+  );
+  accumulator.recommendationCountDelta += Math.abs(
+    (variantResult.recommendations?.length || 0) -
+      (baselineResult.recommendations?.length || 0),
+  );
+
+  if (scoreDeltaStats.top1ScoreDelta !== null) {
+    accumulator.top1ScoreDelta += scoreDeltaStats.top1ScoreDelta;
+    accumulator.top1ScoreDeltaCount += 1;
+  }
+
+  if (scoreDeltaStats.overlapScoreDelta !== null) {
+    accumulator.overlapScoreDelta += scoreDeltaStats.overlapScoreDelta;
+    accumulator.overlapScoreDeltaCount += 1;
+  }
+
+  if (!baselineHasResults && !variantHasResults) {
+    accumulator.bothEmpty += 1;
+  } else if (baselineHasResults !== variantHasResults) {
+    accumulator.availabilityChanged += 1;
+  } else {
+    const orderStats = getOrderStats(baselineIds, variantIds, limit);
+    accumulator.rankComparisons += 1;
+    accumulator.top1Changed += orderStats.top1Changed;
+    accumulator.top5OverlapPct += orderStats.top5OverlapPct;
+    accumulator.top5Jaccard += orderStats.top5Jaccard;
+    accumulator.exactPositionPct += orderStats.exactPositionPct;
+    accumulator.meanRankShift += orderStats.meanRankShift;
+  }
+
+  const weightAlignment = getOverlapRatio(topWeightKeys, topBreakdownKeys);
+  if (weightAlignment !== null) {
+    accumulator.weightAlignmentPct += weightAlignment;
+    accumulator.weightAlignmentCount += 1;
+  }
+
+  const deltaAlignment = getOverlapRatio(positiveDeltaKeys, topBreakdownKeys);
+  if (deltaAlignment !== null) {
+    accumulator.deltaAlignmentPct += deltaAlignment;
+    accumulator.deltaAlignmentCount += 1;
+  }
+
+  return variantTopRecommendation;
+};
+
 const formatPct = (value) =>
   value === null || value === undefined ? "n/a" : `${(value * 100).toFixed(1)}%`;
 const formatNumber = (value) => value.toFixed(2);
+const formatNullableNumber = (value, digits = 3) =>
+  value === null || value === undefined ? "n/a" : value.toFixed(digits);
 
 const printSensitivityTable = (summaryEntries = []) => {
   const header = [
@@ -691,6 +913,83 @@ const printCoverageTable = (coverageEntries = []) => {
   });
 };
 
+const printMagnitudeTable = (summaryEntries = [], title = "Magnitude") => {
+  const header = [
+    "Question".padEnd(20),
+    "Cases".padStart(6),
+    "PoolΔ".padStart(8),
+    "ExactΔ".padStart(8),
+    "RecΔ".padStart(7),
+    "#1ScoreΔ".padStart(10),
+    "SharedΔ".padStart(9),
+  ].join(" ");
+
+  console.log(`\n${title}`);
+  console.log("- PoolΔ: average change in hard-filter candidate count.");
+  console.log("- ExactΔ: average change in scored exact-match pool size.");
+  console.log("- RecΔ: average change in returned recommendation count.");
+  console.log("- #1ScoreΔ: average absolute score change for the top result.");
+  console.log(
+    `- SharedΔ: average absolute score change for cars that stay in both top ${TOP_N} lists.`,
+  );
+  console.log(header);
+  console.log("-".repeat(header.length));
+
+  summaryEntries.forEach((entry) => {
+    console.log(
+      [
+        entry.label.padEnd(20),
+        String(entry.comparisons).padStart(6),
+        formatNullableNumber(entry.avgCandidateCountDelta, 2).padStart(8),
+        formatNullableNumber(entry.avgExactMatchCountDelta, 2).padStart(8),
+        formatNullableNumber(entry.avgRecommendationCountDelta, 2).padStart(7),
+        formatNullableNumber(entry.avgTop1ScoreDelta, 3).padStart(10),
+        formatNullableNumber(entry.avgOverlapScoreDelta, 3).padStart(9),
+      ].join(" "),
+    );
+  });
+};
+
+const printPairwiseTable = (pairwiseEntries = [], rows = PAIRWISE_ROWS_N) => {
+  console.log("\nPairwise interactions");
+
+  if (!pairwiseEntries.length) {
+    console.log("- Disabled. Run with --pairwise to compare two-question mutations.");
+    return;
+  }
+
+  console.log(
+    `- Showing the ${Math.min(rows, pairwiseEntries.length)} strongest question-pair interactions by #1 change and score movement.`,
+  );
+
+  const header = [
+    "Question pair".padEnd(36),
+    "Cases".padStart(6),
+    "#1Change".padStart(9),
+    "Top5Set".padStart(8),
+    "AvgShift".padStart(9),
+    "#1ScoreΔ".padStart(10),
+    "SharedΔ".padStart(9),
+  ].join(" ");
+
+  console.log(header);
+  console.log("-".repeat(header.length));
+
+  pairwiseEntries.slice(0, rows).forEach((entry) => {
+    console.log(
+      [
+        entry.label.padEnd(36),
+        String(entry.comparisons).padStart(6),
+        formatPct(entry.top1ChangedRate).padStart(9),
+        formatPct(entry.avgTop5Jaccard).padStart(8),
+        formatNumber(entry.avgMeanRankShift).padStart(9),
+        formatNullableNumber(entry.avgTop1ScoreDelta, 3).padStart(10),
+        formatNullableNumber(entry.avgOverlapScoreDelta, 3).padStart(9),
+      ].join(" "),
+    );
+  });
+};
+
 const printTraceReport = (traceMatches = [], traceOptions = {}) => {
   if (!traceOptions.traceCar && traceOptions.traceId === undefined) {
     return;
@@ -731,7 +1030,12 @@ const printTraceReport = (traceMatches = [], traceOptions = {}) => {
   }
 };
 
-const analyzeSensitivity = async (catalog, limit = TOP_N, traceOptions = {}) => {
+const analyzeSensitivity = async (
+  catalog,
+  limit = TOP_N,
+  traceOptions = {},
+  analysisOptions = {},
+) => {
   const summaries = Object.fromEntries(
     Object.keys(QUESTION_OPTIONS).map((questionKey) => [questionKey, createAccumulator()]),
   );
@@ -741,6 +1045,7 @@ const analyzeSensitivity = async (catalog, limit = TOP_N, traceOptions = {}) => 
       createCoverageBucket(),
     ]),
   );
+  const pairwiseSummaries = analysisOptions.pairwise ? {} : null;
   const globalCoverage = createCoverageBucket();
   const traceMatches = [];
 
@@ -826,17 +1131,6 @@ const analyzeSensitivity = async (catalog, limit = TOP_N, traceOptions = {}) => 
           ? optionValue.join(", ") || "(none)"
           : optionValue;
         const accumulator = summaries[questionKey];
-        const baselineIds = getTopIds(baselineResult.recommendations, limit);
-        const variantIds = getTopIds(variantResult.recommendations, limit);
-        const variantTopRecommendation = variantResult.recommendations[0];
-        const topBreakdownKeys = getTopBreakdownKeys(variantTopRecommendation);
-        const topWeightKeys = getTopWeightKeys(variantResult.weights);
-        const positiveDeltaKeys = getPositiveWeightDeltaKeys(
-          baselineResult.weights,
-          variantResult.weights,
-        );
-
-        accumulator.comparisons += 1;
         recordCoverage(globalCoverage, variantResult);
         recordCoverage(coverageByQuestion[questionKey], variantResult);
 
@@ -891,34 +1185,12 @@ const analyzeSensitivity = async (catalog, limit = TOP_N, traceOptions = {}) => 
           });
         }
 
-        const baselineHasResults = baselineIds.length > 0;
-        const variantHasResults = variantIds.length > 0;
-
-        if (!baselineHasResults && !variantHasResults) {
-          accumulator.bothEmpty += 1;
-        } else if (baselineHasResults !== variantHasResults) {
-          accumulator.availabilityChanged += 1;
-        } else {
-          const orderStats = getOrderStats(baselineIds, variantIds, limit);
-          accumulator.rankComparisons += 1;
-          accumulator.top1Changed += orderStats.top1Changed;
-          accumulator.top5OverlapPct += orderStats.top5OverlapPct;
-          accumulator.top5Jaccard += orderStats.top5Jaccard;
-          accumulator.exactPositionPct += orderStats.exactPositionPct;
-          accumulator.meanRankShift += orderStats.meanRankShift;
-        }
-
-        const weightAlignment = getOverlapRatio(topWeightKeys, topBreakdownKeys);
-        if (weightAlignment !== null) {
-          accumulator.weightAlignmentPct += weightAlignment;
-          accumulator.weightAlignmentCount += 1;
-        }
-
-        const deltaAlignment = getOverlapRatio(positiveDeltaKeys, topBreakdownKeys);
-        if (deltaAlignment !== null) {
-          accumulator.deltaAlignmentPct += deltaAlignment;
-          accumulator.deltaAlignmentCount += 1;
-        }
+        const variantTopRecommendation = recordComparisonStats(
+          accumulator,
+          baselineResult,
+          variantResult,
+          limit,
+        );
 
         if (Array.isArray(variantTopRecommendation?.recommendationBreakdown)) {
           const sortedByFit = [...variantTopRecommendation.recommendationBreakdown].sort(
@@ -946,35 +1218,75 @@ const analyzeSensitivity = async (catalog, limit = TOP_N, traceOptions = {}) => 
         }
       }
     }
+
+    if (pairwiseSummaries) {
+      const questionKeys = Object.keys(QUESTION_OPTIONS);
+
+      for (let leftIndex = 0; leftIndex < questionKeys.length; leftIndex += 1) {
+        for (
+          let rightIndex = leftIndex + 1;
+          rightIndex < questionKeys.length;
+          rightIndex += 1
+        ) {
+          const leftKey = questionKeys[leftIndex];
+          const rightKey = questionKeys[rightIndex];
+          const pairKey = `${leftKey}__${rightKey}`;
+          const leftOptions = QUESTION_OPTIONS[leftKey].filter(
+            (value) => !valuesEqual(value, baselineAnswers[leftKey]),
+          );
+          const rightOptions = QUESTION_OPTIONS[rightKey].filter(
+            (value) => !valuesEqual(value, baselineAnswers[rightKey]),
+          );
+
+          if (!pairwiseSummaries[pairKey]) {
+            pairwiseSummaries[pairKey] = {
+              label: `${QUESTION_LABELS[leftKey] || leftKey} + ${QUESTION_LABELS[rightKey] || rightKey}`,
+              stats: createAccumulator(),
+            };
+          }
+
+          for (const leftValue of leftOptions) {
+            for (const rightValue of rightOptions) {
+              const pairAnswers = {
+                ...baselineAnswers,
+                [leftKey]: cloneValue(leftValue),
+                [rightKey]: cloneValue(rightValue),
+              };
+              const pairResult = await getRecommendationResponse(
+                catalog,
+                pairAnswers,
+                limit,
+              );
+
+              recordComparisonStats(
+                pairwiseSummaries[pairKey].stats,
+                baselineResult,
+                pairResult,
+                limit,
+              );
+            }
+          }
+        }
+      }
+    }
   }
 
   const summaryEntries = Object.entries(summaries)
-    .map(([questionKey, stats]) => ({
-      questionKey,
-      label: QUESTION_LABELS[questionKey] || questionKey,
-      comparisons: stats.comparisons,
-      rankComparisons: stats.rankComparisons,
-      availabilityChangedRate:
-        stats.availabilityChanged / Math.max(1, stats.comparisons),
-      bothEmptyRate: stats.bothEmpty / Math.max(1, stats.comparisons),
-      top1ChangedRate: stats.top1Changed / Math.max(1, stats.rankComparisons),
-      avgTop5OverlapPct:
-        stats.top5OverlapPct / Math.max(1, stats.rankComparisons),
-      avgTop5Jaccard: stats.top5Jaccard / Math.max(1, stats.rankComparisons),
-      avgExactPositionPct:
-        stats.exactPositionPct / Math.max(1, stats.rankComparisons),
-      avgMeanRankShift:
-        stats.meanRankShift / Math.max(1, stats.rankComparisons),
-      avgWeightAlignmentPct:
-        stats.weightAlignmentCount > 0
-          ? stats.weightAlignmentPct / stats.weightAlignmentCount
-          : null,
-      avgDeltaAlignmentPct:
-        stats.deltaAlignmentCount > 0
-          ? stats.deltaAlignmentPct / stats.deltaAlignmentCount
-          : null,
-    }))
+    .map(([questionKey, stats]) =>
+      buildSummaryEntry(QUESTION_LABELS[questionKey] || questionKey, stats),
+    )
     .sort((left, right) => right.top1ChangedRate - left.top1ChangedRate);
+
+  const pairwiseEntries = pairwiseSummaries
+    ? Object.values(pairwiseSummaries)
+        .map((entry) => buildSummaryEntry(entry.label, entry.stats))
+        .sort((left, right) => {
+          if (right.top1ChangedRate !== left.top1ChangedRate) {
+            return right.top1ChangedRate - left.top1ChangedRate;
+          }
+          return (right.avgTop1ScoreDelta || 0) - (left.avgTop1ScoreDelta || 0);
+        })
+    : [];
 
   const totalCatalogCars =
     catalog.mode === "endpoint" ? 0 : catalog.cars.length;
@@ -996,6 +1308,7 @@ const analyzeSensitivity = async (catalog, limit = TOP_N, traceOptions = {}) => 
       globalCoverage,
       totalCatalogCars,
     ),
+    pairwiseEntries,
     traceMatches,
     topFitSameAsTopContributionRate:
       topFitSameAsTopContributionCount / Math.max(1, topFitComparisonCount),
@@ -1014,6 +1327,8 @@ const main = async () => {
   const analysis = await analyzeSensitivity(catalog, args.limit, {
     traceCar: args.traceCar,
     traceId: args.traceId,
+  }, {
+    pairwise: Boolean(args.pairwise),
   });
 
   console.log(
@@ -1022,6 +1337,11 @@ const main = async () => {
   console.log(
     `Compared ${analysis.sampleCount} answer mutations across ${BASE_PROFILES.length} base profiles.`,
   );
+  if (args.pairwise) {
+    console.log(
+      `Compared ${analysis.pairwiseEntries.reduce((sum, entry) => sum + entry.comparisons, 0)} pairwise answer mutations across the same profiles.`,
+    );
+  }
 
   console.log("\nGlobal coverage");
   console.log(
@@ -1038,7 +1358,15 @@ const main = async () => {
   );
 
   printSensitivityTable(analysis.summaryEntries);
+  printMagnitudeTable(
+    [...analysis.summaryEntries].sort(
+      (left, right) =>
+        (right.avgTop1ScoreDelta || 0) - (left.avgTop1ScoreDelta || 0),
+    ),
+    "Magnitude",
+  );
   printCoverageTable(analysis.coverageEntries);
+  printPairwiseTable(analysis.pairwiseEntries, PAIRWISE_ROWS_N);
   printTraceReport(analysis.traceMatches, {
     traceCar: args.traceCar,
     traceId: args.traceId,
