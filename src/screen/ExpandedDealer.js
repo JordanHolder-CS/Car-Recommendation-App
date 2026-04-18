@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,8 +16,10 @@ import { DealerContent } from "../ui/DealerCard/collapsedDealer";
 import DealerInventList from "../Lists/DealerInventList";
 import { DEFAULT_MAP_REGION } from "../ui/Maps/MapView";
 import Map from "../ui/Maps/MapView";
+import { openInGoogleMaps } from "../ui/Maps/googleMaps";
 import Selector from "../ui/Navigation/Selector";
 import useMapOverlayTransition from "../ui/Animation/useMapOverlayTransition";
+import { ORANGE } from "../ui/Layout/colors";
 
 const API_BASE_URL =
   process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
@@ -64,6 +67,11 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
     openMapOverlay,
     closeMapOverlay,
   } = useMapOverlayTransition();
+
+  const handleOpenGoogleMaps = () =>
+    openInGoogleMaps({
+      markerCoordinate,
+    });
 
   useEffect(() => {
     const dealerId = selectedDealer?.dealer_id;
@@ -187,8 +195,20 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
               style={[styles.MapOverlayCardWrap, animatedCardStyle]}
             >
               <Selector onPress={closeMapOverlay}>
-                <DealerContent dealer={selectedDealer} />
+                <DealerContent dealer={selectedDealer} showBrands={false} />
               </Selector>
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleOpenGoogleMaps}
+                style={({ pressed }) => [
+                  styles.GoogleMapsButton,
+                  pressed ? styles.GoogleMapsButtonPressed : null,
+                ]}
+              >
+                <Text style={styles.GoogleMapsButtonText}>
+                  Open in Google Maps
+                </Text>
+              </Pressable>
             </Animated.View>
           ) : null}
         </View>
@@ -270,6 +290,29 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     bottom: 24,
+  },
+  GoogleMapsButton: {
+    alignSelf: "center",
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: "rgba(255, 255, 255, 0.94)",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    shadowColor: "#000000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  GoogleMapsButtonPressed: {
+    opacity: 0.82,
+  },
+  GoogleMapsButtonText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: ORANGE.dark,
   },
 });
 

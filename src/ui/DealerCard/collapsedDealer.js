@@ -26,7 +26,7 @@ const getDealerBrandNames = (dealer = {}) => {
   return [];
 };
 
-export const DealerContent = ({ dealer = {} }) => {
+export const DealerContent = ({ dealer = {}, showBrands = true }) => {
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
@@ -53,26 +53,28 @@ export const DealerContent = ({ dealer = {} }) => {
         <Text style={styles.ProfileText}>
           {dealer.location || "Location unavailable"}
         </Text>
-        <View style={styles.BrandSection}>
-          <Text style={styles.BrandTitle}>Brands</Text>
-          {visibleBrandNames.length ? (
-            <View style={styles.BrandLogoRow}>
-              {visibleBrandNames.map((brandName) => (
-                <BrandLogo
-                  key={`${dealer.dealer_id ?? dealer.dealer_name ?? "dealer"}-${brandName}`}
-                  brand={brandName}
-                  size={42}
-                />
-              ))}
-              {hiddenBrandCount ? (
-                <View style={styles.BrandOverflowBadge}>
-                  <Text style={styles.BrandOverflowText}>+{hiddenBrandCount}</Text>
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-          <Text style={styles.TypeText}>{brandLabel}</Text>
-        </View>
+        {showBrands ? (
+          <View style={styles.BrandSection}>
+            <Text style={styles.BrandTitle}>Brands</Text>
+            {visibleBrandNames.length ? (
+              <View style={styles.BrandLogoRow}>
+                {visibleBrandNames.map((brandName) => (
+                  <BrandLogo
+                    key={`${dealer.dealer_id ?? dealer.dealer_name ?? "dealer"}-${brandName}`}
+                    brand={brandName}
+                    size={42}
+                  />
+                ))}
+                {hiddenBrandCount ? (
+                  <View style={styles.BrandOverflowBadge}>
+                    <Text style={styles.BrandOverflowText}>+{hiddenBrandCount}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+            <Text style={styles.TypeText}>{brandLabel}</Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
