@@ -1,6 +1,5 @@
 import { Pressable, StyleSheet, View, Image, Text } from "react-native";
 import { useRef } from "react";
-import Map from "../Maps/MapView";
 import { ORANGE } from "../Layout/colors";
 
 const DEFAULT_DEALER_IMAGE =
@@ -20,8 +19,6 @@ export const ExpandedDealer = ({
   dealer = {},
   children,
   onOpenMap = null,
-  mapRegion = null,
-  markerCoordinate = null,
 }) => {
   const mapCardRef = useRef(null);
   const dealerType = dealer.is_franchised
@@ -76,14 +73,11 @@ export const ExpandedDealer = ({
             style={styles.MapCard}
             onPress={handleOpenMap}
           >
-            <Map
-              initialRegion={mapRegion || undefined}
-              interactive={false}
-              containerStyle={styles.MapPreview}
-              markerCoordinate={markerCoordinate}
-            />
+            <View style={styles.MapCardBody}>
+              <Text style={styles.MapCardTitle}>Open dealer map</Text>
+            </View>
             <View style={styles.MapCardLabelWrap}>
-              <Text style={styles.MapCardText}>Map view</Text>
+              <Text style={styles.MapCardText}>Tap to open interactive map</Text>
             </View>
           </Pressable>
         ) : null}
@@ -163,8 +157,17 @@ const styles = StyleSheet.create({
     elevation: 6,
     overflow: "hidden",
   },
-  MapPreview: {
+  MapCardBody: {
     height: 140,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EEF2F7",
+    paddingHorizontal: 16,
+  },
+  MapCardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
   },
   MapCardLabelWrap: {
     position: "absolute",
