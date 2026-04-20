@@ -15,13 +15,12 @@ import Selector from "../ui/Navigation/Selector.js";
 import RecommendationList from "../Lists/RecommendationList.js";
 import { ORANGE } from "../ui/Layout/colors.js";
 import useRetakeButtonReveal from "../ui/Animation/useRetakeButtonReveal.js";
+import { API_BASE_URL } from "../config/api.js";
 
 const BATCH_SIZE = 5;
 const RESULT_LIMIT = 10;
 const MINIMUM_MATCH_SCORE = 0.5;
 
-const API_BASE_URL =
-  process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
 const CAR_API_URL = `${API_BASE_URL}/car`;
 
 const isRecommendationMatch = (car) =>

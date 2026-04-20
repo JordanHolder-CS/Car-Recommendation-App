@@ -4,7 +4,17 @@ import { StyleSheet } from "react-native";
 // use https://fonts.google.com/icons for icons
 
 const Icons = ({ icon, size, style = "Default" }) => {
-  return <MaterialIcons name={icon} size={size} color={styles[style].color} />;
+  const resolvedSize =
+    typeof size === "string" ? Number.parseFloat(size) : size;
+  const iconSize = Number.isFinite(resolvedSize) ? resolvedSize : 24;
+
+  return (
+    <MaterialIcons
+      name={icon}
+      size={iconSize}
+      color={styles[style]?.color || styles.Default.color}
+    />
+  );
 };
 
 const styles = StyleSheet.create({

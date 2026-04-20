@@ -20,9 +20,7 @@ import { openInGoogleMaps } from "../ui/Maps/googleMaps";
 import Selector from "../ui/Navigation/Selector";
 import useMapOverlayTransition from "../ui/Animation/useMapOverlayTransition";
 import { ORANGE } from "../ui/Layout/colors";
-
-const API_BASE_URL =
-  process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
+import { API_BASE_URL } from "../config/api";
 
 const getDealerMapRegion = (dealer) => {
   const latitude = Number.parseFloat(dealer?.latitude);

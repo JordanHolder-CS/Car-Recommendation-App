@@ -11,9 +11,8 @@ import Screen from "../ui/Layout/screen.js";
 import BackButton from "../ui/Navigation/BackButton.js";
 import DealerList from "../Lists/DealerList.js";
 import { ORANGE } from "../ui/Layout/colors.js";
+import { API_BASE_URL } from "../config/api.js";
 
-const API_BASE_URL =
-  process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
 const DEALER_API_URL = `${API_BASE_URL}/dealers`;
 
 export const DealerScreen = ({ navigation, route }) => {

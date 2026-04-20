@@ -1,12 +1,18 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BookingForm from "../Form/BookingForm";
 import BackButton from "../ui/Navigation/BackButton";
 import { ORANGE } from "../ui/Layout/colors";
-
-const API_BASE_URL =
-  process.env.HTTPS_URL || "https://car-recommendation-database.co.uk/api";
+import { API_BASE_URL } from "../config/api";
 
 const BookingScreen = ({ navigation, route }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,21 +80,31 @@ const BookingScreen = ({ navigation, route }) => {
           <View style={styles.headerSpacer} />
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+        <KeyboardAvoidingView
+          style={styles.body}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={0}
         >
-          <View style={styles.content}>
-            <BookingForm
-              onSubmit={handleSubmit}
-              bookingContext={bookingContext}
-              submitDisabled={isSubmitting}
-              submitLabel={
-                isSubmitting ? "Sending booking request..." : "Send booking request"
-              }
-            />
-          </View>
-        </ScrollView>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          >
+            <View style={styles.content}>
+              <BookingForm
+                onSubmit={handleSubmit}
+                bookingContext={bookingContext}
+                submitDisabled={isSubmitting}
+                submitLabel={
+                  isSubmitting
+                    ? "Sending booking request..."
+                    : "Send booking request"
+                }
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -104,6 +120,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#ffffff",
+  },
+  body: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",

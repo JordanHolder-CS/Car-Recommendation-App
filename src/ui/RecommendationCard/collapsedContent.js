@@ -50,6 +50,36 @@ export const RecommendationContent = ({
 
   const vehicleBrand = brand || "";
   const vehicleName = name || "Vehicle unavailable";
+  const statChipStyle = [
+    styles.CoolStatsChip,
+    isExpandedResultVariant && styles.ExpandedResultCoolStatsChip,
+    styleOverrides.coolStatsText,
+  ];
+  const flattenedStatChipStyle = StyleSheet.flatten(statChipStyle) || {};
+  const statTextColor = flattenedStatChipStyle.color || styles.CoolStatsValue.color;
+  const statItems = [
+    horsepower
+      ? { key: "horsepower", icon: "speed", label: `${horsepower} hp` }
+      : null,
+    isEV && evRange
+      ? { key: "range", icon: "battery-charging-full", label: `${evRange} mi` }
+      : mpg
+        ? { key: "mpg", icon: "local-gas-station", label: `${mpg} MPG` }
+        : null,
+    transmission
+      ? { key: "transmission", icon: "tune", label: transmission }
+      : null,
+    seats
+      ? { key: "seats", icon: "airline-seat-recline-extra", label: `${seats} seats` }
+      : null,
+    zeroToSixty
+      ? { key: "zeroToSixty", icon: "timer", label: `0-60 ${zeroToSixty}s` }
+      : null,
+    topSpeed
+      ? { key: "topSpeed", icon: "rocket-launch", label: `${topSpeed} mph` }
+      : null,
+    torque ? { key: "torque", icon: "build", label: `${torque} Nm` } : null,
+  ].filter(Boolean);
 
   return (
     <View
@@ -134,94 +164,14 @@ export const RecommendationContent = ({
         <View
           style={[styles.CoolStatsContainer, styleOverrides.coolStatsContainer]}
         >
-          {horsepower ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="speed" size="12" /> {horsepower} hp
-            </Text>
-          ) : null}
-          {isEV && evRange ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="battery-charging-full" size="12" /> {evRange} mi
-            </Text>
-          ) : mpg ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="local-gas-station" size="12" /> {mpg} MPG
-            </Text>
-          ) : null}
-          {transmission ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="tune" size="12" /> {transmission}
-            </Text>
-          ) : null}
-          {seats ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="airline-seat-recline-extra" size="12" /> {seats}{" "}
-              seats
-            </Text>
-          ) : null}
-          {zeroToSixty ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="timer" size="12" /> 0-60 {zeroToSixty}s
-            </Text>
-          ) : null}
-          {topSpeed ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="rocket-launch" size="12" /> {topSpeed} mph
-            </Text>
-          ) : null}
-          {torque ? (
-            <Text
-              style={[
-                styles.CoolStatsText,
-                isExpandedResultVariant && styles.ExpandedResultCoolStatsText,
-                styleOverrides.coolStatsText,
-              ]}
-            >
-              <Icons icon="build" size="12" /> {torque} Nm
-            </Text>
-          ) : null}
+          {statItems.map((item) => (
+            <View key={item.key} style={statChipStyle}>
+              <Icons icon={item.icon} size="12" />
+              <Text style={[styles.CoolStatsValue, { color: statTextColor }]}>
+                {item.label}
+              </Text>
+            </View>
+          ))}
         </View>
 
         <View style={[styles.Section, styleOverrides.section]}>
@@ -407,16 +357,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     paddingTop: 10,
+    marginBottom: 4,
   },
-  CoolStatsText: {
-    color: "#777777",
+  CoolStatsChip: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 8,
     paddingVertical: 4,
     marginRight: 8,
     marginBottom: 8,
     backgroundColor: "#F0F0F0",
     borderRadius: 6,
-    textAlign: "center",
+    alignSelf: "flex-start",
+  },
+  CoolStatsValue: {
+    color: "#777777",
+    fontSize: 14,
+    lineHeight: 18,
+    marginLeft: 4,
+    includeFontPadding: false,
   },
   Section: {
     paddingBottom: 8,
@@ -454,7 +413,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: "#111827",
   },
-  ExpandedResultCoolStatsText: {
+  ExpandedResultCoolStatsChip: {
     backgroundColor: "#E8EEF6",
     color: "#334155",
     borderRadius: 999,

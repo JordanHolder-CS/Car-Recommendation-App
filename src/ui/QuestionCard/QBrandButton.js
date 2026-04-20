@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 22,
-    backgroundColor: "#F4F4F4",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 14,
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
   SelectedButton: {
     borderWidth: 2,
     borderColor: ORANGE.main,
+    backgroundColor: "#FFFFFF",
   },
   PressedButton: {
     opacity: 0.92,

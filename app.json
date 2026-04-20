@@ -13,10 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "config": {
-        "googleMapsApiKey": "REDACTED "
-      }
+      "supportsTablet": true
     },
     "android": {
       "package": "com.anonymous.Car_Recommender",
@@ -24,12 +21,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "config": {
-        "googleMaps": {
-          "apiKey": "REDACTED "
-        }
-      }
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
