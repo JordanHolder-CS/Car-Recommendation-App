@@ -30,6 +30,7 @@ export const DealerContent = ({ dealer = {}, showBrands = true }) => {
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
+  const dealerImage = dealer.image_url ?? dealer.image ?? DEFAULT_DEALER_IMAGE;
   const brandNames = getDealerBrandNames(dealer);
   const visibleBrandNames = brandNames.slice(0, 4);
   const hiddenBrandCount = Math.max(0, brandNames.length - visibleBrandNames.length);
@@ -41,7 +42,7 @@ export const DealerContent = ({ dealer = {}, showBrands = true }) => {
         <Image
           style={styles.ImageHeader}
           source={{
-            uri: DEFAULT_DEALER_IMAGE,
+            uri: dealerImage,
           }}
         />
       </View>

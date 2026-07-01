@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View, Image, Text } from "react-native";
 import { useRef } from "react";
+import Map from "../Maps/MapView";
 import { ORANGE } from "../Layout/colors";
 
 const DEFAULT_DEALER_IMAGE =
@@ -19,11 +20,14 @@ export const ExpandedDealer = ({
   dealer = {},
   children,
   onOpenMap = null,
+  mapRegion = null,
+  markerCoordinate = null,
 }) => {
   const mapCardRef = useRef(null);
   const dealerType = dealer.is_franchised
     ? "Franchised dealer"
     : "Independent dealer";
+  const dealerImage = dealer.image_url ?? dealer.image ?? DEFAULT_DEALER_IMAGE;
   const inventoryCount = getInventoryCount(dealer.inventory_count);
   const inventoryLabel = getInventoryLabel(inventoryCount);
 
@@ -46,7 +50,7 @@ export const ExpandedDealer = ({
         <Image
           style={styles.ImageHeader}
           source={{
-            uri: DEFAULT_DEALER_IMAGE,
+            uri: dealerImage,
           }}
         />
       </View>
@@ -73,11 +77,14 @@ export const ExpandedDealer = ({
             style={styles.MapCard}
             onPress={handleOpenMap}
           >
-            <View style={styles.MapCardBody}>
-              <Text style={styles.MapCardTitle}>Open dealer map</Text>
-            </View>
+            <Map
+              initialRegion={mapRegion || undefined}
+              interactive={false}
+              containerStyle={styles.MapPreview}
+              markerCoordinate={markerCoordinate}
+            />
             <View style={styles.MapCardLabelWrap}>
-              <Text style={styles.MapCardText}>Tap to open interactive map</Text>
+              <Text style={styles.MapCardText}>Map view</Text>
             </View>
           </Pressable>
         ) : null}
@@ -157,17 +164,8 @@ const styles = StyleSheet.create({
     elevation: 6,
     overflow: "hidden",
   },
-  MapCardBody: {
+  MapPreview: {
     height: 140,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#EEF2F7",
-    paddingHorizontal: 16,
-  },
-  MapCardTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#111827",
   },
   MapCardLabelWrap: {
     position: "absolute",

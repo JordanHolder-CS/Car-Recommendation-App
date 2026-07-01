@@ -21,6 +21,10 @@ import Selector from "../ui/Navigation/Selector";
 import useMapOverlayTransition from "../ui/Animation/useMapOverlayTransition";
 import { ORANGE } from "../ui/Layout/colors";
 import { API_BASE_URL } from "../config/api";
+import {
+  assignImagesInOrder,
+  DEALER_INVENTORY_IMAGE_POOL,
+} from "../config/imagePools";
 
 const getDealerMapRegion = (dealer) => {
   const latitude = Number.parseFloat(dealer?.latitude);
@@ -101,7 +105,10 @@ const ExpandedDealerScreen = ({ navigation, route }) => {
         }
 
         const data = await response.json();
-        setListings(Array.isArray(data) ? data : []);
+        const nextListings = Array.isArray(data) ? data : [];
+        setListings(
+          assignImagesInOrder(nextListings, DEALER_INVENTORY_IMAGE_POOL),
+        );
       } catch (err) {
         console.error("Error fetching dealer listings:", err);
         setError(err.message);

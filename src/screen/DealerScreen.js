@@ -12,6 +12,10 @@ import BackButton from "../ui/Navigation/BackButton.js";
 import DealerList from "../Lists/DealerList.js";
 import { ORANGE } from "../ui/Layout/colors.js";
 import { API_BASE_URL } from "../config/api.js";
+import {
+  assignImagesInOrder,
+  DEALER_IMAGE_POOL,
+} from "../config/imagePools.js";
 
 const DEALER_API_URL = `${API_BASE_URL}/dealers`;
 
@@ -58,7 +62,8 @@ export const DealerScreen = ({ navigation, route }) => {
         }
 
         const data = await response.json();
-        setDealers(Array.isArray(data) ? data : []);
+        const nextDealers = Array.isArray(data) ? data : [];
+        setDealers(assignImagesInOrder(nextDealers, DEALER_IMAGE_POOL));
       } catch (err) {
         console.error("Error fetching dealers:", err);
         setError(err.message);

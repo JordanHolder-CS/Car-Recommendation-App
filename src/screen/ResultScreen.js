@@ -16,6 +16,10 @@ import RecommendationList from "../Lists/RecommendationList.js";
 import { ORANGE } from "../ui/Layout/colors.js";
 import useRetakeButtonReveal from "../ui/Animation/useRetakeButtonReveal.js";
 import { API_BASE_URL } from "../config/api.js";
+import {
+  assignImagesInOrder,
+  RECOMMENDATION_IMAGE_POOL,
+} from "../config/imagePools.js";
 
 const BATCH_SIZE = 5;
 const RESULT_LIMIT = 10;
@@ -73,7 +77,13 @@ export const ResultScreen = ({ navigation, route }) => {
         const profile = data.profile || {};
         const meta = data.meta || {};
 
-        setCars((data.recommendations || []).filter(isRecommendationMatch));
+        const matchedRecommendations = (data.recommendations || []).filter(
+          isRecommendationMatch,
+        );
+
+        setCars(
+          assignImagesInOrder(matchedRecommendations, RECOMMENDATION_IMAGE_POOL),
+        );
         setUseCase(profile.useCase || data.useCase || "");
         setIntent(profile.intent || data.intent || "");
         setProfileLabel(profile.label || data.profileLabel || "");
