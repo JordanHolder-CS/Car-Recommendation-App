@@ -1,11 +1,3 @@
-<!--
-Hey, thanks for using the awesome-readme-template template.
-If you have any enhancements, then fork this project and create a pull request
-or just open an issue with the label "enhancement".
-
-Don't forget to give this project a star for additional support ;)
-Maybe you can mention me or this repo in the acknowledgements too
--->
 <div align="center">
   <h1>Car Recommendation Application</h1>
 <br/>
@@ -21,7 +13,6 @@ Maybe you can mention me or this repo in the acknowledgements too
 - [Learn more](#learn-more)
 - [Usage](#usage)
 - [Contact](#contact)
-- [Acknowledgements](#acknowledgements)
 
 <!-- About the Project -->
 
@@ -31,7 +22,7 @@ Maybe you can mention me or this repo in the acknowledgements too
 
 <div>
 <h1>1. Questionnaire</h1>
-<p>To help you find a vehicle that fits their needs, a questionnaire is used to detirmine what vehicle features and characteristics you are most likely to require in your new car.</p>
+<p>To help you find a vehicle that fits their needs, a questionnaire is used to determine what vehicle features and characteristics you are most likely to require in your new car.</p>
 </div>
 
 <div>
@@ -50,7 +41,7 @@ Maybe you can mention me or this repo in the acknowledgements too
 
 <div>
 <H1>3. Direct Link to Dealership</H1>
-<p>The application stores a list of dealerships in it's database. Any dealership that one of the recommended vehciles are listed to the user to choose from.</p>
+<p>The application stores a list of dealerships in the database. Any dealership that has one of the recommended vehicles are listed to the user to choose from.</p>
 <img src="docs/screenshots/image8.png" width="250" />
 <img src="docs/screenshots/image9.png" width="250" />
 <img src="docs/screenshots/image10.png" width="250" />
@@ -62,7 +53,64 @@ Maybe you can mention me or this repo in the acknowledgements too
 <img src="docs/screenshots/image12.png" width="250" />
 </div>
 
-<!-- Recommendation Algorithm -->
+<!-- Getting Started -->
+
+# Get started
+
+1. Clone the repository into an IDE of your choice
+
+```bash
+git clone https://github.com/JordanHolder-CS/Car-Recommendation-App.git
+```
+
+2. Install dependencies using the terminal
+
+```bash
+npm install
+```
+
+3. Install Expo Go on your mobile device
+
+```
+For iOS:
+Go to the App Store
+Find Expo Go
+Click Install
+
+For Android:
+Go to the Google Play Store
+Find Expo Go
+Click Install
+```
+
+4. Start the Expo Go app
+
+```
+**IMPORTANT**
+Your mobile device and the device you're running the codebase on (Desktop/Laptop) must be on the same network.
+This is because the application will be using localhost:8000, and thus must use the same local network.
+```
+
+5. Run the code from your IDE
+
+```bash
+npm start
+```
+
+6. Run the application on your mobile app via Expo Go
+
+You should see a QR code. You can scan on your mobile device via the phones camera app to automatically open the application. Alternatively, you can also use the following methods without Expo Go (although they require a little more setup):
+
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+To learn more about developing a project with Expo, look at the following resources:
+
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
 # Recommendation Algorithm
 
@@ -467,97 +515,6 @@ The project testing focused on the highest-risk areas of this flow: selecting th
   </table>
 </div>
 
-<!-- Getting Started -->
-
-# Get started
-
-1. Clone the repository into an IDE of your choice
-
-```bash
-https://github.com/JordanHolder-CS/Car-Recommendation-App.git
-```
-
-2. Install dependencies
-
-```bash
-npm install
-```
-
-3. Install Expo Go on your mobile device
-
-```
-For iOS:
-Go to the App Store
-Find Expo Go
-Click Install
-
-For Android:
-Go to the Google Play Store
-Find Expo Go
-Click Install
-```
-
-4. Start the Expo Go app
-
-```
-**IMPORTANT**
-Your mobile device and the device you're running the codebase on (Desktop/Laptop) must be on the same network.
-This is because the application will be using localhost:8000, and thus must use the same local network.
-```
-
-5. Run the code from your IDE
-
-```bash
-npm expo start
-```
-
-6. In the terminal output, you'll find options to open the app in a
-
-You should see a QR code. You can scan on your mobile device via the phones camera app to automatically open the application. Alternatively, you can also use the following methods without Expo Go (although they require a little more setup):
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-# Learn more
-
-To learn more about developing a project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-# Join the community
-
-<!-- Usage -->
-
-# Usage
-
-Use this space to tell a little more about your project and how it can be used. Show additional screenshots, code samples, demos or link to other resources.
-
-```javascript
-import Component from "my-project";
-
-function App() {
-  return <Component />;
-}
-```
-
 # Contact
 
-Jordan Holder - [@twitter_handle](https://twitter.com/twitter_handle) - jordanholder2000@hotmail.com
-
-Project Link: [https://github.com/Louis3797/awesome-readme-template](https://github.com/Louis3797/awesome-readme-template)
-
-<!-- Acknowledgments -->
-
-# Acknowledgements
-
-Use this section to mention useful resources and libraries that you have used in your projects.
-
-- [Shields.io](https://shields.io/)
-- [Awesome README](https://github.com/matiassingers/awesome-readme)
-- [Emoji Cheat Sheet](https://github.com/ikatyang/emoji-cheat-sheet/blob/master/README.md#travel--places)
-- [Readme Template](https://github.com/othneildrew/Best-README-Template)
+Jordan Holder - [@LinkedIn](https://www.linkedin.com/in/jordan-holder/) - jordanholder2000@hotmail.com
