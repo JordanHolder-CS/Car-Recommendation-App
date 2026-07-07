@@ -14,10 +14,10 @@ const {
   USE_CASE_RULES,
   normalizeBrandKey,
   toSelections,
-} = require("../../src/ScoringConfigs/recommendationConfig");
+} = require("../ScoringConfigs/recommendationConfig");
 const {
   createRecommendationScoring,
-} = require("../../src/ScoringConfigs/recommendationScoring");
+} = require("../ScoringConfigs/recommendationScoring");
 
 const USE_CASE_ORDER = ["family", "work", "weekend", "city", "long_distance"];
 const INTENT_ORDER = [

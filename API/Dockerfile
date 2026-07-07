@@ -6,9 +6,8 @@ WORKDIR /app/API
 COPY API/package*.json ./
 RUN npm ci --omit=dev
 
-COPY API ./                         
-COPY src/ScoringConfigs /app/src/ScoringConfigs
+COPY API ./
 
 EXPOSE 8080
 
-CMD ["node", "/app/API/config/server.js"]
+CMD ["node", "config/server.js"]

@@ -8,7 +8,7 @@ const {
 } = require("../services/recommendationService");
 const {
   createRecommendationScoring,
-} = require("../../src/ScoringConfigs/recommendationScoring");
+} = require("../ScoringConfigs/recommendationScoring");
 
 // --- Shared fake car data ---
 // Car A: cheap, efficient, light - city/value-friendly

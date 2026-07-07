@@ -1,6 +1,18 @@
 const path = require("path");
-require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+const fs = require("fs");
+const dotenv = require("dotenv");
 const express = require("express");
+
+[
+  path.resolve(__dirname, ".env"),
+  path.resolve(__dirname, "../.env"),
+  path.resolve(__dirname, "../../.env"),
+].forEach((envFile) => {
+  if (fs.existsSync(envFile)) {
+    dotenv.config({ path: envFile });
+  }
+});
+
 const app = express();
 const port = process.env.PORT || 8080;
 const carRoutes = require("../routes/carRoute.js");
